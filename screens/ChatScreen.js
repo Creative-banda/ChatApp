@@ -1,9 +1,17 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, FlatList, TextInput, TouchableOpacity, Text, StyleSheet, StatusBar} from 'react-native';
+import { useRoute } from '@react-navigation/native';
+import { database } from '../config';
+import { ref, get } from 'firebase/database';
 
 const ChatScreen = () => {
     const [messages, setMessages] = useState([]);
     const [inputText, setInputText] = useState('');
+    const route = useRoute();
+    const { chatId } = route.params;
+    useEffect(() => {
+        initializingChats();
+    }, []);
 
     const renderMessage = ({ item }) => (
         <View style={styles.messageContainer}>
@@ -17,6 +25,20 @@ const ChatScreen = () => {
             setInputText('');
         }
     };
+
+    const initializingChats = async () =>{
+        try{
+          let chatsRef = ref(database, 'chats');
+          const snapshot = await get(chatsRef);
+          if (snapshot.exists()) {
+            const chatsData = snapshot.val();
+            // setChats(chatsData);
+            console.log(chatsData);
+          }
+        } catch (error) {
+          console.error("Error fetching chats: ", error);
+        }
+      };
 
     return (
         <View style={styles.container}>

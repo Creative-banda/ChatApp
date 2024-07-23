@@ -10,13 +10,13 @@ const ChatAppHomePage = ({ navigation, uid }) => {
   const [username, setUsername] = useState('');
 
   useEffect(() => {
-    initializingData();
+    initializingUsers();
     if (uid) {
       fetchUsername(uid);
     }
   }, [uid]);
 
-  const initializingData = async () => {
+  const initializingUsers = async () => {
     try {
       let rolesRef = ref(database, 'Users');
       const snapshot = await get(rolesRef);
@@ -32,6 +32,7 @@ const ChatAppHomePage = ({ navigation, uid }) => {
       console.error("Error fetching data: ", error);
     }
   };
+
 
   const fetchUsername = async (uid) => {
     try {
@@ -51,7 +52,7 @@ const ChatAppHomePage = ({ navigation, uid }) => {
     return (
       <TouchableOpacity
         style={styles.card}
-        onPress={() => navigation.navigate("ChatScreen")}
+        onPress={() => navigation.navigate("ChatScreen", { chatId: item})}
       >
         <View style={styles.textContainer}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>

@@ -20,17 +20,22 @@ const SignUpPage = ({ navigation }) => {
         const user = userCredential.user;
         console.log(user);
 
-        // Store user data in Firestore
         await setDoc(doc(firestore, "Users", user.uid), {
           username: username,
           email: email
         });
 
-        // Create a node in Realtime Database
         await set(ref(database, 'Users/' + username), {
           username: username,
           email: email,
         });
+
+        await set(ref(database, 'chats/' + username), [
+          {
+            To: "",
+            message: ""
+          }
+        ]);
 
         Alert.alert('Sign Up Success', 'User account created successfully');
         navigation.navigate("Login");
