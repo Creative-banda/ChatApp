@@ -52,7 +52,7 @@ const ChatAppHomePage = ({ navigation, uid }) => {
     return (
       <TouchableOpacity
         style={styles.card}
-        onPress={() => navigation.navigate("ChatScreen", { chatId: item})}
+        onPress={() => navigation.navigate("ChatScreen", { chatId: item, name : {username}})}
       >
         <View style={styles.textContainer}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>

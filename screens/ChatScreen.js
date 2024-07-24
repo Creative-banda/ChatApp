@@ -8,16 +8,26 @@ const ChatScreen = () => {
     const [messages, setMessages] = useState([]);
     const [inputText, setInputText] = useState('');
     const route = useRoute();
-    const { chatId } = route.params;
+    const { chatId, name } = route.params;
+
+    // console.log("Name",name.username);
     useEffect(() => {
         initializingChats();
     }, []);
 
-    const renderMessage = ({ item }) => (
-        <View style={styles.messageContainer}>
-            <Text style={styles.messageText}>{item}</Text>
-        </View>
-    );
+    const renderMessage = ({ item }) => {
+        const isMyMessage = item.To.trim().toLowerCase() === name.username.trim().toLowerCase();
+        console.log(item.To, name.username);
+        return(
+            <View
+            style={[
+              styles.messageContainer,
+              isMyMessage ? styles.myMessage : styles.otherMessage,
+            ]}
+          >
+            <Text style={styles.messageText}>{item.message}</Text>
+          </View>
+    );}
 
     const handleSend = () => {
         if (inputText.trim() !== '') {
@@ -27,13 +37,13 @@ const ChatScreen = () => {
     };
 
     const initializingChats = async () =>{
+        // console.log(chatId.id);
         try{
-          let chatsRef = ref(database, 'chats');
+            let chatsRef = ref(database, `chats/${chatId.name}`);
           const snapshot = await get(chatsRef);
           if (snapshot.exists()) {
             const chatsData = snapshot.val();
-            // setChats(chatsData);
-            console.log(chatsData);
+            setMessages(chatsData);
           }
         } catch (error) {
           console.error("Error fetching chats: ", error);
@@ -75,14 +85,36 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
     },
     messageContainer: {
-        backgroundColor: '#222',
-        borderRadius: 10,
-        padding: 10,
         marginBottom: 10,
     },
     messageText: {
         fontSize: 16,
         color: '#fff',
+    },
+    myMessage: {
+        alignSelf: 'flex-end',
+        backgroundColor: '#0095f6', 
+        padding: 7,
+        marginVertical: 5,
+        maxWidth: '75%',
+        color: '#fff',
+        borderTopLeftRadius: 20,
+        borderBottomRightRadius: 20,
+        borderBottomLeftRadius: 20,
+        paddingHorizontal: 20,
+    },
+    otherMessage: {
+        alignSelf: 'flex-start',
+        backgroundColor: '#CBC3E3',
+        padding: 7,
+        paddingHorizontal: 20,
+        borderTopRightRadius: 20,
+        borderBottomRightRadius: 20,
+        borderBottomLeftRadius: 20,
+        marginVertical: 5,
+        maxWidth: '75%',
+        fontSize: 16,
+        color: '#000'
     },
     inputContainer: {
         flexDirection: 'row',
