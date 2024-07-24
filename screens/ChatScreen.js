@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, FlatList, TextInput, TouchableOpacity, Text, StyleSheet, StatusBar, Image } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { database } from '../config';
-import { ref, get, push, set,onValue} from 'firebase/database';
+import { ref, push, set, onValue } from 'firebase/database';
 import Back from '../assets/SVG/BackButton';
 
 const ChatScreen = ({ navigation }) => {
@@ -17,12 +17,9 @@ const ChatScreen = ({ navigation }) => {
             if (snapshot.exists()) {
                 const chatsData = snapshot.val();
                 let allChats = [];
-                
-                // Iterate through all users' chats
+
                 Object.values(chatsData).forEach(userChats => {
-                    // Iterate through each chat of the user
                     Object.values(userChats).forEach(chat => {
-                        // Check if chat is an array, if so, spread it, otherwise add as is
                         if (Array.isArray(chat)) {
                             allChats.push(...chat);
                         } else {
@@ -30,17 +27,16 @@ const ChatScreen = ({ navigation }) => {
                         }
                     });
                 });
-    
-                // Filter chats for the current conversation
-                const filteredChats = allChats.filter(chat => 
+
+                const filteredChats = allChats.filter(chat =>
                     (chat.To?.trim() === name.username.trim() && chat.from?.trim() === chatId.name.trim()) ||
                     (chat.To?.trim() === chatId.name.trim() && chat.from?.trim() === name.username.trim())
                 );
-    
+
                 setMessages(filteredChats.reverse());
             }
         });
-    
+
         return () => unsubscribe();
     }, [name.username, chatId.name]);
 
@@ -59,6 +55,7 @@ const ChatScreen = ({ navigation }) => {
     };
 
     const handleSend = async () => {
+        setInputText('');
         if (inputText.trim() !== '') {
             const newMessage = [{
                 message: inputText,
@@ -71,7 +68,6 @@ const ChatScreen = ({ navigation }) => {
                 const otherMessageRef = push(ref(database, `chats/${chatId.name.trim()}`));
                 await set(newMessageRef, newMessage);
                 await set(otherMessageRef, newMessage);
-                setInputText('');
             } catch (error) {
                 console.error("Error sending message: ", error);
             }
@@ -99,7 +95,7 @@ const ChatScreen = ({ navigation }) => {
                 onEndReached={() => {
                     console.log("End reached");
                 }
-            }
+                }
             />
             <View style={styles.inputContainer}>
                 <TextInput
@@ -113,6 +109,7 @@ const ChatScreen = ({ navigation }) => {
                     <Text style={styles.sendButtonText}>Send</Text>
                 </TouchableOpacity>
             </View>
+            
         </View>
     );
 };
@@ -196,6 +193,16 @@ const styles = StyleSheet.create({
     sendButtonText: {
         fontSize: 16,
         color: '#fff',
+    },
+    alertButton: {
+        backgroundColor: '#f44336',
+        padding: 10,
+        margin: 10,
+        borderRadius: 5,
+    },
+    alertButtonText: {
+        color: 'white',
+        textAlign: 'center',
     },
 });
 

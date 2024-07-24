@@ -4,10 +4,12 @@ import { database, firestore } from '../config';
 import { ref, get } from 'firebase/database';
 import { doc, getDoc } from 'firebase/firestore';
 import { getAuth, signOut } from 'firebase/auth';
+import CustomAlert from '../components/CustomAlert';
 
 const ChatAppHomePage = ({ navigation, uid }) => {
   const [users, setUsers] = useState([]);
   const [username, setUsername] = useState('');
+  const [alertVisible, setAlertVisible] = useState(false);
 
   useEffect(() => {
     initializingUsers();
@@ -52,7 +54,7 @@ const ChatAppHomePage = ({ navigation, uid }) => {
     return (
       <TouchableOpacity
         style={styles.card}
-        onPress={() => navigation.navigate("ChatScreen", { chatId: item, name : {username}})}
+        onPress={() => navigation.navigate("ChatScreen", { chatId: item, name: { username } })}
       >
         <View style={styles.textContainer}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -65,15 +67,8 @@ const ChatAppHomePage = ({ navigation, uid }) => {
   };
 
   const handleLogout = () => {
-    const auth = getAuth();
-    signOut(auth)
-      .then(() => {
-        console.log('User signed out!');
-        navigation.navigate('Login'); 
-      })
-      .catch((error) => {
-        console.error('Error signing out: ', error);
-      });
+    setAlertVisible(true);
+
   };
 
 
@@ -82,7 +77,7 @@ const ChatAppHomePage = ({ navigation, uid }) => {
       <StatusBar barStyle="light-content" backgroundColor="#121212" />
       <View style={styles.header}>
         {username ?
-          <Text style={styles.title}>Hii, {username}</Text> : 
+          <Text style={styles.title}>Hii, {username}</Text> :
           <Text></Text>
         }
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
@@ -95,6 +90,20 @@ const ChatAppHomePage = ({ navigation, uid }) => {
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.flatListContent}
       />
+      <CustomAlert
+        Title="Do you really want to logout?"
+        visible={alertVisible}
+        onRequestClose={() => setAlertVisible(false)}
+        onYes={() => {
+          const auth = getAuth();
+          signOut(auth)
+            .then(() => {
+              setAlertVisible(false);
+              navigation.navigate('Login');
+            })
+        }}
+        onNo={() => setAlertVisible(false)}
+      />
     </View>
   );
 };
@@ -102,7 +111,7 @@ const ChatAppHomePage = ({ navigation, uid }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop:20,
+    paddingTop: 20,
     backgroundColor: '#121212',
     padding: 16,
   },

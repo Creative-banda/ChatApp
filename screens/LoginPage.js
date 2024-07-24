@@ -4,17 +4,23 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, firestore } from '../config';
+import SimpleAlert from '../components/SimpleAlert';
 
 const LoginPage = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [disable, setdisable] = useState(false);
+  const [AlertMessage, SetAlertMessage] = useState("");
+  const [AlertTitle, SetAlertTitle] = useState("");
+  const [AlertVisible, SetAlertVisible] = useState(false);
 
 
   const handleLogin = async () => {
     if (email.trim() === "" || password.trim() === "") {
-      Alert.alert('Input Error', 'Please enter your login credentials');
+      SetAlertMessage('Please enter your Login credentials');
+      SetAlertTitle('Input Error');
+      SetAlertVisible(true);
     } else {
       setLoading(true);
       setdisable(true);
@@ -28,15 +34,23 @@ const LoginPage = ({ navigation }) => {
         if (userDoc.exists()) {
           const userData = userDoc.data();
           console.log("Username: ", userData.username);
-          Alert.alert('Login Success', `Welcome ${userData.username}`);
-          navigation.navigate("Home");
+          <SimpleAlert
+          Title={"Login Success"}
+          visible={true}
+          Message={`Welcome ${userData.username}`}
+          onClose={() => {navigation.navigate("Home");}}
+        />
         } else {
           console.log("No such document!");
-          Alert.alert('Error', 'No user data found');
+          SetAlertMessage("No user data found")
+          SetAlertTitle("Login Error")
+          SetAlertVisible(true)
         }
       } catch (error) {
         console.error("Error fetching user data: ", error);
-        Alert.alert('Login Error', error.message);
+        SetAlertMessage(error.message)
+        SetAlertTitle("Login Error")
+        SetAlertVisible(true)
       } finally {
         setLoading(false);
         setdisable(false);
@@ -91,6 +105,12 @@ const LoginPage = ({ navigation }) => {
           <Text style={styles.forgotPassword}>Click Here If You Are New User</Text>
         </TouchableOpacity>
       </KeyboardAvoidingView>
+        <SimpleAlert
+          Title={AlertTitle}
+          visible={AlertVisible}
+          Message={AlertMessage}
+          onClose={() => SetAlertVisible(false)}
+        />
     </LinearGradient>
   );
 
