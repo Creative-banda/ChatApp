@@ -25,7 +25,11 @@
     "react-native-web": "~0.19.10"
   },
   "devDependencies": {
-    "@babel/core": "^7.20.0"
+    "@babel/core": "^7.20.0",
+    "install": "^0.13.0",
+    "npm": "^10.8.2",
+    "react-native-svg": "^15.4.0",
+    "react-native-svg-transformer": "^1.5.0"
   },
   "private": true
 }
