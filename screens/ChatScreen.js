@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, FlatList, TextInput, TouchableOpacity, Text, StyleSheet, StatusBar, Image } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { database } from '../config';
-import { ref, get, push, set} from 'firebase/database';
+import { ref, get, push, set,onValue} from 'firebase/database';
 import Back from '../assets/SVG/BackButton';
 
 const ChatScreen = ({ navigation }) => {
@@ -12,8 +12,37 @@ const ChatScreen = ({ navigation }) => {
     const { chatId, name } = route.params;
 
     useEffect(() => {
-        initializingChats();
-    }, []);
+        const chatsRef = ref(database, `chats`);
+        const unsubscribe = onValue(chatsRef, (snapshot) => {
+            if (snapshot.exists()) {
+                const chatsData = snapshot.val();
+                let allChats = [];
+                
+                // Iterate through all users' chats
+                Object.values(chatsData).forEach(userChats => {
+                    // Iterate through each chat of the user
+                    Object.values(userChats).forEach(chat => {
+                        // Check if chat is an array, if so, spread it, otherwise add as is
+                        if (Array.isArray(chat)) {
+                            allChats.push(...chat);
+                        } else {
+                            allChats.push(chat);
+                        }
+                    });
+                });
+    
+                // Filter chats for the current conversation
+                const filteredChats = allChats.filter(chat => 
+                    (chat.To?.trim() === name.username.trim() && chat.from?.trim() === chatId.name.trim()) ||
+                    (chat.To?.trim() === chatId.name.trim() && chat.from?.trim() === name.username.trim())
+                );
+    
+                setMessages(filteredChats.reverse());
+            }
+        });
+    
+        return () => unsubscribe();
+    }, [name.username, chatId.name]);
 
     const renderMessage = ({ item }) => {
         const isMyMessage = item.from.trim().toLowerCase() === name.username.trim().toLowerCase();
@@ -39,30 +68,13 @@ const ChatScreen = ({ navigation }) => {
 
             try {
                 const newMessageRef = push(ref(database, `chats/${name.username.trim()}`));
+                const otherMessageRef = push(ref(database, `chats/${chatId.name.trim()}`));
                 await set(newMessageRef, newMessage);
+                await set(otherMessageRef, newMessage);
                 setInputText('');
             } catch (error) {
                 console.error("Error sending message: ", error);
             }
-        }
-    };
-
-    const initializingChats = async () => {
-        let username = name.username.trim();
-        try {
-            let chatsRef = ref(database, `chats/${username}`);
-            const snapshot = await get(chatsRef);
-            if (snapshot.exists()) {
-                const chatsData = snapshot.val();
-                const chatsArray = Object.values(chatsData);
-                const filteredChats = chatsArray.flat().filter(chat => 
-                    (chat.To.trim() === username && chat.from.trim() === chatId.name.trim()) ||
-                    (chat.To.trim() === chatId.name.trim() && chat.from.trim() === username)
-                );
-                setMessages(filteredChats);
-            }
-        } catch (error) {
-            console.error("Error fetching chats: ", error);
         }
     };
 
@@ -83,9 +95,11 @@ const ChatScreen = ({ navigation }) => {
                 contentContainerStyle={styles.chatContainer}
                 inverted
                 onEndReachedThreshold={0.5}
+                initialNumToRender={10}
                 onEndReached={() => {
                     console.log("End reached");
-                }}
+                }
+            }
             />
             <View style={styles.inputContainer}>
                 <TextInput
