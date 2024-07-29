@@ -12,20 +12,19 @@ const ChatScreen = ({ navigation }) => {
     const { chatId, name } = route.params;
 
     useEffect(() => {
-        const chatsRef = ref(database, `chats`);
+        const chatsRef = ref(database, `chats/${name.username.trim()}`);
         const unsubscribe = onValue(chatsRef, (snapshot) => {
             if (snapshot.exists()) {
                 const chatsData = snapshot.val();
                 let allChats = [];
 
-                Object.values(chatsData).forEach(userChats => {
-                    Object.values(userChats).forEach(chat => {
-                        if (Array.isArray(chat)) {
-                            allChats.push(...chat);
-                        } else {
-                            allChats.push(chat);
-                        }
-                    });
+
+                Object.values(chatsData).forEach(chat => {
+                    if (Array.isArray(chat)) {
+                        allChats.push(...chat);
+                    } else {
+                        allChats.push(chat);
+                    }
                 });
 
                 const filteredChats = allChats.filter(chat =>
@@ -65,9 +64,11 @@ const ChatScreen = ({ navigation }) => {
 
             try {
                 const newMessageRef = push(ref(database, `chats/${name.username.trim()}`));
-                const otherMessageRef = push(ref(database, `chats/${chatId.name.trim()}`));
+                if (name.username.trim() !== chatId.name.trim()) {
+                    const otherMessageRef = push(ref(database, `chats/${chatId.name.trim()}`));
+                    await set(otherMessageRef, newMessage);
+                }
                 await set(newMessageRef, newMessage);
-                await set(otherMessageRef, newMessage);
             } catch (error) {
                 console.error("Error sending message: ", error);
             }
@@ -109,7 +110,7 @@ const ChatScreen = ({ navigation }) => {
                     <Text style={styles.sendButtonText}>Send</Text>
                 </TouchableOpacity>
             </View>
-            
+
         </View>
     );
 };
