@@ -11,6 +11,7 @@ import LoginPage from './screens/LoginPage';
 import ChatScreen from './screens/ChatScreen';
 import SignUp from './screens/SignUp';
 import SettingPage from './screens/SettingPage';
+import Profile from './screens/Profile';
 
 const Stack = createStackNavigator();
 
@@ -68,6 +69,7 @@ const App = () => {
         <Stack.Screen name="SignUp" component={SignUp} />
         <Stack.Screen name="ChatScreen" component={ChatScreen} />
         <Stack.Screen name="SettingPage" component={SettingPage} />
+        <Stack.Screen name="Profile" component={Profile} />
       </Stack.Navigator>
     </NavigationContainer>
   );
