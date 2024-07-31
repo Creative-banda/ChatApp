@@ -28,18 +28,12 @@ const LoginPage = ({ navigation }) => {
         console.log("Attempting to login");
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
-
         const userDoc = await getDoc(doc(firestore, "Users", user.uid));
 
         if (userDoc.exists()) {
           const userData = userDoc.data();
           console.log("Username: ", userData.username);
-          <SimpleAlert
-          Title={"Login Success"}
-          visible={true}
-          Message={`Welcome ${userData.username}`}
-          onClose={() => {navigation.navigate("Home");}}
-        />
+          navigation.navigate("Home");
         } else {
           console.log("No such document!");
           SetAlertMessage("No user data found")

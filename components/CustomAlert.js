@@ -1,7 +1,7 @@
 import React from 'react'
 import { View, Text, Modal, TouchableOpacity, StyleSheet, Animated } from 'react-native';
 
-const CustomAlert = ({ Title, Message, visible, onYes, onNo }) => {
+const CustomAlert = ({ Title, visible, onYes, onNo }) => {
     const [fadeAnim] = React.useState(new Animated.Value(0));
 
     React.useEffect(() => {
@@ -14,7 +14,7 @@ const CustomAlert = ({ Title, Message, visible, onYes, onNo }) => {
 
     return (
         <Modal
-            animationType="none"
+            animationType="fade"
             transparent={true}
             visible={visible}
             onRequestClose={onNo}

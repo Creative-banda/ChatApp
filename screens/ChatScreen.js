@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, FlatList, TextInput, TouchableOpacity, Text, StyleSheet, StatusBar, Image } from 'react-native';
+import { View, FlatList, TextInput, TouchableOpacity, Text, StyleSheet, StatusBar, Image, ImageBackground } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { database } from '../config';
 import { ref, push, set, onValue } from 'firebase/database';
@@ -8,6 +8,7 @@ import Back from '../assets/SVG/BackButton';
 const ChatScreen = ({ navigation }) => {
     const [messages, setMessages] = useState([]);
     const [inputText, setInputText] = useState('');
+    const [selectedItems, setSelectedItems] = useState([]);
     const route = useRoute();
     const { chatId, name } = route.params;
 
@@ -17,7 +18,6 @@ const ChatScreen = ({ navigation }) => {
             if (snapshot.exists()) {
                 const chatsData = snapshot.val();
                 let allChats = [];
-
 
                 Object.values(chatsData).forEach(chat => {
                     if (Array.isArray(chat)) {
@@ -39,24 +39,46 @@ const ChatScreen = ({ navigation }) => {
         return () => unsubscribe();
     }, [name.username, chatId.name]);
 
+    const toggleSelected = (id) => {
+        if (selectedItems.includes(id)) {
+            setSelectedItems(selectedItems.filter(item => item !== id));
+        } else {
+            setSelectedItems([...selectedItems, id]);
+        }
+    };
+
     const renderMessage = ({ item }) => {
         const isMyMessage = item.from.trim().toLowerCase() === name.username.trim().toLowerCase();
+        const isSelected = selectedItems.includes(item.id);
+
         return (
             <View
                 style={[
                     styles.messageContainer,
                     isMyMessage ? styles.myMessage : styles.otherMessage,
+                    isSelected && styles.selectedMessage, isSelected && styles.selectedTextView
                 ]}
             >
-                <Text style={styles.messageText}>{item.message}</Text>
+                {isMyMessage ? 
+                <TouchableOpacity onLongPress={() => toggleSelected(item.id)}>
+                    <Text style={[styles.messageText, isSelected && styles.selectedMessageText]}>{item.message}</Text>
+                </TouchableOpacity> : 
+                <Text style={styles.messageText}>{item.message}</Text>}
             </View>
         );
     };
 
+    function generateRandomId() {
+        return Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
+    }
+
     const handleSend = async () => {
+        const Id = generateRandomId();
+
         setInputText('');
         if (inputText.trim() !== '') {
             const newMessage = [{
+                id: Id,
                 message: inputText,
                 from: name.username,
                 To: chatId.name,
@@ -76,42 +98,39 @@ const ChatScreen = ({ navigation }) => {
     };
 
     return (
-        <View style={styles.container}>
-            <View style={{ padding: 10, flexDirection: 'row', alignItems: 'center', backgroundColor: '#111' }}>
-                <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <Back />
-                </TouchableOpacity>
-                <Image source={require('../assets/icon.png')} style={styles.avatar} />
-                <Text style={{ color: '#fff', fontSize: 20, fontWeight: 'bold' }}>{chatId.name}</Text>
-            </View>
-            <StatusBar barStyle="light-content" backgroundColor="#000000" />
-            <FlatList
-                data={messages}
-                renderItem={renderMessage}
-                keyExtractor={(item, index) => index.toString()}
-                contentContainerStyle={styles.chatContainer}
-                inverted
-                onEndReachedThreshold={0.5}
-                initialNumToRender={10}
-                onEndReached={() => {
-                    console.log("End reached");
-                }
-                }
-            />
-            <View style={styles.inputContainer}>
-                <TextInput
-                    style={styles.input}
-                    value={inputText}
-                    onChangeText={setInputText}
-                    placeholder="Message..."
-                    placeholderTextColor="#999"
+        <ImageBackground source={require('../assets/Images/background.jpg')} style={styles.container}>
+            <View style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
+                <View style={{ padding: 10, flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.6)', borderBottomColor: '#4C4A48', borderBottomWidth: 2 }}>
+                    <TouchableOpacity onPress={() => navigation.goBack()}>
+                        <Back />
+                    </TouchableOpacity>
+                    <Image source={require('../assets/icon.png')} style={styles.avatar} />
+                    <Text style={{ color: '#fff', fontSize: 20, fontWeight: 'bold' }}>{chatId.name}</Text>
+                </View>
+                <StatusBar barStyle="light-content" backgroundColor="#000000" />
+                <FlatList
+                    data={messages}
+                    renderItem={renderMessage}
+                    contentContainerStyle={styles.chatContainer}
+                    inverted
+                    onEndReachedThreshold={0.5}
+                    initialNumToRender={10}
+                    extraData={selectedItems}
                 />
-                <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
-                    <Text style={styles.sendButtonText}>Send</Text>
-                </TouchableOpacity>
+                <View style={styles.inputContainer}>
+                    <TextInput
+                        style={styles.input}
+                        value={inputText}
+                        onChangeText={setInputText}
+                        placeholder="Message..."
+                        placeholderTextColor="#999"
+                    />
+                    <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
+                        <Text style={styles.sendButtonText}>Send</Text>
+                    </TouchableOpacity>
+                </View>
             </View>
-
-        </View>
+        </ImageBackground>
     );
 };
 
@@ -134,8 +153,9 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     messageText: {
-        fontSize: 16,
+        fontSize: 17,
         color: '#000000',
+        fontFamily: 'Nunito',
     },
     myMessage: {
         alignSelf: 'flex-end',
@@ -143,12 +163,11 @@ const styles = StyleSheet.create({
         padding: 7,
         marginVertical: 5,
         maxWidth: '75%',
-        color: '#fff',
         borderTopLeftRadius: 20,
         borderBottomRightRadius: 20,
         borderBottomLeftRadius: 20,
         paddingHorizontal: 20,
-        paddingLeft: 20
+        paddingLeft: 20,
     },
     otherMessage: {
         alignSelf: 'flex-start',
@@ -162,7 +181,14 @@ const styles = StyleSheet.create({
         paddingTop: 10,
         maxWidth: '75%',
         fontSize: 16,
-        paddingRight: 40
+        paddingRight: 40,
+    },
+    selectedMessage: {
+        backgroundColor: '#FFFFF',
+    },
+    selectedMessageText: {
+        color: '#000',
+        fontFamily: 'Lato',
     },
     inputContainer: {
         flexDirection: 'row',
@@ -205,6 +231,10 @@ const styles = StyleSheet.create({
         color: 'white',
         textAlign: 'center',
     },
+    selectedTextView:{
+        backgroundColor: '#E09D90',
+    }
+
 });
 
 export default ChatScreen;

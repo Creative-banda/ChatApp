@@ -1,15 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet, StatusBar } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet, StatusBar, ImageBackground } from 'react-native';
 import { database, firestore } from '../config';
 import { ref, get } from 'firebase/database';
 import { doc, getDoc } from 'firebase/firestore';
-import { getAuth, signOut } from 'firebase/auth';
-import CustomAlert from '../components/CustomAlert';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 const ChatAppHomePage = ({ navigation, uid }) => {
   const [users, setUsers] = useState([]);
   const [username, setUsername] = useState('');
-  const [alertVisible, setAlertVisible] = useState(false);
 
   useEffect(() => {
     initializingUsers();
@@ -66,45 +64,35 @@ const ChatAppHomePage = ({ navigation, uid }) => {
     );
   };
 
-  const handleLogout = () => {
-    setAlertVisible(true);
-
-  };
 
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#121212" />
-      <View style={styles.header}>
-        {username ?
-          <Text style={styles.title}>Hii, {username}</Text> :
-          <Text></Text>
-        }
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Text style={styles.logoutButtonText}>Logout</Text>
-        </TouchableOpacity>
+
+    <ImageBackground
+      source={require('../assets/Images/background.jpg')}
+      style={styles.backgroundImage}
+      resizeMode="stretch"
+
+    >
+
+      <View style={styles.container}>
+        <StatusBar barStyle="light-content" backgroundColor="#121212" />
+        <View style={styles.header}>
+          {username ?
+            <Text style={styles.title}>Hii, {username}</Text> :
+            <Text></Text>
+          }
+          <Icon name="gear" size={30} color="#ffffff" onPress={() => navigation.navigate('SettingPage')} style={styles.icon} />
+        </View>
+        <FlatList
+          data={users}
+          renderItem={renderChatItem}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.flatListContent}
+        />
+        
       </View>
-      <FlatList
-        data={users}
-        renderItem={renderChatItem}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.flatListContent}
-      />
-      <CustomAlert
-        Title="Do you really want to logout?"
-        visible={alertVisible}
-        onRequestClose={() => setAlertVisible(false)}
-        onYes={() => {
-          const auth = getAuth();
-          signOut(auth)
-            .then(() => {
-              setAlertVisible(false);
-              navigation.navigate('Login');
-            })
-        }}
-        onNo={() => setAlertVisible(false)}
-      />
-    </View>
+    </ImageBackground>
   );
 };
 
@@ -112,19 +100,34 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: 20,
-    backgroundColor: '#121212',
-    padding: 16,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    padding: 20,
+    borderRadius: 10,
+
+  },
+  backgroundImage: {
+    flex: 1,
+    justifyContent: 'center',
+    backgroundColor: '#1e1e1e',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 25,
   },
+  icon: {
+    marginRight: 10,
+    marginTop:10
+  },
+
+
   title: {
-    fontSize: 24,
+    fontSize: 25,
     fontWeight: 'bold',
     color: '#ffffff',
+    fontFamily: 'Lato',
+    fontWeight: '600',
   },
   logoutButton: {
     backgroundColor: '#d32f2f',
@@ -133,24 +136,23 @@ const styles = StyleSheet.create({
   },
   logoutButtonText: {
     fontSize: 16,
-    fontWeight: 'bold',
     color: '#ffffff',
+    fontFamily: 'Lato',
   },
   flatListContent: {
     paddingBottom: 16,
   },
   card: {
     flexDirection: 'row',
-    backgroundColor: '#1e1e1e',
-    borderRadius: 8,
+    borderRadius: 5,
     padding: 16,
     marginBottom: 16,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 2,
-    elevation: 5,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    borderWidth: 2,
+    borderColor: '#8F8F8E',
+    borderTopEndRadius: 40,
+    borderBottomEndRadius: 10,
   },
   avatar: {
     width: 50,
@@ -163,8 +165,12 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 18,
-    fontWeight: 'bold',
     color: '#ffffff',
+    textShadowColor: '#000000',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+    fontFamily: 'Nunito',
+
   },
   message: {
     fontSize: 14,
