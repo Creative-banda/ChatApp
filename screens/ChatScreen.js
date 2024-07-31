@@ -2,13 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { View, FlatList, TextInput, TouchableOpacity, Text, StyleSheet, StatusBar, Image, ImageBackground } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { database } from '../config';
-import { ref, push, set, onValue } from 'firebase/database';
+import { ref, push, set, onValue, update, get} from 'firebase/database';
 import Back from '../assets/SVG/BackButton';
+import Icon from 'react-native-vector-icons/AntDesign';
+import CustomAlert from '../components/CustomAlert';
 
 const ChatScreen = ({ navigation }) => {
     const [messages, setMessages] = useState([]);
     const [inputText, setInputText] = useState('');
     const [selectedItems, setSelectedItems] = useState([]);
+    const [isSelectionMode, setIsSelectionMode] = useState(false);
+    const [alertVisible, setAlertVisible] = useState(false);
     const route = useRoute();
     const { chatId, name } = route.params;
 
@@ -39,13 +43,81 @@ const ChatScreen = ({ navigation }) => {
         return () => unsubscribe();
     }, [name.username, chatId.name]);
 
-    const toggleSelected = (id) => {
-        if (selectedItems.includes(id)) {
-            setSelectedItems(selectedItems.filter(item => item !== id));
-        } else {
-            setSelectedItems([...selectedItems, id]);
+    const toggleSelectionMode = (id) => {
+        setIsSelectionMode(true);
+        toggleItemSelection(id);
+    };
+
+    const toggleItemSelection = (id) => {
+        setSelectedItems(prevSelectedItems => {
+            if (prevSelectedItems.includes(id)) {
+                const updatedSelectedItems = prevSelectedItems.filter(item => item !== id);
+                setIsSelectionMode(updatedSelectedItems.length > 0);
+                return updatedSelectedItems;
+            } else {
+                const updatedSelectedItems = [...prevSelectedItems, id];
+                setIsSelectionMode(true);
+                return updatedSelectedItems;
+            }
+        });
+    };
+
+    const handleDeselect = () => {
+        setSelectedItems([]);
+        setIsSelectionMode(false);
+    };
+
+    const handleDelete = async () => {
+        if (selectedItems.length === 0) {
+            Alert.alert('No messages selected', 'Please select at least one message to delete.');
+            return;
+        }
+
+        setAlertVisible(true);
+    };
+
+    const deleteMessages = async (user, otherUser, messageIds) => {
+        const userChatsRef = ref(database, `chats/${user.trim()}`);
+        const otherUserChatsRef = ref(database, `chats/${otherUser.trim()}`);
+    
+        try {
+            await deleteFromChat(userChatsRef, messageIds);
+            await deleteFromChat(otherUserChatsRef, messageIds);
+            console.log('Messages deleted successfully from both users');
+            setSelectedItems([]);
+            setIsSelectionMode(false);
+            setAlertVisible(false);
+        } catch (error) {
+            console.error('Error deleting messages from both users:', error);
         }
     };
+
+    const deleteFromChat = async (chatRef, messageIds) => {
+        const snapshot = await get(chatRef);
+        if (snapshot.exists()) {
+            const chatsData = snapshot.val();
+            const updates = {};
+    
+            Object.keys(chatsData).forEach(key => {
+                const messages = chatsData[key];
+                if (Array.isArray(messages)) {
+                    const updatedMessages = messages.filter(message => !messageIds.includes(message.id));
+                    if (updatedMessages.length > 0) {
+                        updates[`${key}`] = updatedMessages;
+                    } else {
+                        updates[`${key}`] = null; // Delete the entire node if no messages are left
+                    }
+                }
+            });
+    
+            if (Object.keys(updates).length > 0) {
+                await update(chatRef, updates);
+            }
+        }
+    };    
+    
+    
+
 
     const renderMessage = ({ item }) => {
         const isMyMessage = item.from.trim().toLowerCase() === name.username.trim().toLowerCase();
@@ -56,14 +128,17 @@ const ChatScreen = ({ navigation }) => {
                 style={[
                     styles.messageContainer,
                     isMyMessage ? styles.myMessage : styles.otherMessage,
-                    isSelected && styles.selectedMessage, isSelected && styles.selectedTextView
+                    isSelected && styles.selectedMessage
                 ]}
             >
-                {isMyMessage ? 
-                <TouchableOpacity onLongPress={() => toggleSelected(item.id)}>
+                {isMyMessage ?
+                <TouchableOpacity onLongPress={() => toggleSelectionMode(item.id)} onPress={() => {if (isSelectionMode) {toggleItemSelection(item.id);}}}>
                     <Text style={[styles.messageText, isSelected && styles.selectedMessageText]}>{item.message}</Text>
-                </TouchableOpacity> : 
-                <Text style={styles.messageText}>{item.message}</Text>}
+                    </TouchableOpacity> : 
+                <Text style={[styles.messageText, isSelected && styles.selectedMessageText]}>
+                    {item.message}
+                </Text>
+                }
             </View>
         );
     };
@@ -99,15 +174,30 @@ const ChatScreen = ({ navigation }) => {
 
     return (
         <ImageBackground source={require('../assets/Images/background.jpg')} style={styles.container}>
-            <View style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
-                <View style={{ padding: 10, flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.6)', borderBottomColor: '#4C4A48', borderBottomWidth: 2 }}>
-                    <TouchableOpacity onPress={() => navigation.goBack()}>
-                        <Back />
-                    </TouchableOpacity>
-                    <Image source={require('../assets/icon.png')} style={styles.avatar} />
-                    <Text style={{ color: '#fff', fontSize: 20, fontWeight: 'bold' }}>{chatId.name}</Text>
+            <StatusBar barStyle="light-content" backgroundColor="#000000" />
+            <View style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.4)' }}>
+
+                <View style={styles.header}>
+                    {isSelectionMode ? (
+                        <View style={styles.selectionModeContainer}>
+                            <TouchableOpacity onPress={handleDeselect} style={styles.selectionModeButton}>
+                                <Icon name="back" size={24} color="#fff" />
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={handleDelete} style={{ paddingVertical: 10 }}>
+                                <Icon name="delete" size={24} color="#fff" />
+                            </TouchableOpacity>
+                        </View>
+                    ) : (
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginHorizontal: 5, marginRight: 10 }}>
+                                <Back />
+                            </TouchableOpacity>
+                            <Image source={require('../assets/icon.png')} style={styles.avatar} />
+                            <Text style={{ color: '#fff', fontSize: 22, fontFamily: 'Lato' }}>{chatId.name}</Text>
+                        </View>
+                    )}
                 </View>
-                <StatusBar barStyle="light-content" backgroundColor="#000000" />
+
                 <FlatList
                     data={messages}
                     renderItem={renderMessage}
@@ -130,9 +220,17 @@ const ChatScreen = ({ navigation }) => {
                     </TouchableOpacity>
                 </View>
             </View>
+            <CustomAlert
+                Title="Do you really want to delete?"
+                visible={alertVisible}
+                onRequestClose={() => setAlertVisible(false)}
+                onYes={() => deleteMessages(name.username, chatId.name, selectedItems)}
+                onNo={() => setAlertVisible(false)}
+            />
         </ImageBackground>
     );
 };
+
 
 const styles = StyleSheet.create({
     container: {
@@ -142,6 +240,13 @@ const styles = StyleSheet.create({
     chatContainer: {
         paddingVertical: 10,
         paddingHorizontal: 20,
+    },
+    header: {
+        padding: 10,
+        flexDirection: 'row',
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        borderBottomColor: '#4C4A48',
+        borderBottomWidth: 2,
     },
     avatar: {
         width: 50,
@@ -169,6 +274,11 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         paddingLeft: 20,
     },
+    selectionModeButton: {
+        paddingVertical: 10,
+        position: 'absolute',
+        left: 10,
+    },
     otherMessage: {
         alignSelf: 'flex-start',
         backgroundColor: '#FFFFFF',
@@ -183,12 +293,18 @@ const styles = StyleSheet.create({
         fontSize: 16,
         paddingRight: 40,
     },
+    selectionModeContainer: {
+        flex: 1,
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        gap: 50,
+        paddingHorizontal: 30,
+    },
     selectedMessage: {
-        backgroundColor: '#FFFFF',
+        backgroundColor: '#E09D90',
     },
     selectedMessageText: {
         color: '#000',
-        fontFamily: 'Lato',
     },
     inputContainer: {
         flexDirection: 'row',
@@ -221,20 +337,11 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#fff',
     },
-    alertButton: {
-        backgroundColor: '#f44336',
-        padding: 10,
-        margin: 10,
-        borderRadius: 5,
-    },
-    alertButtonText: {
-        color: 'white',
-        textAlign: 'center',
-    },
-    selectedTextView:{
+
+
+    selectedTextView: {
         backgroundColor: '#E09D90',
     }
-
 });
 
 export default ChatScreen;
