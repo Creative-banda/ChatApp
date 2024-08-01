@@ -47,6 +47,7 @@ const ChatScreen = ({ navigation }) => {
         return () => unsubscribe();
     }, [name.username, chatId.name]);
 
+
     const toggleSelectionMode = (id) => {
         setIsSelectionMode(true);
         toggleItemSelection(id);
@@ -133,8 +134,8 @@ const ChatScreen = ({ navigation }) => {
                 ]}
             >
                 {isMyMessage ?
-                    <TouchableOpacity onLongPress={() => toggleSelectionMode(item.id)}>
-                        < Text style={[styles.messageText, isSelected && styles.selectedMessageText]}>{item.message}</Text>
+                <TouchableOpacity onLongPress={() => toggleSelectionMode(item.id)} onPress={() => {if (isSelectionMode) {toggleItemSelection(item.id);}}}>
+                    <Text style={[styles.messageText, isSelected && styles.selectedMessageText]}>{item.message}</Text>
 
                     </TouchableOpacity>
                     :
@@ -174,10 +175,6 @@ const ChatScreen = ({ navigation }) => {
             }
         }
     };
-
-    const gestureHandler = () => {
-        console.log("Sw")
-    }
 
     return (
             <ImageBackground source={require('../assets/Images/background.jpg')} style={styles.container}>

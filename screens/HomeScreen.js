@@ -8,6 +8,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 const ChatAppHomePage = ({ navigation, uid, email }) => {
   const [users, setUsers] = useState([]);
   const [username, setUsername] = useState('');
+  const [userDetails, setuserDetails] = useState({});
 
   useEffect(() => {
     initializingUsers();
@@ -39,8 +40,9 @@ const ChatAppHomePage = ({ navigation, uid, email }) => {
       const userDoc = doc(firestore, 'Users', uid);
       const docSnap = await getDoc(userDoc);
       if (docSnap.exists()) {
-        console.log(docSnap)
         setUsername(docSnap.data().username);
+        setuserDetails(docSnap.data());
+        console.log(docSnap.data());
       } else {
         console.log('No such document!');
       }
@@ -90,7 +92,7 @@ const ChatAppHomePage = ({ navigation, uid, email }) => {
             <Text style={styles.title}>Hii, {username}</Text> :
             <Text></Text>
           }
-          <Icon name="gear" size={30} color="#ffffff" onPress={() => navigation.navigate('SettingPage')} style={styles.icon} />
+          <Icon name="gear" size={30} color="#ffffff" onPress={() => navigation.navigate('SettingPage', { uid: uid })} style={styles.icon} />
         </View>
         <FlatList
           data={users}

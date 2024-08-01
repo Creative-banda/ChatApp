@@ -5,6 +5,7 @@ import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { setDoc, doc } from 'firebase/firestore';
 import { ref, set } from 'firebase/database'; // Import Realtime Database functions
 import { auth, firestore, database } from '../config';
+import Profile from './Profile';
 
 const SignUpPage = ({ navigation }) => {
   const [username, setUsername] = useState('');
@@ -28,6 +29,12 @@ const SignUpPage = ({ navigation }) => {
         await set(ref(database, 'Users/' + username), {
           username: username,
           email: email,
+          ProfilePic: "",
+          PhoneNumber: "",
+          Gender: "",
+          Birthday: "",
+          Status: "",
+          About: "",
         });
 
         await set(ref(database, 'chats/' + username), [
