@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, FlatList, TextInput, TouchableOpacity, Text, StyleSheet, StatusBar, Image, ImageBackground } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { database } from '../config';
-import { ref, push, set, onValue, update, get} from 'firebase/database';
+import { ref, push, set, onValue, update, get } from 'firebase/database';
 import Back from '../assets/SVG/BackButton';
 import Icon from 'react-native-vector-icons/AntDesign';
 import CustomAlert from '../components/CustomAlert';
@@ -13,6 +13,7 @@ const ChatScreen = ({ navigation }) => {
     const [selectedItems, setSelectedItems] = useState([]);
     const [isSelectionMode, setIsSelectionMode] = useState(false);
     const [alertVisible, setAlertVisible] = useState(false);
+    const [IsMessage, setIsMessage] = useState(false)
     const route = useRoute();
     const { chatId, name } = route.params;
 
@@ -36,6 +37,9 @@ const ChatScreen = ({ navigation }) => {
                     (chat.To?.trim() === chatId.name.trim() && chat.from?.trim() === name.username.trim())
                 );
 
+                if (filteredChats.length === 0) {
+                    setIsMessage(true)
+                }
                 setMessages(filteredChats.reverse());
             }
         });
@@ -79,7 +83,7 @@ const ChatScreen = ({ navigation }) => {
     const deleteMessages = async (user, otherUser, messageIds) => {
         const userChatsRef = ref(database, `chats/${user.trim()}`);
         const otherUserChatsRef = ref(database, `chats/${otherUser.trim()}`);
-    
+
         try {
             await deleteFromChat(userChatsRef, messageIds);
             await deleteFromChat(otherUserChatsRef, messageIds);
@@ -97,7 +101,7 @@ const ChatScreen = ({ navigation }) => {
         if (snapshot.exists()) {
             const chatsData = snapshot.val();
             const updates = {};
-    
+
             Object.keys(chatsData).forEach(key => {
                 const messages = chatsData[key];
                 if (Array.isArray(messages)) {
@@ -105,19 +109,16 @@ const ChatScreen = ({ navigation }) => {
                     if (updatedMessages.length > 0) {
                         updates[`${key}`] = updatedMessages;
                     } else {
-                        updates[`${key}`] = null; // Delete the entire node if no messages are left
+                        updates[`${key}`] = null;
                     }
                 }
             });
-    
+
             if (Object.keys(updates).length > 0) {
                 await update(chatRef, updates);
             }
         }
-    };    
-    
-    
-
+    };
 
     const renderMessage = ({ item }) => {
         const isMyMessage = item.from.trim().toLowerCase() === name.username.trim().toLowerCase();
@@ -132,14 +133,16 @@ const ChatScreen = ({ navigation }) => {
                 ]}
             >
                 {isMyMessage ?
-                <TouchableOpacity onLongPress={() => toggleSelectionMode(item.id)} onPress={() => {if (isSelectionMode) {toggleItemSelection(item.id);}}}>
-                    <Text style={[styles.messageText, isSelected && styles.selectedMessageText]}>{item.message}</Text>
-                    </TouchableOpacity> : 
-                <Text style={[styles.messageText, isSelected && styles.selectedMessageText]}>
-                    {item.message}
-                </Text>
+                    <TouchableOpacity onLongPress={() => toggleSelectionMode(item.id)}>
+                        < Text style={[styles.messageText, isSelected && styles.selectedMessageText]}>{item.message}</Text>
+
+                    </TouchableOpacity>
+                    :
+                    <Text style={[styles.messageText, isSelected && styles.selectedMessageText]}>
+                        {item.message}
+                    </Text>
                 }
-            </View>
+            </View >
         );
     };
 
@@ -172,8 +175,12 @@ const ChatScreen = ({ navigation }) => {
         }
     };
 
+    const gestureHandler = () => {
+        console.log("Sw")
+    }
+
     return (
-        <ImageBackground source={require('../assets/Images/background.jpg')} style={styles.container}>
+            <ImageBackground source={require('../assets/Images/background.jpg')} style={styles.container}>
             <StatusBar barStyle="light-content" backgroundColor="#000000" />
             <View style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.4)' }}>
 
@@ -197,6 +204,15 @@ const ChatScreen = ({ navigation }) => {
                         </View>
                     )}
                 </View>
+
+                {IsMessage && (
+                    <View style={styles.InfoContainer}>
+                        <Image source={require('../assets/icon.png')} style={styles.avatar} />
+
+                        <Text style={styles.InfoHeader}>{chatId.name}</Text>
+                        <Text style={styles.InfoText}>Say Hii To {chatId.name}</Text>
+                    </View>
+                )}
 
                 <FlatList
                     data={messages}
@@ -256,6 +272,23 @@ const styles = StyleSheet.create({
     },
     messageContainer: {
         marginBottom: 10,
+    },
+    InfoContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        top:'30%'
+    },
+    InfoHeader: {
+        color: '#FFFFFF',
+        marginTop: 10,
+        fontSize: 22,
+        fontFamily: 'Lato',
+    },
+    InfoText: {
+        color: '#FFFFFF',
+        marginTop: 10,
+        fontSize: 16,
+        fontFamily: 'Nunito',
     },
     messageText: {
         fontSize: 17,
@@ -337,8 +370,6 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#fff',
     },
-
-
     selectedTextView: {
         backgroundColor: '#E09D90',
     }

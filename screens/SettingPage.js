@@ -22,7 +22,7 @@ export default function SettingPage({ navigation }) {
                     <Text style={styles.Header}>Settings</Text>
                     <View style={styles.settingContainer}>
                         <Text style={{fontSize: 20, fontWeight: 'bold', color: 'rgba(255, 255, 255, 0.8)', marginLeft: 20,marginTop:20}}>General</Text>
-                        <SettingsItem title="Account" IconName="user" />
+                        <SettingsItem title="Profile" IconName="user" onPress={() => navigation.navigate('Profile')} />
                         <SettingsItem title="Notification" IconName="notification" />
                         <SettingsItem title="Logout" IconName="logout" onPress={handleLogout} />
                         <SettingsItem title="Delete Account" IconName="delete" />
