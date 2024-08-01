@@ -19,7 +19,7 @@ export default function SettingPage({ navigation }) {
                     <TouchableOpacity onPress={() => navigation.goBack()} style = {styles.backbutton}>
                         <BackButton/>
                     </TouchableOpacity>
-                    <Text style={styles.title}>Settings</Text>
+                    <Text style={styles.Header}>Settings</Text>
                     <View style={styles.settingContainer}>
                         <Text style={{fontSize: 20, fontWeight: 'bold', color: 'rgba(255, 255, 255, 0.8)', marginLeft: 20,marginTop:20}}>General</Text>
                         <SettingsItem title="Account" IconName="user" />
@@ -63,6 +63,14 @@ const styles = StyleSheet.create({
     },
     container: {
         flex: 1,
+    },
+    Header: {
+        fontSize: 32,
+        fontFamily: 'Lato',
+        color: 'rgba(255, 255, 255, 0.8)',
+        marginTop: 30,
+        marginLeft: 30,
+        marginBottom: 20,
     },
     backbutton: {
         marginTop: 30,

@@ -5,7 +5,7 @@ import { ref, get } from 'firebase/database';
 import { doc, getDoc } from 'firebase/firestore';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
-const ChatAppHomePage = ({ navigation, uid }) => {
+const ChatAppHomePage = ({ navigation, uid, email }) => {
   const [users, setUsers] = useState([]);
   const [username, setUsername] = useState('');
 
@@ -39,6 +39,7 @@ const ChatAppHomePage = ({ navigation, uid }) => {
       const userDoc = doc(firestore, 'Users', uid);
       const docSnap = await getDoc(userDoc);
       if (docSnap.exists()) {
+        console.log(docSnap)
         setUsername(docSnap.data().username);
       } else {
         console.log('No such document!');
@@ -49,19 +50,26 @@ const ChatAppHomePage = ({ navigation, uid }) => {
   };
 
   const renderChatItem = ({ item }) => {
-    return (
-      <TouchableOpacity
-        style={styles.card}
-        onPress={() => navigation.navigate("ChatScreen", { chatId: item, name: { username } })}
-      >
-        <View style={styles.textContainer}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Image source={item.image} style={styles.avatar} />
-            <Text style={styles.name}>{item.name}</Text>
+    if (item.id == email) {
+      return false;
+    }
+    else {
+
+      return (
+        <TouchableOpacity
+          style={styles.card}
+          onPress={() => navigation.navigate("ChatScreen", { chatId: item, name: { username } })}
+        >
+          <View style={styles.textContainer}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Image source={item.image} style={styles.avatar} />
+              <Text style={styles.name}>{item.name}</Text>
+            </View>
           </View>
-        </View>
-      </TouchableOpacity>
-    );
+        </TouchableOpacity>
+
+      );
+    }
   };
 
 
@@ -90,7 +98,7 @@ const ChatAppHomePage = ({ navigation, uid }) => {
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.flatListContent}
         />
-        
+
       </View>
     </ImageBackground>
   );
@@ -118,7 +126,7 @@ const styles = StyleSheet.create({
   },
   icon: {
     marginRight: 10,
-    marginTop:10
+    marginTop: 10
   },
 
 
