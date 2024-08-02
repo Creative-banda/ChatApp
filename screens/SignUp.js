@@ -3,9 +3,8 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingVi
 import { LinearGradient } from 'expo-linear-gradient';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { setDoc, doc } from 'firebase/firestore';
-import { ref, set } from 'firebase/database'; // Import Realtime Database functions
+import { ref, set } from 'firebase/database';
 import { auth, firestore, database } from '../config';
-import Profile from './Profile';
 
 const SignUpPage = ({ navigation }) => {
   const [username, setUsername] = useState('');
@@ -40,7 +39,11 @@ const SignUpPage = ({ navigation }) => {
         await set(ref(database, 'chats/' + username), [
           {
             To: "",
-            message: ""
+            from: "",
+            id: "",
+            message: "",
+            messageType: "text",
+
           }
         ]);
 

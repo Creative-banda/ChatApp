@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { View, FlatList, TextInput, TouchableOpacity, Text, StyleSheet, StatusBar, Image, ImageBackground, Modal } from 'react-native';
 import { useRoute } from '@react-navigation/native';
-import { database } from '../config';
+import { database, storage } from '../config';
 import { ref, push, set, onValue, update, get } from 'firebase/database';
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import Back from '../assets/SVG/BackButton';
 import Icon from 'react-native-vector-icons/AntDesign';
 import CustomAlert from '../components/CustomAlert';
 import EmojiSelector from 'react-native-emoji-selector';
+import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
 
 const ChatScreen = ({ navigation }) => {
     const [messages, setMessages] = useState([]);
@@ -137,8 +140,12 @@ const ChatScreen = ({ navigation }) => {
             >
                 {isMyMessage ?
                     <TouchableOpacity onLongPress={() => toggleSelectionMode(item.id)} onPress={() => { if (isSelectionMode) { toggleItemSelection(item.id); } }}>
-                        <Text style={[styles.messageText, isSelected && styles.selectedMessageText]}>{item.message}</Text>
 
+                        {item.messageType === "text" ?
+                            <Text style={[styles.messageText, isSelected && styles.selectedMessageText]}>{item.message}</Text>
+                            :
+                            <Image source={{ uri: item.message }} style={styles.image} />
+                        }
                     </TouchableOpacity>
                     :
                     <Text style={[styles.messageText, isSelected && styles.selectedMessageText]}>
@@ -158,7 +165,7 @@ const ChatScreen = ({ navigation }) => {
         return Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
     }
 
-    const handleSend = async () => {
+    const handleSend = async (inputText,messageType) => {
         const Id = generateRandomId();
 
         setInputText('');
@@ -168,6 +175,8 @@ const ChatScreen = ({ navigation }) => {
                 message: inputText,
                 from: name.username,
                 To: chatId.name,
+                messageType: messageType,
+                time: new Date().toISOString()
             }];
 
             try {
@@ -183,9 +192,45 @@ const ChatScreen = ({ navigation }) => {
         }
     };
 
-    const HandleFileAdd = () => {
-        console.log('File added');
-    }
+    const HandleFileAdd = async () => {
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: false,
+            quality: 1,
+        });
+
+        if (!result.canceled) {
+            const manipulatedImage = await ImageManipulator.manipulateAsync(
+                result.assets[0].uri,
+            );
+            handleSendImage(manipulatedImage.uri);
+        }
+    };
+
+    const handleSendImage = async (url) => {
+        try {
+            if (!url) {
+                console.error("No image URI found");
+                return;
+            }
+
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error("Failed to fetch image");
+            }
+
+            const blob = await response.blob();
+            const filename = url.substring(url.lastIndexOf('/') + 1);
+            const storageReference  = storageRef(storage, `images/${filename}`);
+
+            await uploadBytes(storageReference , blob);
+            const downloadUrl = await getDownloadURL(storageReference );
+
+            handleSend(downloadUrl, "image");
+        } catch (error) {
+            console.error("Error sending image: ", error);
+        }
+    };
 
     return (
         <ImageBackground source={require('../assets/Images/background.jpg')} style={styles.container}>
@@ -235,7 +280,7 @@ const ChatScreen = ({ navigation }) => {
                     <TouchableOpacity onPress={() => setIsPickerVisible(true)}>
                         <Icon name="smileo" size={24} color="#fff" />
                     </TouchableOpacity>
-                    <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', marginLeft: 10, borderWidth: 1, borderColor: '#fff' ,borderRadius: 20, paddingHorizontal: 8}}>
+                    <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', marginLeft: 10, borderWidth: 1, borderColor: '#fff', borderRadius: 20, paddingHorizontal: 8 }}>
                         <TextInput
                             style={styles.input}
                             value={inputText}
@@ -249,7 +294,7 @@ const ChatScreen = ({ navigation }) => {
                             <Icon name="pluscircle" size={24} color="#fff" />
                         </TouchableOpacity>
                     </View>
-                    <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
+                    <TouchableOpacity style={styles.sendButton} onPress={() => handleSend(inputText, "text")}>
                         <Text style={styles.sendButtonText}>Send</Text>
                     </TouchableOpacity>
                 </View>
@@ -310,6 +355,10 @@ const styles = StyleSheet.create({
         marginTop: 10,
         fontSize: 22,
         fontFamily: 'Lato',
+    },
+    image: {
+        width: 200,
+        height: 200,
     },
     InfoText: {
         color: '#FFFFFF',
