@@ -4,11 +4,13 @@ import { database, firestore } from '../config';
 import { ref, get } from 'firebase/database';
 import { doc, getDoc } from 'firebase/firestore';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import UserIcon from '../assets/SVG/UserIcon';
+import StatusIcon from '../assets/SVG/StatusIcon';
+import CallIcon from '../assets/SVG/CallIcon';
 
 const ChatAppHomePage = ({ navigation, uid, email }) => {
   const [users, setUsers] = useState([]);
   const [username, setUsername] = useState('');
-  const [userDetails, setuserDetails] = useState({});
 
   useEffect(() => {
     initializingUsers();
@@ -19,12 +21,12 @@ const ChatAppHomePage = ({ navigation, uid, email }) => {
 
   const initializingUsers = async () => {
     try {
-      let rolesRef = ref(database, 'Users');
-      const snapshot = await get(rolesRef);
+      let UserData = ref(database, 'Users');
+      const snapshot = await get(UserData);
       if (snapshot.exists()) {
-        const rolesData = snapshot.val();
-        const keys = Object.keys(rolesData);
-        const usersList = keys.map(key => ({ id: rolesData[key].email, name: key, image: require('../assets/icon.png') }));
+        const UserData = snapshot.val();
+        const keys = Object.keys(UserData);
+        const usersList = keys.map(key => ({ id: UserData[key].email, name: key, image: UserData[key].ProfilePic }));
         setUsers(usersList);
       } else {
         console.log('No data available');
@@ -41,7 +43,6 @@ const ChatAppHomePage = ({ navigation, uid, email }) => {
       const docSnap = await getDoc(userDoc);
       if (docSnap.exists()) {
         setUsername(docSnap.data().username);
-        setuserDetails(docSnap.data());
         console.log(docSnap.data());
       } else {
         console.log('No such document!');
@@ -55,8 +56,11 @@ const ChatAppHomePage = ({ navigation, uid, email }) => {
     if (item.id == email) {
       return false;
     }
-    else {
 
+    else {
+      const imageUri = item.image && item.image.trim() !== ''
+        ? { uri: item.image }
+        : require('../assets/icon.png');
       return (
         <TouchableOpacity
           style={styles.card}
@@ -64,7 +68,7 @@ const ChatAppHomePage = ({ navigation, uid, email }) => {
         >
           <View style={styles.textContainer}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Image source={item.image} style={styles.avatar} />
+              <Image source={imageUri} style={styles.avatar} />
               <Text style={styles.name}>{item.name}</Text>
             </View>
           </View>
@@ -73,8 +77,6 @@ const ChatAppHomePage = ({ navigation, uid, email }) => {
       );
     }
   };
-
-
 
   return (
 
@@ -101,6 +103,18 @@ const ChatAppHomePage = ({ navigation, uid, email }) => {
           contentContainerStyle={styles.flatListContent}
         />
 
+
+        <View style={styles.BottomIcons}>
+          <TouchableOpacity>
+            <UserIcon />
+          </TouchableOpacity>
+          <TouchableOpacity>
+            <StatusIcon />
+          </TouchableOpacity>
+          <TouchableOpacity>
+            <CallIcon />
+          </TouchableOpacity>
+        </View>
       </View>
     </ImageBackground>
   );
@@ -187,6 +201,15 @@ const styles = StyleSheet.create({
     color: '#b0b0b0',
     marginTop: 4,
   },
+  BottomIcons: {
+    flexDirection: "row",
+    paddingHorizontal: 40,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderRadius: 30,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+  }
 });
 
 export default ChatAppHomePage;

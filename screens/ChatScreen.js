@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, FlatList, TextInput, TouchableOpacity, Text, StyleSheet, StatusBar, Image, ImageBackground } from 'react-native';
+import { View, FlatList, TextInput, TouchableOpacity, Text, StyleSheet, StatusBar, Image, ImageBackground, Modal } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { database } from '../config';
 import { ref, push, set, onValue, update, get } from 'firebase/database';
 import Back from '../assets/SVG/BackButton';
 import Icon from 'react-native-vector-icons/AntDesign';
 import CustomAlert from '../components/CustomAlert';
+import EmojiSelector from 'react-native-emoji-selector';
 
 const ChatScreen = ({ navigation }) => {
     const [messages, setMessages] = useState([]);
@@ -14,6 +15,7 @@ const ChatScreen = ({ navigation }) => {
     const [isSelectionMode, setIsSelectionMode] = useState(false);
     const [alertVisible, setAlertVisible] = useState(false);
     const [IsMessage, setIsMessage] = useState(false)
+    const [isPickerVisible, setIsPickerVisible] = useState(false);
     const route = useRoute();
     const { chatId, name } = route.params;
 
@@ -134,8 +136,8 @@ const ChatScreen = ({ navigation }) => {
                 ]}
             >
                 {isMyMessage ?
-                <TouchableOpacity onLongPress={() => toggleSelectionMode(item.id)} onPress={() => {if (isSelectionMode) {toggleItemSelection(item.id);}}}>
-                    <Text style={[styles.messageText, isSelected && styles.selectedMessageText]}>{item.message}</Text>
+                    <TouchableOpacity onLongPress={() => toggleSelectionMode(item.id)} onPress={() => { if (isSelectionMode) { toggleItemSelection(item.id); } }}>
+                        <Text style={[styles.messageText, isSelected && styles.selectedMessageText]}>{item.message}</Text>
 
                     </TouchableOpacity>
                     :
@@ -145,6 +147,11 @@ const ChatScreen = ({ navigation }) => {
                 }
             </View >
         );
+    };
+
+    const handleEmojiSelect = (emoji) => {
+        setInputText(inputText + emoji);
+        setIsPickerVisible(false);
     };
 
     function generateRandomId() {
@@ -176,8 +183,12 @@ const ChatScreen = ({ navigation }) => {
         }
     };
 
+    const HandleFileAdd = () => {
+        console.log('File added');
+    }
+
     return (
-            <ImageBackground source={require('../assets/Images/background.jpg')} style={styles.container}>
+        <ImageBackground source={require('../assets/Images/background.jpg')} style={styles.container}>
             <StatusBar barStyle="light-content" backgroundColor="#000000" />
             <View style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.4)' }}>
 
@@ -221,13 +232,23 @@ const ChatScreen = ({ navigation }) => {
                     extraData={selectedItems}
                 />
                 <View style={styles.inputContainer}>
-                    <TextInput
-                        style={styles.input}
-                        value={inputText}
-                        onChangeText={setInputText}
-                        placeholder="Message..."
-                        placeholderTextColor="#999"
-                    />
+                    <TouchableOpacity onPress={() => setIsPickerVisible(true)}>
+                        <Icon name="smileo" size={24} color="#fff" />
+                    </TouchableOpacity>
+                    <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', marginLeft: 10, borderWidth: 1, borderColor: '#fff' ,borderRadius: 20, paddingHorizontal: 8}}>
+                        <TextInput
+                            style={styles.input}
+                            value={inputText}
+                            onChangeText={setInputText}
+                            placeholder="Message..."
+                            placeholderTextColor="#999"
+                            multiline={true}
+                            numberOfLines={3}
+                        />
+                        <TouchableOpacity onPress={() => HandleFileAdd()} >
+                            <Icon name="pluscircle" size={24} color="#fff" />
+                        </TouchableOpacity>
+                    </View>
                     <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
                         <Text style={styles.sendButtonText}>Send</Text>
                     </TouchableOpacity>
@@ -240,6 +261,15 @@ const ChatScreen = ({ navigation }) => {
                 onYes={() => deleteMessages(name.username, chatId.name, selectedItems)}
                 onNo={() => setAlertVisible(false)}
             />
+            <Modal
+                transparent
+                visible={isPickerVisible}
+                onRequestClose={() => setIsPickerVisible(false)}
+            >
+                <View style={styles.modalContainer}>
+                    <EmojiSelector onEmojiSelected={handleEmojiSelect} />
+                </View>
+            </Modal>
         </ImageBackground>
     );
 };
@@ -273,7 +303,7 @@ const styles = StyleSheet.create({
     InfoContainer: {
         alignItems: 'center',
         justifyContent: 'center',
-        top:'30%'
+        top: '30%'
     },
     InfoHeader: {
         color: '#FFFFFF',
@@ -339,23 +369,23 @@ const styles = StyleSheet.create({
     inputContainer: {
         flexDirection: 'row',
         alignItems: 'center',
+        paddingVertical: 10,
+        paddingHorizontal: 15,
+        gap: 5,
+        backgroundColor: '#111',
         borderTopWidth: 1,
         borderTopColor: '#333',
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-        backgroundColor: '#111',
     },
     input: {
         flex: 1,
         height: 40,
-        borderWidth: 1,
-        borderColor: '#333',
         borderRadius: 20,
         paddingVertical: 5,
         paddingHorizontal: 10,
         marginRight: 10,
         fontSize: 16,
         color: '#fff',
+        fontFamily: 'Nunito',
     },
     sendButton: {
         backgroundColor: '#2196f3',
@@ -369,7 +399,16 @@ const styles = StyleSheet.create({
     },
     selectedTextView: {
         backgroundColor: '#E09D90',
-    }
+    },
+    modalContainer: {
+        position: 'absolute',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '50%',
+        backgroundColor: 'rgba(0,0,0,0.5)',
+    },
+
+
 });
 
 export default ChatScreen;

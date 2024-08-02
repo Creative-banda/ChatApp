@@ -10,7 +10,7 @@ import DisplayImage from '../components/DisplayImage';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { ref as databaseRef, update } from 'firebase/database';
 import { useRoute } from '@react-navigation/native';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc,deleteObject } from 'firebase/firestore';
 
 export default function Profile({ navigation }) {
     const route = useRoute();
@@ -45,10 +45,7 @@ export default function Profile({ navigation }) {
 
         if (!result.canceled) {
             const manipulatedImage = await ImageManipulator.manipulateAsync(
-                result.assets[0].uri,
-                [{ resize: { width: 800, height: 600 } }],
-                { compress: 1, format: ImageManipulator.SaveFormat.JPEG }
-            );
+                result.assets[0].uri);
 
             setImageUri(manipulatedImage.uri);
         }
@@ -60,6 +57,17 @@ export default function Profile({ navigation }) {
             await update(rolesRef, { ProfilePic: url });
         } catch (error) {
             console.error("Error updating database: ", error);
+        }
+    };
+    const deleteImage = async (filename) => {
+        try {
+            const fileRef = ref(storage, filename);
+            
+            await deleteObject(fileRef);
+            
+            console.log("File deleted successfully");
+        } catch (error) {
+            console.error("Error deleting file: ", error);
         }
     };
 
