@@ -12,6 +12,8 @@ import ChatScreen from './screens/ChatScreen';
 import SignUp from './screens/SignUp';
 import SettingPage from './screens/SettingPage';
 import Profile from './screens/Profile';
+import CallScreen from './screens/CallScreen';
+import StatusScreen from './screens/StatusScreen';
 
 const Stack = createStackNavigator();
 
@@ -70,6 +72,8 @@ const App = () => {
         <Stack.Screen name="ChatScreen" component={ChatScreen} />
         <Stack.Screen name="SettingPage" component={SettingPage} />
         <Stack.Screen name="Profile" component={Profile} />
+        <Stack.Screen name="Status" component={StatusScreen} />
+        <Stack.Screen name="Call" component={CallScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

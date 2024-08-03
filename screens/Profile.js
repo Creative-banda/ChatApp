@@ -120,8 +120,8 @@ export default function Profile({ navigation }) {
                 </View>
                 <InputBox placeholder={"Username"} Label={userInfo?.username || 'Loading...'} />
                 <InputBox placeholder={"Email"} Label={userInfo?.email || 'Loading...'} />
-                <InputBox placeholder={"Phone Number"} Label={"9876543210"} />
-                <InputBox placeholder={"Gender"} Label={"Male"} />
+                <InputBox placeholder={"Phone Number"} Label={userInfo?.PhoneNumber || 'Loading..'} />
+                <InputBox placeholder={"Gender"} Label={userInfo?.Gender || 'Loading...'} />
             </View>
             {imageUri && <DisplayImage imageUri={imageUri} setImageUri={setImageUri} Done={uploadImage} />}
         </ImageBackground>

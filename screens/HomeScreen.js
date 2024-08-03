@@ -105,13 +105,13 @@ const ChatAppHomePage = ({ navigation, uid, email }) => {
 
 
         <View style={styles.BottomIcons}>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={()=>{navigation.navigate("Home")}}>
             <UserIcon />
           </TouchableOpacity>
-          <TouchableOpacity>
+          <TouchableOpacity  onPress={()=>{navigation.navigate("Status")}}>
             <StatusIcon />
           </TouchableOpacity>
-          <TouchableOpacity>
+          <TouchableOpacity  onPress={()=>{navigation.navigate("Call")}}>
             <CallIcon />
           </TouchableOpacity>
         </View>

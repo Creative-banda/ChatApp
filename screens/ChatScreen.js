@@ -45,6 +45,9 @@ const ChatScreen = ({ navigation }) => {
                 if (filteredChats.length === 0) {
                     setIsMessage(true)
                 }
+                else{
+                    setIsMessage(false)
+                }
                 setMessages(filteredChats.reverse());
             }
         });
@@ -132,27 +135,26 @@ const ChatScreen = ({ navigation }) => {
 
         return (
             <View
-                style={[
-                    styles.messageContainer,
-                    isMyMessage ? styles.myMessage : styles.otherMessage,
-                    isSelected && styles.selectedMessage
-                ]}
+                style={[styles.messageContainer, isMyMessage ? styles.myMessage : styles.otherMessage, isSelected && styles.selectedMessage]}
             >
-                {isMyMessage ?
+                {isMyMessage ? (
                     <TouchableOpacity onLongPress={() => toggleSelectionMode(item.id)} onPress={() => { if (isSelectionMode) { toggleItemSelection(item.id); } }}>
-
-                        {item.messageType === "text" ?
+                        {item.messageType === "text" ? (
                             <Text style={[styles.messageText, isSelected && styles.selectedMessageText]}>{item.message}</Text>
-                            :
+                        ) : (
                             <Image source={{ uri: item.message }} style={styles.image} />
-                        }
+                        )}
                     </TouchableOpacity>
-                    :
-                    <Text style={[styles.messageText, isSelected && styles.selectedMessageText]}>
-                        {item.message}
-                    </Text>
-                }
-            </View >
+                ) : (
+                    <TouchableOpacity onLongPress={() => toggleSelectionMode(item.id)} onPress={() => { if (isSelectionMode) { toggleItemSelection(item.id); } }}>
+                        {item.messageType === "text" ? (
+                            <Text style={[styles.messageText, isSelected && styles.selectedMessageText]}>{item.message}</Text>
+                        ) : (
+                            <Image source={{ uri: item.message }} style={styles.image} />
+                        )}
+                    </TouchableOpacity>
+                )}
+            </View>
         );
     };
 
@@ -165,7 +167,7 @@ const ChatScreen = ({ navigation }) => {
         return Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
     }
 
-    const handleSend = async (inputText,messageType) => {
+    const handleSend = async (inputText, messageType) => {
         const Id = generateRandomId();
 
         setInputText('');
@@ -221,10 +223,10 @@ const ChatScreen = ({ navigation }) => {
 
             const blob = await response.blob();
             const filename = url.substring(url.lastIndexOf('/') + 1);
-            const storageReference  = storageRef(storage, `images/${filename}`);
+            const storageReference = storageRef(storage, `images/${filename}`);
 
-            await uploadBytes(storageReference , blob);
-            const downloadUrl = await getDownloadURL(storageReference );
+            await uploadBytes(storageReference, blob);
+            const downloadUrl = await getDownloadURL(storageReference);
 
             handleSend(downloadUrl, "image");
         } catch (error) {
@@ -252,7 +254,7 @@ const ChatScreen = ({ navigation }) => {
                             <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginHorizontal: 5, marginRight: 10 }}>
                                 <Back />
                             </TouchableOpacity>
-                            <Image source={require('../assets/icon.png')} style={styles.avatar} />
+                            <Image source={chatId.image ? { uri: chatId.image } : require('../assets/icon.png')} style={styles.avatar} />
                             <Text style={{ color: '#fff', fontSize: 22, fontFamily: 'Lato' }}>{chatId.name}</Text>
                         </View>
                     )}
@@ -260,7 +262,7 @@ const ChatScreen = ({ navigation }) => {
 
                 {IsMessage && (
                     <View style={styles.InfoContainer}>
-                        <Image source={require('../assets/icon.png')} style={styles.avatar} />
+                        <Image source={chatId.image ? { uri: chatId.image } : require('../assets/icon.png')} style={styles.avatar} />
 
                         <Text style={styles.InfoHeader}>{chatId.name}</Text>
                         <Text style={styles.InfoText}>Say Hii To {chatId.name}</Text>
@@ -359,6 +361,8 @@ const styles = StyleSheet.create({
     image: {
         width: 200,
         height: 200,
+        resizeMode:'cover'
+        
     },
     InfoText: {
         color: '#FFFFFF',
