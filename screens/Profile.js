@@ -6,11 +6,11 @@ import InputBox from '../components/InputBox';
 import * as ImagePicker from 'expo-image-picker';
 import { storage, firestore, database } from '../config';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { doc, getDoc, updateDoc, deleteObject } from 'firebase/firestore';
 import DisplayImage from '../components/DisplayImage';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { ref as databaseRef, update } from 'firebase/database';
 import { useRoute } from '@react-navigation/native';
-import { doc, getDoc, updateDoc,deleteObject } from 'firebase/firestore';
 
 export default function Profile({ navigation }) {
     const route = useRoute();
@@ -53,7 +53,7 @@ export default function Profile({ navigation }) {
 
     const UpdatingDatabase = async (url) => {
         try {
-            let rolesRef = databaseRef(database, `Users/${userInfo.username.trim()}`);
+            let rolesRef = databaseRef(database, `Users/${userInfo.username}`);
             await update(rolesRef, { ProfilePic: url });
         } catch (error) {
             console.error("Error updating database: ", error);
@@ -62,9 +62,9 @@ export default function Profile({ navigation }) {
     const deleteImage = async (filename) => {
         try {
             const fileRef = ref(storage, filename);
-            
+
             await deleteObject(fileRef);
-            
+
             console.log("File deleted successfully");
         } catch (error) {
             console.error("Error deleting file: ", error);
@@ -74,9 +74,9 @@ export default function Profile({ navigation }) {
     const UpdatingFirestore = async (url) => {
         try {
             const userRef = doc(firestore, 'Users', uid);
-            
+
             await updateDoc(userRef, { ProfilePic: url });
-            
+
             console.log("Firestore updated successfully!");
         } catch (error) {
             console.error("Error updating Firestore: ", error);
@@ -118,10 +118,10 @@ export default function Profile({ navigation }) {
                         </TouchableOpacity>
                     </View>
                 </View>
-                <InputBox placeholder={"Username"} Label={userInfo?.username || 'Loading...'} />
-                <InputBox placeholder={"Email"} Label={userInfo?.email || 'Loading...'} />
-                <InputBox placeholder={"Phone Number"} Label={userInfo?.PhoneNumber || 'Loading..'} />
-                <InputBox placeholder={"Gender"} Label={userInfo?.Gender || 'Loading...'} />
+                <InputBox placeholder={userInfo?.username || 'Loading...'} />
+                <InputBox placeholder={userInfo?.email || 'Loading...'} />
+                <InputBox placeholder={userInfo?.PhoneNumber || 'Loading..'} />
+                <InputBox placeholder={userInfo?.Gender || 'Loading...'} />
             </View>
             {imageUri && <DisplayImage imageUri={imageUri} setImageUri={setImageUri} Done={uploadImage} />}
         </ImageBackground>

@@ -65,7 +65,7 @@ const App = () => {
         }}
       >
         <Stack.Screen name="Home">
-          {(props) => <ChatAppHomePage {...props} uid={user ? user.uid : null} email={user ? user.email : null} />}
+          {(props) => <ChatAppHomePage {...props} uid={user ? user.uid : null} user={user} email={user ? user.email : null} />}
         </Stack.Screen>
         <Stack.Screen name="Login" component={LoginPage} />
         <Stack.Screen name="SignUp" component={SignUp} />

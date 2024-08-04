@@ -15,37 +15,40 @@ export default function SettingPage({ navigation }) {
     const [alertVisible, setAlertVisible] = useState(false);
     const [promptVisible, setPromptVisible] = useState(false);
     const route = useRoute();
-    const { uid } = route.params;
+    const { uid, user } = route.params;
+    console.log("User",user);
 
     const handleLogout = () => {
         setAlertVisible(true);
     };
 
     const deleteAccount = async (password) => {
-        const user = auth.currentUser;
+        const currentUser = auth.currentUser;
         console.log("Deleting");
-
-        if (!user) {
+    
+        if (!currentUser) {
             Alert.alert('Error', 'No user is currently signed in.');
             return;
         }
-
+    
         try {
-            const email = auth.currentUser.email;
+            const email = currentUser.email;
             const credential = EmailAuthProvider.credential(email, password);
             console.log('Re-authenticating user...');
-            await reauthenticateWithCredential(user, credential);
-
+            await reauthenticateWithCredential(currentUser, credential);
+    
             console.log('Deleting user data from Firestore...');
-            await deleteDoc(doc(firestore, "Users", user.uid));
-
+            await deleteDoc(doc(firestore, "Users", uid)); // Use uid from route.params
+    
             console.log('Deleting user data from Realtime Database...');
-            await remove(ref(database, 'Users/' + user.displayName));
-            await remove(ref(database, 'chats/' + user.displayName));
-
+            const username = user.username; // Use user from route.params
+            console.log("Username", username);
+            await remove(ref(database, 'Users/' + username));
+            await remove(ref(database, 'chats/' + username.trim()));
+    
             console.log('Deleting user account...');
-            await deleteUser(user);
-
+            await deleteUser(currentUser);
+    
             console.log('Account deleted successfully.');
             Alert.alert('Success', 'Your account has been deleted.');
             navigation.navigate("Login");
@@ -54,6 +57,7 @@ export default function SettingPage({ navigation }) {
             Alert.alert('Error', 'Failed to delete account. Please try again.');
         }
     };
+    
 
     return (
         <ImageBackground source={require('../assets/Images/background.jpg')} style={styles.backgroundImage}>

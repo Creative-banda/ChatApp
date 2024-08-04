@@ -11,6 +11,7 @@ import CallIcon from '../assets/SVG/CallIcon';
 const ChatAppHomePage = ({ navigation, uid, email }) => {
   const [users, setUsers] = useState([]);
   const [username, setUsername] = useState('');
+  const [UserInfo, SetUserInfo] = useState('');
 
   useEffect(() => {
     initializingUsers();
@@ -43,7 +44,7 @@ const ChatAppHomePage = ({ navigation, uid, email }) => {
       const docSnap = await getDoc(userDoc);
       if (docSnap.exists()) {
         setUsername(docSnap.data().username);
-        console.log(docSnap.data());
+        SetUserInfo(docSnap.data());
       } else {
         console.log('No such document!');
       }
@@ -53,11 +54,13 @@ const ChatAppHomePage = ({ navigation, uid, email }) => {
   };
 
   const renderChatItem = ({ item }) => {
-    if (item.id == email) {
+    if (item.id.trim() == email.trim()) {
       return false;
     }
 
     else {
+      console.log(item.id);
+      console.log("Email",email);
       const imageUri = item.image && item.image.trim() !== ''
         ? { uri: item.image }
         : require('../assets/icon.png');
@@ -88,13 +91,14 @@ const ChatAppHomePage = ({ navigation, uid, email }) => {
     >
 
       <View style={styles.container}>
+        {users.length === 1 && <Text style={{position:'absolute', color:'#fff',fontSize:18 ,top:'50%', fontFamily:'Nunito', alignSelf:'center'}}>Sorry No User Is There 😥</Text>}
         <StatusBar barStyle="light-content" backgroundColor="#121212" />
         <View style={styles.header}>
           {username ?
             <Text style={styles.title}>Hii, {username}</Text> :
             <Text></Text>
           }
-          <Icon name="gear" size={30} color="#ffffff" onPress={() => navigation.navigate('SettingPage', { uid: uid })} style={styles.icon} />
+          <Icon name="gear" size={30} color="#ffffff" onPress={() => navigation.navigate('SettingPage', { uid: uid, user: UserInfo })} style={styles.icon} />
         </View>
         <FlatList
           data={users}
@@ -105,13 +109,13 @@ const ChatAppHomePage = ({ navigation, uid, email }) => {
 
 
         <View style={styles.BottomIcons}>
-          <TouchableOpacity onPress={()=>{navigation.navigate("Home")}}>
+          <TouchableOpacity onPress={() => { navigation.navigate("Home") }}>
             <UserIcon />
           </TouchableOpacity>
-          <TouchableOpacity  onPress={()=>{navigation.navigate("Status")}}>
+          <TouchableOpacity onPress={() => { navigation.navigate("Status", { uid: uid, user: UserInfo }) }}>
             <StatusIcon />
           </TouchableOpacity>
-          <TouchableOpacity  onPress={()=>{navigation.navigate("Call")}}>
+          <TouchableOpacity onPress={() => { navigation.navigate("Call") }}>
             <CallIcon />
           </TouchableOpacity>
         </View>

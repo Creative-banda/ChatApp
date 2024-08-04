@@ -40,22 +40,15 @@ const SignupPage = ({ navigation }) => {
         const user = userCredential.user;
         console.log(user);
 
-        await setDoc(doc(firestore, "Users", user.uid), {
-          username: username,
-          email: email,
-          ProfilePic: "",
-          PhoneNumber: phoneNumber,
-          Gender: gender
-        });
-
-        await set(ref(database, 'Users/' + username), {
+        await set(ref(database, ('Users/' + user.uid)), {
+          id: user.uid,
           username: username,
           email: email,
           ProfilePic: "",
           PhoneNumber: phoneNumber,
           Gender: gender,
           Birthday: "",
-          Status: "",
+          Status: {id:"Dummy",url : "Dummy"},
           About: "",
         });
 
@@ -76,8 +69,8 @@ const SignupPage = ({ navigation }) => {
         Alert.alert('Sign Up Error', error.message);
         console.log(error.message);
       }
-      setIsloading(false);
     }
+    setIsloading(false);
   };
 
 

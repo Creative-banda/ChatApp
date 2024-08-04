@@ -29,20 +29,9 @@ const LoginPage = ({ navigation }) => {
         console.log("Attempting to login");
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
-        const userDoc = await getDoc(doc(firestore, "Users", user.uid));
+        let UserData = ref(database, 'Users');
+        const snapshot = await get(UserData);
 
-        if (userDoc.exists()) {
-          const userData = userDoc.data();
-          console.log("Username: ", userData.username);
-          navigation.navigate("Home");
-        } else {
-          console.log("No such document!");
-          setAlertMessage("No user data found");
-          setAlertTitle("Login Error");
-          setAlertVisible(true);
-        }
-      } catch (error) {
-        console.error("Error fetching user data: ", error);
         setAlertMessage(error.message);
         setAlertTitle("Login Error");
         setAlertVisible(true);
@@ -54,7 +43,7 @@ const LoginPage = ({ navigation }) => {
   };
 
   return (
-    <ImageBackground source={require('../assets/Images/Registration.jpg')} style = {styles.BackgroundImage}>
+    <ImageBackground source={require('../assets/Images/Registration.jpg')} style={styles.BackgroundImage}>
 
       <View style={styles.gradient}>
         <StatusBar barStyle="light-content" />
@@ -117,8 +106,8 @@ const LoginPage = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  BackgroundImage:{
-    flex:1,
+  BackgroundImage: {
+    flex: 1,
     justifyContent: 'center',
     backgroundColor: '#1e1e1e',
 
