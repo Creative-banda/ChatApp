@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet, StatusBar, ImageBackground } from 'react-native';
-import { database, firestore } from '../config';
+import { database } from '../config';
 import { ref, get } from 'firebase/database';
-import { doc, getDoc } from 'firebase/firestore';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import UserIcon from '../assets/SVG/UserIcon';
 import StatusIcon from '../assets/SVG/StatusIcon';
@@ -27,7 +26,7 @@ const ChatAppHomePage = ({ navigation, uid, email }) => {
       if (snapshot.exists()) {
         const UserData = snapshot.val();
         const keys = Object.keys(UserData);
-        const usersList = keys.map(key => ({ id: UserData[key].email, name: key, image: UserData[key].ProfilePic }));
+        const usersList = keys.map(key => ({ id: UserData[key].email, name: key, image: UserData[key].ProfilePic, username: UserData[key].username }));
         setUsers(usersList);
       } else {
         console.log('No data available');
@@ -40,11 +39,12 @@ const ChatAppHomePage = ({ navigation, uid, email }) => {
 
   const fetchUsername = async (uid) => {
     try {
-      const userDoc = doc(firestore, 'Users', uid);
-      const docSnap = await getDoc(userDoc);
-      if (docSnap.exists()) {
-        setUsername(docSnap.data().username);
-        SetUserInfo(docSnap.data());
+      let UserData = ref(database, `Users/${uid}`);
+      const snapshot = await get(UserData);
+      if (snapshot.exists()) {
+        CurrentUser = snapshot.val()
+        setUsername(CurrentUser.username)
+        SetUserInfo(CurrentUser)
       } else {
         console.log('No such document!');
       }
@@ -57,22 +57,21 @@ const ChatAppHomePage = ({ navigation, uid, email }) => {
     if (item.id.trim() == email.trim()) {
       return false;
     }
-
+    
+    
     else {
-      console.log(item.id);
-      console.log("Email",email);
       const imageUri = item.image && item.image.trim() !== ''
         ? { uri: item.image }
         : require('../assets/icon.png');
       return (
         <TouchableOpacity
           style={styles.card}
-          onPress={() => navigation.navigate("ChatScreen", { chatId: item, name: { username } })}
+          onPress={() => navigation.navigate("ChatScreen", { chatId: item, name:  UserInfo })}
         >
           <View style={styles.textContainer}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <Image source={imageUri} style={styles.avatar} />
-              <Text style={styles.name}>{item.name}</Text>
+              <Text style={styles.name}>{item.username}</Text>
             </View>
           </View>
         </TouchableOpacity>
@@ -109,7 +108,7 @@ const ChatAppHomePage = ({ navigation, uid, email }) => {
 
 
         <View style={styles.BottomIcons}>
-          <TouchableOpacity onPress={() => { navigation.navigate("Home") }}>
+          <TouchableOpacity>
             <UserIcon />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => { navigation.navigate("Status", { uid: uid, user: UserInfo }) }}>

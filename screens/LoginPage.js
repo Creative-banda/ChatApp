@@ -29,12 +29,7 @@ const LoginPage = ({ navigation }) => {
         console.log("Attempting to login");
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
-        let UserData = ref(database, 'Users');
-        const snapshot = await get(UserData);
-
-        setAlertMessage(error.message);
-        setAlertTitle("Login Error");
-        setAlertVisible(true);
+        navigation.navigate("Home",{uid : user.uid})
       } finally {
         setLoading(false);
         setDisable(false);

@@ -51,7 +51,7 @@ const CallHistoryScreen = ({navigation}) => {
           <TouchableOpacity  onPress={()=>{navigation.navigate("Status")}}>
             <StatusIcon />
           </TouchableOpacity>
-          <TouchableOpacity  onPress={()=>{navigation.navigate("Call")}}>
+          <TouchableOpacity>
             <CallIcon />
           </TouchableOpacity>
         </View>

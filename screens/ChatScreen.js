@@ -23,7 +23,7 @@ const ChatScreen = ({ navigation }) => {
     const { chatId, name } = route.params;
 
     useEffect(() => {
-        const chatsRef = ref(database, `chats/${name.username.trim()}`);
+        const chatsRef = ref(database, `chats/${name.id}`);
         const unsubscribe = onValue(chatsRef, (snapshot) => {
             if (snapshot.exists()) {
                 const chatsData = snapshot.val();
@@ -34,12 +34,13 @@ const ChatScreen = ({ navigation }) => {
                         allChats.push(...chat);
                     } else {
                         allChats.push(chat);
+                        
                     }
                 });
 
                 const filteredChats = allChats.filter(chat =>
-                    (chat.To?.trim() === name.username.trim() && chat.from?.trim() === chatId.name.trim()) ||
-                    (chat.To?.trim() === chatId.name.trim() && chat.from?.trim() === name.username.trim())
+                    (chat.To?.trim() === name.username.trim() && chat.from?.trim() === chatId.username.trim()) ||
+                    (chat.To?.trim() === chatId.username.trim() && chat.from?.trim() === name.username.trim())
                 );
 
                 if (filteredChats.length === 0) {
@@ -53,7 +54,7 @@ const ChatScreen = ({ navigation }) => {
         });
 
         return () => unsubscribe();
-    }, [name.username, chatId.name]);
+    }, [name, chatId]);
 
 
     const toggleSelectionMode = (id) => {
@@ -176,14 +177,14 @@ const ChatScreen = ({ navigation }) => {
                 id: Id,
                 message: inputText,
                 from: name.username,
-                To: chatId.name,
+                To: chatId.username,
                 messageType: messageType,
                 time: new Date().toISOString()
             }];
 
             try {
-                const newMessageRef = push(ref(database, `chats/${name.username.trim()}`));
-                if (name.username.trim() !== chatId.name.trim()) {
+                const newMessageRef = push(ref(database, `chats/${name.id.trim()}`));
+                if (name.username.trim() !== chatId.username.trim()) {
                     const otherMessageRef = push(ref(database, `chats/${chatId.name.trim()}`));
                     await set(otherMessageRef, newMessage);
                 }
@@ -255,7 +256,7 @@ const ChatScreen = ({ navigation }) => {
                                 <Back />
                             </TouchableOpacity>
                             <Image source={chatId.image ? { uri: chatId.image } : require('../assets/icon.png')} style={styles.avatar} />
-                            <Text style={{ color: '#fff', fontSize: 22, fontFamily: 'Lato' }}>{chatId.name}</Text>
+                            <Text style={{ color: '#fff', fontSize: 22, fontFamily: 'Lato' }}>{chatId.username}</Text>
                         </View>
                     )}
                 </View>
@@ -264,8 +265,8 @@ const ChatScreen = ({ navigation }) => {
                     <View style={styles.InfoContainer}>
                         <Image source={chatId.image ? { uri: chatId.image } : require('../assets/icon.png')} style={styles.avatar} />
 
-                        <Text style={styles.InfoHeader}>{chatId.name}</Text>
-                        <Text style={styles.InfoText}>Say Hii To {chatId.name}</Text>
+                        <Text style={styles.InfoHeader}>{chatId.username}</Text>
+                        <Text style={styles.InfoText}>Say Hii To {chatId.username}</Text>
                     </View>
                 )}
 

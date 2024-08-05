@@ -3,9 +3,8 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ImageBackgr
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Antdesign from 'react-native-vector-icons/FontAwesome'
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { setDoc, doc } from 'firebase/firestore';
 import { ref, set } from 'firebase/database';
-import { auth, firestore, database } from '../config';
+import { auth, database } from '../config';
 import BackButton from '../assets/SVG/BackButton'
 
 const SignupPage = ({ navigation }) => {
@@ -48,11 +47,11 @@ const SignupPage = ({ navigation }) => {
           PhoneNumber: phoneNumber,
           Gender: gender,
           Birthday: "",
-          Status: {id:"Dummy",url : "Dummy"},
+          Status: [],
           About: "",
         });
 
-        await set(ref(database, 'chats/' + username.trim()), [
+        await set(ref(database, ('chats/' + user.uid)), [
           {
             To: "Dummy",
             from: "Dummy",

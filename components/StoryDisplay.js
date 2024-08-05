@@ -1,8 +1,7 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, Modal, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-
-export default function StoryDisplay({ image, modalVisible, onClose, Name }) {
+export default function StoryDisplay({ image, modalVisible, onClose, Name,Message }) {
     return (
         <View style={styles.container}>
             <Modal
@@ -21,6 +20,9 @@ export default function StoryDisplay({ image, modalVisible, onClose, Name }) {
                     <View style={styles.modalContent}>
                         <Image source={{ uri: image }} style={styles.storyImage} />
                     </View>
+                    <View>
+                    </View>
+                    <Text style={{color:'#fff', fontSize:15}}>{Message}</Text>
                 </View>
             </Modal>
         </View>
@@ -60,6 +62,7 @@ const styles = StyleSheet.create({
     },
     closeButton: {
         position: 'absolute',
+        zIndex:10,
         top: 50,
         right: 35,
         padding: 10,

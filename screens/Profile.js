@@ -4,17 +4,17 @@ import BackButton from '../assets/SVG/BackButton';
 import Icon from 'react-native-vector-icons/AntDesign';
 import InputBox from '../components/InputBox';
 import * as ImagePicker from 'expo-image-picker';
-import { storage, firestore, database } from '../config';
+import { storage, database } from '../config';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { doc, getDoc, updateDoc, deleteObject } from 'firebase/firestore';
 import DisplayImage from '../components/DisplayImage';
 import * as ImageManipulator from 'expo-image-manipulator';
-import { ref as databaseRef, update } from 'firebase/database';
+import { ref as databaseRef, update,get } from 'firebase/database';
 import { useRoute } from '@react-navigation/native';
 
 export default function Profile({ navigation }) {
     const route = useRoute();
     const { uid } = route.params;
+    
     const [userInfo, setuserInfo] = useState(null);
     const [imageUri, setImageUri] = useState(null);
 
@@ -24,10 +24,11 @@ export default function Profile({ navigation }) {
 
     const fetchUsername = async () => {
         try {
-            const userDoc = doc(firestore, 'Users', uid);
-            const docSnap = await getDoc(userDoc);
-            if (docSnap.exists()) {
-                setuserInfo(docSnap.data());
+            let UserData = databaseRef(database, `Users/${uid}`);
+            const snapshot = await get(UserData);
+            if (snapshot.exists()) {
+                setuserInfo(snapshot.val());
+                
             } else {
                 console.log('No such document!');
             }
@@ -53,7 +54,7 @@ export default function Profile({ navigation }) {
 
     const UpdatingDatabase = async (url) => {
         try {
-            let rolesRef = databaseRef(database, `Users/${userInfo.username}`);
+            let rolesRef = databaseRef(database, `Users/${userInfo.id}`);
             await update(rolesRef, { ProfilePic: url });
         } catch (error) {
             console.error("Error updating database: ", error);
@@ -71,17 +72,6 @@ export default function Profile({ navigation }) {
         }
     };
 
-    const UpdatingFirestore = async (url) => {
-        try {
-            const userRef = doc(firestore, 'Users', uid);
-
-            await updateDoc(userRef, { ProfilePic: url });
-
-            console.log("Firestore updated successfully!");
-        } catch (error) {
-            console.error("Error updating Firestore: ", error);
-        }
-    };
 
     const uploadImage = async () => {
         if (!imageUri) return;
@@ -95,7 +85,6 @@ export default function Profile({ navigation }) {
             const url = await getDownloadURL(storageRef);
             alert('Image uploaded successfully!');
             await UpdatingDatabase(url);
-            await UpdatingFirestore(url);
             fetchUsername();
             setImageUri(null);
         } catch (error) {
