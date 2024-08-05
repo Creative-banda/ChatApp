@@ -4,6 +4,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import CallIcon from '../assets/SVG/CallIcon';
 import StatusIcon from '../assets/SVG/StatusIcon';
 import UserIcon from '../assets/SVG/UserIcon';
+import { useRoute } from '@react-navigation/native';
 
 const callHistory = [
   { id: '1', name: 'John Doe', type: 'missed', time: '2h ago' },
@@ -12,6 +13,8 @@ const callHistory = [
 ];
 
 const CallHistoryScreen = ({navigation}) => {
+  const route = useRoute();
+  const { uid, user } = route.params;
   const renderCallTypeIcon = (type) => {
     switch (type) {
       case 'missed':
@@ -48,7 +51,7 @@ const CallHistoryScreen = ({navigation}) => {
           <TouchableOpacity onPress={()=>{navigation.navigate("Home")}}>
             <UserIcon />
           </TouchableOpacity>
-          <TouchableOpacity  onPress={()=>{navigation.navigate("Status")}}>
+          <TouchableOpacity onPress={()=>{navigation.navigate("Status", { uid: uid, user: user })}}>
             <StatusIcon />
           </TouchableOpacity>
           <TouchableOpacity>
@@ -66,10 +69,10 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   header: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 24, 
     color: '#fff',
     marginBottom: 16,
+    fontFamily: 'Lato'
   },
   callList: {
     paddingBottom: 16,
@@ -95,6 +98,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: '#fff',
+    fontFamily: 'Nunito'
   },
   callTime: {
     fontSize: 14,

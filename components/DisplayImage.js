@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Image, Modal, TouchableOpacity, Text } from 'react-native';
+import { StyleSheet, View, Image, Modal, TouchableOpacity, Text, Platform, KeyboardAvoidingView } from 'react-native';
 import BackButton from '../assets/SVG/BackButton';
 
 const DisplayImage = ({ imageUri, setImageUri, Done }) => {
@@ -10,17 +10,20 @@ const DisplayImage = ({ imageUri, setImageUri, Done }) => {
             visible={imageUri !== null}
             onRequestClose={() => setImageUri(null)}
         >
-            <View style={styles.container}>
-                <TouchableOpacity style={styles.backButton} onPress={() => setImageUri(null)}>
-                    <BackButton />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.doneButton} onPress={() => {Done()}}>
-                    <Text style={styles.doneText}>Done</Text>
-                </TouchableOpacity>
+            <KeyboardAvoidingView>
 
-                <Image source={{ uri: imageUri }} style={styles.image} />
+                <View style={styles.container}>
+                    <TouchableOpacity style={styles.backButton} onPress={() => setImageUri(null)}>
+                        <BackButton />
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.doneButton} onPress={() => { Done() }}>
+                        <Text style={styles.doneText}>Done</Text>
+                    </TouchableOpacity>
 
-            </View>
+                    <Image source={{ uri: imageUri }} style={styles.image} />
+
+                </View>
+            </KeyboardAvoidingView>
         </Modal>
     );
 }
@@ -50,6 +53,7 @@ const styles = StyleSheet.create({
     },
     doneText: {
         color: 'white',
+        zIndex: 10,
         fontSize: 20,
         fontWeight: 'bold',
     }

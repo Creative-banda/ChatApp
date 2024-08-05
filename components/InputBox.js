@@ -1,13 +1,16 @@
 import { View, Text, TextInput, StyleSheet } from 'react-native'
 import React from 'react'
 
-export default function InputBox({ placeholder, Label }) {
+export default function InputBox({ placeholder, Label, editable, value, onChangeText }) {
   return (
     <View style={styles.container}>
       <TextInput
         placeholder={placeholder}
+        {...(editable && { value: value })}
+        onChangeText={onChangeText}
         style={styles.input}
         placeholderTextColor="#aaa"
+        editable={editable}
       />
       {Label && <Text style={styles.label}>{Label}</Text>}
     </View>
@@ -22,12 +25,12 @@ const styles = StyleSheet.create({
   input: {
     width: '100%',
     borderBottomWidth: 1,
-    borderColor: '#888', 
+    borderColor: '#888',
     paddingVertical: 10,
     paddingHorizontal: 15,
     borderRadius: 20,
     fontSize: 16,
-    color: '#fff', 
+    color: '#fff',
   },
   label: {
     position: 'absolute',
@@ -37,7 +40,7 @@ const styles = StyleSheet.create({
     top: 10,
     fontSize: 15,
     fontWeight: 'bold',
-    color: '#ccc', 
+    color: '#ccc',
     backgroundColor: 'transparent',
   }
 })

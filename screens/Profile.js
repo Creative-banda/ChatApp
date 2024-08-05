@@ -1,4 +1,4 @@
-import { View, Text, Image, StyleSheet, ImageBackground, TouchableOpacity } from 'react-native';
+import { View, Text, Image, StyleSheet, ImageBackground, TouchableOpacity, KeyboardAvoidingView, ScrollView } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import BackButton from '../assets/SVG/BackButton';
 import Icon from 'react-native-vector-icons/AntDesign';
@@ -8,32 +8,67 @@ import { storage, database } from '../config';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import DisplayImage from '../components/DisplayImage';
 import * as ImageManipulator from 'expo-image-manipulator';
-import { ref as databaseRef, update,get } from 'firebase/database';
+import { ref as databaseRef, update, get } from 'firebase/database';
 import { useRoute } from '@react-navigation/native';
 
 export default function Profile({ navigation }) {
     const route = useRoute();
     const { uid } = route.params;
-    
-    const [userInfo, setuserInfo] = useState(null);
+
+    const [userInfo, setUserInfo] = useState(null);
     const [imageUri, setImageUri] = useState(null);
+    const [edit, setEdit] = useState(false);
+    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
+    const [PhoneNumber, setPhoneNumber] = useState('');
+    const [Gender, setGender] = useState('');
 
     useEffect(() => {
-        fetchUsername();
+        fetchUserData();
     }, [uid]);
 
-    const fetchUsername = async () => {
+    useEffect(() => {
+        if (userInfo) {
+            setUsername(userInfo.username || '');
+            setEmail(userInfo.email || '');
+            setPhoneNumber(userInfo.PhoneNumber || '');
+            setGender(userInfo.Gender || '');
+        }
+    }, [userInfo]);
+
+    const fetchUserData = async () => {
         try {
-            let UserData = databaseRef(database, `Users/${uid}`);
-            const snapshot = await get(UserData);
+            const userRef = databaseRef(database, `Users/${uid}`);
+            const snapshot = await get(userRef);
             if (snapshot.exists()) {
-                setuserInfo(snapshot.val());
-                
+                setUserInfo(snapshot.val());
+                console.log(snapshot.val());
             } else {
                 console.log('No such document!');
             }
         } catch (error) {
-            console.error("Error fetching username: ", error);
+            console.error("Error fetching user data: ", error);
+        }
+    };
+
+    const EditProfile = () => {
+        setEdit(true);
+    };
+
+    const handleSave = () => {
+        if (username && email && PhoneNumber && Gender) {
+            setEdit(false);
+            const userRef = databaseRef(database, `Users/${uid}`);
+            update(userRef, {
+                username,
+                email,
+                PhoneNumber,
+                Gender,
+            });
+            fetchUserData();
+            console.log("Updated");
+        } else {
+            alert("Please fill all fields before saving.");
         }
     };
 
@@ -45,33 +80,10 @@ export default function Profile({ navigation }) {
         });
 
         if (!result.canceled) {
-            const manipulatedImage = await ImageManipulator.manipulateAsync(
-                result.assets[0].uri);
-
+            const manipulatedImage = await ImageManipulator.manipulateAsync(result.assets[0].uri);
             setImageUri(manipulatedImage.uri);
         }
     };
-
-    const UpdatingDatabase = async (url) => {
-        try {
-            let rolesRef = databaseRef(database, `Users/${userInfo.id}`);
-            await update(rolesRef, { ProfilePic: url });
-        } catch (error) {
-            console.error("Error updating database: ", error);
-        }
-    };
-    const deleteImage = async (filename) => {
-        try {
-            const fileRef = ref(storage, filename);
-
-            await deleteObject(fileRef);
-
-            console.log("File deleted successfully");
-        } catch (error) {
-            console.error("Error deleting file: ", error);
-        }
-    };
-
 
     const uploadImage = async () => {
         if (!imageUri) return;
@@ -84,35 +96,51 @@ export default function Profile({ navigation }) {
             await uploadBytes(storageRef, blob);
             const url = await getDownloadURL(storageRef);
             alert('Image uploaded successfully!');
-            await UpdatingDatabase(url);
-            fetchUsername();
+            await updateProfilePic(url);
+            fetchUserData();
             setImageUri(null);
         } catch (error) {
             console.error("Error uploading image: ", error);
         }
     };
 
+    const updateProfilePic = async (url) => {
+        try {
+            const userRef = databaseRef(database, `Users/${uid}`);
+            await update(userRef, { ProfilePic: url });
+        } catch (error) {
+            console.error("Error updating database: ", error);
+        }
+    };
+
     return (
         <ImageBackground source={require('../assets/Images/background.jpg')} style={styles.BackgroundImage}>
-            <View style={styles.header}>
-                <TouchableOpacity style={{ alignSelf: 'flex-start' }} onPress={() => navigation.goBack()}>
-                    <BackButton />
-                </TouchableOpacity>
-                <Text style={styles.title}>Edit Profile</Text>
-                <View style={styles.body}>
-                    <View style={styles.profileContainer}>
-                        <Image source={userInfo?.ProfilePic ? { uri: userInfo.ProfilePic } : require('../assets/icon.png')} style={styles.profile} />
-                        <TouchableOpacity style={styles.cameraIcon} onPress={selectImage}>
-                            <Icon name="camera" size={23} color='white' />
+            <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
+                <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+                    <View style={styles.header}>
+                        <TouchableOpacity style={{ alignSelf: 'flex-start' }} onPress={() => navigation.goBack()}>
+                            <BackButton />
+                        </TouchableOpacity>
+                        <Text style={styles.title}>Edit Profile</Text>
+                        <View style={styles.body}>
+                            <View style={styles.profileContainer}>
+                                <Image source={userInfo?.ProfilePic ? { uri: userInfo.ProfilePic } : require('../assets/icon.png')} style={styles.profile} />
+                                <TouchableOpacity style={styles.cameraIcon} onPress={selectImage}>
+                                    <Icon name="camera" size={23} color='white' />
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                        <InputBox placeholder={username} editable={edit} value={username} onChangeText={setUsername} />
+                        <InputBox placeholder={email} editable={edit} value={email} onChangeText={setEmail} />
+                        <InputBox placeholder={PhoneNumber} editable={edit} value={PhoneNumber} onChangeText={setPhoneNumber} />
+                        <InputBox placeholder={Gender} editable={edit} value={Gender} onChangeText={setGender} />
+                        <TouchableOpacity style={styles.EditButton} onPress={edit ? handleSave : EditProfile}>
+                            <Text style={styles.EditText}>{edit ? "Save" : "Edit Profile"}</Text>
                         </TouchableOpacity>
                     </View>
-                </View>
-                <InputBox placeholder={userInfo?.username || 'Loading...'} />
-                <InputBox placeholder={userInfo?.email || 'Loading...'} />
-                <InputBox placeholder={userInfo?.PhoneNumber || 'Loading..'} />
-                <InputBox placeholder={userInfo?.Gender || 'Loading...'} />
-            </View>
-            {imageUri && <DisplayImage imageUri={imageUri} setImageUri={setImageUri} Done={uploadImage} />}
+                    {imageUri && <DisplayImage imageUri={imageUri} setImageUri={setImageUri} Done={uploadImage} />}
+                </ScrollView>
+            </KeyboardAvoidingView>
         </ImageBackground>
     );
 }
@@ -160,5 +188,19 @@ const styles = StyleSheet.create({
         borderRadius: 50,
         alignItems: 'center',
         justifyContent: 'center',
-    }
+    },
+    EditButton: {
+        backgroundColor: '#52B35E',
+        padding: 10,
+        borderRadius: 5,
+        alignItems: 'center',
+        marginTop: 20,
+        width: '90%',
+        alignSelf: 'center',
+    },
+    EditText: {
+        color: '#fff',
+        fontSize: 15,
+        fontFamily: 'Lato',
+    },
 });

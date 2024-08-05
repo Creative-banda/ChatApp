@@ -6,6 +6,7 @@ import { ref, push, set, onValue, update, get } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import Back from '../assets/SVG/BackButton';
 import Icon from 'react-native-vector-icons/AntDesign';
+import Entypo from 'react-native-vector-icons/Entypo';
 import CustomAlert from '../components/CustomAlert';
 import EmojiSelector from 'react-native-emoji-selector';
 import * as ImagePicker from 'expo-image-picker';
@@ -294,7 +295,7 @@ const ChatScreen = ({ navigation }) => {
                             numberOfLines={3}
                         />
                         <TouchableOpacity onPress={() => HandleFileAdd()} >
-                            <Icon name="pluscircle" size={24} color="#fff" />
+                            <Entypo name='attachment' size={22} color='#fff'/>
                         </TouchableOpacity>
                     </View>
                     <TouchableOpacity style={styles.sendButton} onPress={() => handleSend(inputText, "text")}>
@@ -338,6 +339,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0, 0, 0, 0.6)',
         borderBottomColor: '#4C4A48',
         borderBottomWidth: 2,
+        fontFamily: 'Lato'
     },
     avatar: {
         width: 50,

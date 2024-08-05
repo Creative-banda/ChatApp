@@ -3,8 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingVi
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Antdesign from 'react-native-vector-icons/FontAwesome';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
-import { auth, firestore } from '../config';
+import { auth } from '../config';
 import SimpleAlert from '../components/SimpleAlert';
 
 const LoginPage = ({ navigation }) => {
@@ -18,7 +17,7 @@ const LoginPage = ({ navigation }) => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   const handleLogin = async () => {
-    if (email.trim() === "" || password.trim() === "") {
+    if (email === "" || password === "") {
       setAlertMessage('Please enter your Login credentials');
       setAlertTitle('Input Error');
       setAlertVisible(true);
@@ -121,9 +120,9 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 32,
-    fontWeight: 'bold',
     color: '#fff',
     marginBottom: 8,
+    fontFamily: 'Lato'
   },
   subtitle: {
     fontSize: 16,
@@ -168,6 +167,7 @@ const styles = StyleSheet.create({
     color: '#a0a0a0',
     textAlign: 'center',
     fontSize: 14,
+    fontFamily: 'Lato'
   },
 });
 

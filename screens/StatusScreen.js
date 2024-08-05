@@ -104,9 +104,9 @@ const StoryStatusScreen = ({ navigation }) => {
     };
 
     const renderStories = ({ item }) => {
-        // if (item.email === user.email){
-        //     return false
-        // }
+        if (item.email === user.email || !item.Status) {
+            return null; 
+        }
         return (
             <TouchableOpacity style={styles.storyContainer} onPress={() => handleStoryPress(item)}>
                 <Image source={{ uri: item.Status.url }} style={styles.storyImage} />
@@ -144,7 +144,7 @@ const StoryStatusScreen = ({ navigation }) => {
                 <TouchableOpacity>
                     <StatusIcon />
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => navigation.navigate('Call')}>
+                <TouchableOpacity onPress={() => navigation.navigate('Call', { uid: uid, user: user })}>
                     <CallIcon />
                 </TouchableOpacity>
             </View>
@@ -163,9 +163,9 @@ const styles = StyleSheet.create({
     },
     header: {
         fontSize: 24,
-        fontWeight: 'bold',
         color: '#fff',
         marginBottom: 16,
+        fontFamily: 'Lato'
     },
     addStoryContainer: {
         flexDirection: 'row',
@@ -184,6 +184,7 @@ const styles = StyleSheet.create({
         fontSize: 18,
         color: '#fff',
         marginLeft: 8,
+        fontFamily: 'Nunito'
     },
     storyList: {
         paddingBottom: 16,
@@ -211,11 +212,13 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: '600',
         color: '#fff',
+        fontFamily: 'Lato'
     },
     storyTime: {
         fontSize: 14,
         color: '#888',
         marginTop: 4,
+        fontFamily: 'Nunito'
     },
     BottomIcons: {
         position: 'absolute',

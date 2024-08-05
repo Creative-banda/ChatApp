@@ -22,7 +22,7 @@ export default function StoryDisplay({ image, modalVisible, onClose, Name,Messag
                     </View>
                     <View>
                     </View>
-                    <Text style={{color:'#fff', fontSize:15}}>{Message}</Text>
+                    <Text style={{color:'#fff', fontSize:15, fontFamily: 'Lato'}}>{Message}</Text>
                 </View>
             </Modal>
         </View>
@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
         left: 30,
         color: '#fff',
         fontSize: 20,
-        fontWeight: 'bold',
+        fontFamily: 'Lato'
     },
 
     storyImage: {

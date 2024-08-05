@@ -54,31 +54,33 @@ const ChatAppHomePage = ({ navigation, uid, email }) => {
   };
 
   const renderChatItem = ({ item }) => {
-    if (item.id.trim() == email.trim()) {
-      return false;
+    if (!item || !item.id || !item.username) {
+      return null; 
     }
-    
-    
-    else {
-      const imageUri = item.image && item.image.trim() !== ''
-        ? { uri: item.image }
-        : require('../assets/icon.png');
-      return (
-        <TouchableOpacity
-          style={styles.card}
-          onPress={() => navigation.navigate("ChatScreen", { chatId: item, name:  UserInfo })}
-        >
-          <View style={styles.textContainer}>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Image source={imageUri} style={styles.avatar} />
-              <Text style={styles.name}>{item.username}</Text>
-            </View>
+  
+    if (item.id === email) {
+      return null; 
+    }
+  
+    const imageUri = item.image && item.image !== ''
+      ? { uri: item.image }
+      : require('../assets/icon.png');
+  
+    return (
+      <TouchableOpacity
+        style={styles.card}
+        onPress={() => navigation.navigate("ChatScreen", { chatId: item, name: UserInfo })}
+      >
+        <View style={styles.textContainer}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Image source={imageUri} style={styles.avatar} />
+            <Text style={styles.name}>{item.username}</Text>
           </View>
-        </TouchableOpacity>
-
-      );
-    }
+        </View>
+      </TouchableOpacity>
+    );
   };
+  
 
   return (
 
@@ -114,7 +116,7 @@ const ChatAppHomePage = ({ navigation, uid, email }) => {
           <TouchableOpacity onPress={() => { navigation.navigate("Status", { uid: uid, user: UserInfo }) }}>
             <StatusIcon />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => { navigation.navigate("Call") }}>
+          <TouchableOpacity onPress={() => { navigation.navigate("Call", { uid: uid, user: UserInfo }) }}>
             <CallIcon />
           </TouchableOpacity>
         </View>
