@@ -225,8 +225,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 16,
     padding: 2,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderColor: '#6E6B68',
+    backgroundColor: 'rgba(255, 255, 255, 1)',
     borderWidth: 0.3
   },
   dropdownText: {

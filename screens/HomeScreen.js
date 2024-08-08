@@ -52,7 +52,7 @@ const ChatAppHomePage = ({ navigation, uid, email }) => {
       console.error("Error fetching username: ", error);
     }
   };
-
+  
   const renderChatItem = ({ item }) => {
     if (!item || !item.id || !item.username) {
       return null; 
@@ -61,10 +61,9 @@ const ChatAppHomePage = ({ navigation, uid, email }) => {
     if (item.id === email) {
       return null; 
     }
+    
   
-    const imageUri = item.image && item.image !== ''
-      ? { uri: item.image }
-      : require('../assets/icon.png');
+    const imageUri = item.image && item.image !== ''? { uri: item.image } : require('../assets/icon.png');
   
     return (
       <TouchableOpacity

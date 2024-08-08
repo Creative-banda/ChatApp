@@ -1,8 +1,8 @@
-import { View, Text, Image, StyleSheet, ImageBackground, TouchableOpacity, KeyboardAvoidingView, ScrollView } from 'react-native';
 import React, { useState, useEffect } from 'react';
+import { View, Text, Image, StyleSheet, ImageBackground, TouchableOpacity, KeyboardAvoidingView, ScrollView } from 'react-native';
 import BackButton from '../assets/SVG/BackButton';
-import Icon from 'react-native-vector-icons/AntDesign';
-import InputBox from '../components/InputBox';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import Antdesign from 'react-native-vector-icons/FontAwesome'
 import * as ImagePicker from 'expo-image-picker';
 import { storage, database } from '../config';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -10,6 +10,7 @@ import DisplayImage from '../components/DisplayImage';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { ref as databaseRef, update, get } from 'firebase/database';
 import { useRoute } from '@react-navigation/native';
+import InputBox from '../components/InputBox'; 
 
 export default function Profile({ navigation }) {
     const route = useRoute();
@@ -22,6 +23,9 @@ export default function Profile({ navigation }) {
     const [email, setEmail] = useState('');
     const [PhoneNumber, setPhoneNumber] = useState('');
     const [Gender, setGender] = useState('');
+    const [showGenderDropdown, setShowGenderDropdown] = useState(false);
+
+    const genderOptions = ['Male', 'Female', 'Other'];
 
     useEffect(() => {
         fetchUserData();
@@ -42,7 +46,6 @@ export default function Profile({ navigation }) {
             const snapshot = await get(userRef);
             if (snapshot.exists()) {
                 setUserInfo(snapshot.val());
-                console.log(snapshot.val());
             } else {
                 console.log('No such document!');
             }
@@ -82,6 +85,7 @@ export default function Profile({ navigation }) {
         if (!result.canceled) {
             const manipulatedImage = await ImageManipulator.manipulateAsync(result.assets[0].uri);
             setImageUri(manipulatedImage.uri);
+            console.log(manipulatedImage);
         }
     };
 
@@ -126,14 +130,41 @@ export default function Profile({ navigation }) {
                             <View style={styles.profileContainer}>
                                 <Image source={userInfo?.ProfilePic ? { uri: userInfo.ProfilePic } : require('../assets/icon.png')} style={styles.profile} />
                                 <TouchableOpacity style={styles.cameraIcon} onPress={selectImage}>
-                                    <Icon name="camera" size={23} color='white' />
+                                    <Antdesign name="camera" size={22} color='white' />
                                 </TouchableOpacity>
                             </View>
                         </View>
+                        <InputBox placeholder={email} editable={false} value={email} onChangeText={setEmail} />
                         <InputBox placeholder={username} editable={edit} value={username} onChangeText={setUsername} />
-                        <InputBox placeholder={email} editable={edit} value={email} onChangeText={setEmail} />
                         <InputBox placeholder={PhoneNumber} editable={edit} value={PhoneNumber} onChangeText={setPhoneNumber} />
-                        <InputBox placeholder={Gender} editable={edit} value={Gender} onChangeText={setGender} />
+                        
+                        {/* Gender Dropdown */}
+                        <TouchableOpacity
+                            style={styles.dropdownContainer}
+                            onPress={() => setShowGenderDropdown(!showGenderDropdown)}
+                        >
+                            <Antdesign name="user" size={26} color="#888" style={styles.icon} />
+                            <Text style={styles.dropdownText}>{Gender || 'Select Gender'}</Text>
+                            <Icon name="arrow-drop-down" size={24} color="#FFF8F2" style={styles.icon} />
+                        </TouchableOpacity>
+
+                        {showGenderDropdown && (
+                            <View style={styles.dropdownOptions}>
+                                {genderOptions.map((option) => (
+                                    <TouchableOpacity
+                                        key={option}
+                                        style={styles.dropdownOption}
+                                        onPress={() => {
+                                            setGender(option);
+                                            setShowGenderDropdown(false);
+                                        }}
+                                    >
+                                        <Text style={styles.dropdownOptionText}>{option}</Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+                        )}
+
                         <TouchableOpacity style={styles.EditButton} onPress={edit ? handleSave : EditProfile}>
                             <Text style={styles.EditText}>{edit ? "Save" : "Edit Profile"}</Text>
                         </TouchableOpacity>
@@ -202,5 +233,32 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 15,
         fontFamily: 'Lato',
+    },
+    dropdownContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 10,
+        borderRadius: 5,
+        marginTop: 10,
+    },
+    dropdownText: {
+        flex: 1,
+        fontSize: 16,
+        color: '#888',
+    },
+    icon: {
+        marginHorizontal: 10,
+    },
+    dropdownOptions:{
+        borderRadius: 5,
+        width: '100%',
+        backgroundColor:'rgba(0,0,0,0.3)'
+    },
+    dropdownOption: {
+        padding: 10,
+    },
+    dropdownOptionText: {
+        fontSize: 16,
+        color: '#ABA6A2',
     },
 });

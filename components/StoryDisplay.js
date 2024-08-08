@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, Modal, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-export default function StoryDisplay({ image, modalVisible, onClose, Name,Message }) {
+export default function StoryDisplay({ image, modalVisible, onClose, Name, Message }) {
     return (
         <View style={styles.container}>
             <Modal
@@ -22,7 +22,7 @@ export default function StoryDisplay({ image, modalVisible, onClose, Name,Messag
                     </View>
                     <View>
                     </View>
-                    <Text style={{color:'#fff', fontSize:15, fontFamily: 'Lato'}}>{Message}</Text>
+                    <Text style={styles.MessageText}>{Message}</Text>
                 </View>
             </Modal>
         </View>
@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        backgroundColor: 'rgba(0, 0, 0, 0.9)',
     },
     modalContent: {
         width: '90%',
@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
     },
     closeButton: {
         position: 'absolute',
-        zIndex:10,
+        zIndex: 10,
         top: 50,
         right: 35,
         padding: 10,
@@ -73,4 +73,13 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontWeight: 'bold',
     },
+    MessageText: {
+        color: '#fff',
+        fontSize: 15,
+        fontFamily: 'Lato',
+        backgroundColor: '#545',
+        width: '100%',
+        textAlign: 'center',
+        paddingVertical: 10
+    }
 });

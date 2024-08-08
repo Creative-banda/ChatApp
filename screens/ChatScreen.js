@@ -92,6 +92,9 @@ const ChatScreen = ({ navigation }) => {
     };
 
     const deleteMessages = async (user, otherUser, messageIds) => {
+        console.log("User :",user);
+        console.log("Other User :",otherUser);
+        console.log("Message Id",messageIds);
         const userChatsRef = ref(database, `chats/${user.trim()}`);
         const otherUserChatsRef = ref(database, `chats/${otherUser.trim()}`);
 
@@ -129,35 +132,6 @@ const ChatScreen = ({ navigation }) => {
                 await update(chatRef, updates);
             }
         }
-    };
-
-    const renderMessage = ({ item }) => {
-        const isMyMessage = item.from.trim().toLowerCase() === name.username.trim().toLowerCase();
-        const isSelected = selectedItems.includes(item.id);
-
-        return (
-            <View
-                style={[styles.messageContainer, isMyMessage ? styles.myMessage : styles.otherMessage, isSelected && styles.selectedMessage]}
-            >
-                {isMyMessage ? (
-                    <TouchableOpacity onLongPress={() => toggleSelectionMode(item.id)} onPress={() => { if (isSelectionMode) { toggleItemSelection(item.id); } }}>
-                        {item.messageType === "text" ? (
-                            <Text style={[styles.messageText, isSelected && styles.selectedMessageText]}>{item.message}</Text>
-                        ) : (
-                            <Image source={{ uri: item.message }} style={styles.image} />
-                        )}
-                    </TouchableOpacity>
-                ) : (
-                    <TouchableOpacity onLongPress={() => toggleSelectionMode(item.id)} onPress={() => { if (isSelectionMode) { toggleItemSelection(item.id); } }}>
-                        {item.messageType === "text" ? (
-                            <Text style={[styles.messageText, isSelected && styles.selectedMessageText]}>{item.message}</Text>
-                        ) : (
-                            <Image source={{ uri: item.message }} style={styles.image} />
-                        )}
-                    </TouchableOpacity>
-                )}
-            </View>
-        );
     };
 
     const handleEmojiSelect = (emoji) => {
@@ -236,6 +210,36 @@ const ChatScreen = ({ navigation }) => {
         }
     };
 
+
+    const renderMessage = ({ item }) => {
+        const isMyMessage = item.from.trim().toLowerCase() === name.username.trim().toLowerCase();
+        const isSelected = selectedItems.includes(item.id);
+
+        return (
+            <View
+                style={[styles.messageContainer, isMyMessage ? styles.myMessage : styles.otherMessage, isSelected && styles.selectedMessage]}
+            >
+                {isMyMessage ? (
+                    <TouchableOpacity onLongPress={() => toggleSelectionMode(item.id)} onPress={() => { if (isSelectionMode) { toggleItemSelection(item.id); } }}>
+                        {item.messageType === "text" ? (
+                            <Text style={[styles.messageText, isSelected && styles.selectedMessageText]}>{item.message}</Text>
+                        ) : (
+                            <Image source={{ uri: item.message }} style={styles.image} />
+                        )}
+                    </TouchableOpacity>
+                ) : (
+                    <TouchableOpacity onLongPress={() => toggleSelectionMode(item.id)} onPress={() => { if (isSelectionMode) { toggleItemSelection(item.id); } }}>
+                        {item.messageType === "text" ? (
+                            <Text style={[styles.messageText, isSelected && styles.selectedMessageText]}>{item.message}</Text>
+                        ) : (
+                            <Image source={{ uri: item.message }} style={styles.image} />
+                        )}
+                    </TouchableOpacity>
+                )}
+            </View>
+        );
+    };
+
     return (
         <ImageBackground source={require('../assets/Images/background.jpg')} style={styles.container}>
             <StatusBar barStyle="light-content" backgroundColor="#000000" />
@@ -307,7 +311,7 @@ const ChatScreen = ({ navigation }) => {
                 Title="Do you really want to delete?"
                 visible={alertVisible}
                 onRequestClose={() => setAlertVisible(false)}
-                onYes={() => deleteMessages(name.username, chatId.name, selectedItems)}
+                onYes={() => deleteMessages(name.id, chatId.name, selectedItems)}
                 onNo={() => setAlertVisible(false)}
             />
             <Modal

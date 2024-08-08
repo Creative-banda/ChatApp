@@ -10,7 +10,6 @@ const DisplayImage = ({ imageUri, setImageUri, Done }) => {
             visible={imageUri !== null}
             onRequestClose={() => setImageUri(null)}
         >
-            <KeyboardAvoidingView>
 
                 <View style={styles.container}>
                     <TouchableOpacity style={styles.backButton} onPress={() => setImageUri(null)}>
@@ -23,7 +22,6 @@ const DisplayImage = ({ imageUri, setImageUri, Done }) => {
                     <Image source={{ uri: imageUri }} style={styles.image} />
 
                 </View>
-            </KeyboardAvoidingView>
         </Modal>
     );
 }

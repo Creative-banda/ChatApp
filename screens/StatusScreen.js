@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, Modal, Alert, ActivityIndicator } from 'react-native';
 import { storage, database } from '../config';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { ref as databaseRef, update, get } from 'firebase/database';
 import CallIcon from '../assets/SVG/CallIcon';
 import StatusIcon from '../assets/SVG/StatusIcon';
@@ -10,18 +10,20 @@ import PlusIcon from '../assets/SVG/PlusIcon';
 import StoryDisplay from '../components/StoryDisplay';
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as ImagePicker from 'expo-image-picker';
-import DisplayAddStory from '../components/DisplayAddStory'
+import DisplayAddStory from '../components/DisplayAddStory';
 import { useRoute } from '@react-navigation/native';
 
 const StoryStatusScreen = ({ navigation }) => {
     const route = useRoute();
     const { uid, user } = route.params;
     const [Stories, SetStories] = useState([]);
-    const [selectedStory, setSelectedStory] = useState('');
+    const [selectedStory, setSelectedStory] = useState(null);
     const [modalVisible, setModalVisible] = useState(false);
     const [imageUri, setImageUri] = useState('');
-    const [IsUploading, SetUploading] = useState(false)
+    const [IsUploading, SetUploading] = useState(false);
     const [inputText, setInputText] = useState('');
+    const [storyActionModalVisible, setStoryActionModalVisible] = useState(false);
+    const [myStatus, setMyStatus] = useState(null);
 
     useEffect(() => {
         initializingUsers();
@@ -32,9 +34,14 @@ const StoryStatusScreen = ({ navigation }) => {
             let UserData = databaseRef(database, 'Users');
             const snapshot = await get(UserData);
             if (snapshot.exists()) {
-                const UserData = snapshot.val();
-                const StatusList = Object.values(UserData);
-                SetStories(StatusList);
+                const userData = snapshot.val();
+                const statusList = Object.values(userData);
+                SetStories(statusList);
+                const userStatus = statusList.find(item => item.email === user.email);
+                if (userStatus) {
+                    console.log("My Status :",userStatus);
+                    setMyStatus(userStatus);
+                }
             } else {
                 console.log('No data available');
             }
@@ -43,7 +50,12 @@ const StoryStatusScreen = ({ navigation }) => {
         }
     };
 
-    const handleAddStory = async () => {
+    const handleAddStory = () => {
+        setStoryActionModalVisible(true);
+    };
+
+    const handleImagePick = async () => {
+        setStoryActionModalVisible(false);
         const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: false,
@@ -59,19 +71,53 @@ const StoryStatusScreen = ({ navigation }) => {
         }
     };
 
+    const handleViewStory = async () => {
+        setSelectedStory(myStatus);
+        setModalVisible(true);
+    }
+
+    const handleRemoveStory = async () => {
+        try {
+            SetUploading(true);
+            const statusRef = databaseRef(database, `Users/${user.id}/Status`);
+            const snapshot = await get(statusRef);
+
+            if (snapshot.exists()) {
+                await update(statusRef, { url: "", time: "", message: "" });
+                let imageUrl = snapshot.val().url;
+                // Remove from storage
+                if (snapshot.val().url) {
+                    const storageRef = ref(storage, imageUrl);
+                    await deleteObject(storageRef);
+                    console.log("Deleted Sucessfully");
+                    Alert.alert("Sucessfully","Story Deleted Sucessfully")
+                } else {
+                    Alert.alert("No Story", "Sorry You Did Not Upload Any Story")
+                }
+            } else {
+                console.log("No story to remove");
+            }
+        } catch (error) {
+            console.error("Error updating story URL: ", error);
+        }
+        finally{
+            SetUploading(false);
+            setStoryActionModalVisible(false);
+        }
+    };
+
     const UpdatingDatabase = async (url) => {
-        console.log(inputText);
-        
         try {
             let statusRef = databaseRef(database, `Users/${user.id}/Status`);
 
             await update(statusRef, {
                 time: Date.now(),
                 url: url,
-                message : inputText
+                message: inputText,
             });
 
             console.log("Database updated successfully!");
+            initializingUsers();
         } catch (error) {
             console.error("Error updating database: ", error);
         }
@@ -95,7 +141,9 @@ const StoryStatusScreen = ({ navigation }) => {
         } catch (error) {
             console.error("Error uploading image:", error);
         }
-        SetUploading(false)
+        finally{
+            SetUploading(false);
+        }
     };
 
     const handleStoryPress = (item) => {
@@ -104,9 +152,10 @@ const StoryStatusScreen = ({ navigation }) => {
     };
 
     const renderStories = ({ item }) => {
-        if (item.email === user.email || !item.Status) {
-            return null; 
+        if (item.email.trim() === user.email.trim() || !item.Status) {
+            return null;
         }
+    
         return (
             <TouchableOpacity style={styles.storyContainer} onPress={() => handleStoryPress(item)}>
                 <Image source={{ uri: item.Status.url }} style={styles.storyImage} />
@@ -126,7 +175,9 @@ const StoryStatusScreen = ({ navigation }) => {
             <Text style={styles.header}>Stories</Text>
             <TouchableOpacity style={styles.addStoryContainer} onPress={handleAddStory}>
                 <PlusIcon />
-                <Text style={styles.addStoryText}>Add Story</Text>
+                <Text style={styles.addStoryText}>
+                    {myStatus?.Status.url ? 'Manage Story' : 'Add Story'}
+                </Text>
             </TouchableOpacity>
 
             <FlatList
@@ -149,11 +200,39 @@ const StoryStatusScreen = ({ navigation }) => {
                 </TouchableOpacity>
             </View>
 
-            {imageUri && <DisplayAddStory imageUri={imageUri} setImageUri={setImageUri} Done={uploadImage} IsUploading={IsUploading} inputText={inputText} setInputText={setInputText}/>}
-            {selectedStory && <StoryDisplay image={selectedStory.Status.url} modalVisible={modalVisible} onClose={() => {  setSelectedStory(''); setModalVisible(false)}} Name={selectedStory.username} Message={selectedStory.Status.message} />}
+            {imageUri && <DisplayAddStory imageUri={imageUri} setImageUri={setImageUri} Done={uploadImage} IsUploading={IsUploading} inputText={inputText} setInputText={setInputText} />}
+            {selectedStory && <StoryDisplay image={selectedStory.Status.url} modalVisible={modalVisible} onClose={() => { setSelectedStory(''); setModalVisible(false); }} Name={selectedStory.username} Message={selectedStory.Status.message} />}
+            {selectedStory && <StoryDisplay image={myStatus.Status.url} modalVisible={modalVisible} onClose={() => setModalVisible(false)} Name={selectedStory.username} Message={selectedStory.Status.message} />}
+
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={storyActionModalVisible}
+                onRequestClose={() => setStoryActionModalVisible(false)}
+            >
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalContent}>
+                        <TouchableOpacity onPress={handleImagePick} style={styles.modalButton}>
+                            <Text style={styles.modalButtonText}>Add Story</Text>
+                        </TouchableOpacity>
+
+                        { myStatus?.Status.url && <TouchableOpacity onPress={handleViewStory} style={styles.modalButton}>
+                            <Text style={styles.modalButtonText}>View Story</Text>
+                        </TouchableOpacity>}
+
+                        { myStatus?.Status.url && <TouchableOpacity onPress={handleRemoveStory} style={styles.modalButton}>
+                            {IsUploading ? <ActivityIndicator size='small'/> : <Text style={styles.modalButtonText}>Remove Story</Text>}
+                        </TouchableOpacity>}
+                        <TouchableOpacity onPress={() => setStoryActionModalVisible(false)} style={styles.modalButton}>
+                            <Text style={styles.modalButtonText}>Cancel</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 };
+
 
 const styles = StyleSheet.create({
     container: {
@@ -231,7 +310,33 @@ const styles = StyleSheet.create({
         paddingVertical: 10,
         borderRadius: 30,
         backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    }
+    },
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    },
+    modalContent: {
+        width: '80%',
+        backgroundColor: '#1e1e1e',
+        padding: 20,
+        borderRadius: 10,
+        alignItems: 'center',
+    },
+    modalButton: {
+        width: '100%',
+        padding: 15,
+        marginVertical: 10,
+        backgroundColor: '#333',
+        borderRadius: 8,
+        alignItems: 'center',
+    },
+    modalButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontFamily: 'Nunito'
+    },
 });
 
 export default StoryStatusScreen;
