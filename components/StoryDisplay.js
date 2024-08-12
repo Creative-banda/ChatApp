@@ -1,17 +1,20 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, Modal, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+
+
+
 export default function StoryDisplay({ image, modalVisible, onClose, Name, Message }) {
     return (
-        <View style={styles.container}>
-            <Modal
-                animationType="fade"
-                transparent={true}
-                visible={modalVisible}
-                onRequestClose={() => {
-                    onClose()
-                }}
-            >
+        <Modal
+            animationType="fade"
+            transparent={true}
+            visible={modalVisible}
+            onRequestClose={() => {
+                onClose()
+            }}
+        >
+            <View style={styles.container}>
                 <View style={styles.modalContainer}>
                     <Text style={styles.nameText}>{Name}</Text>
                     <TouchableOpacity onPress={onClose} style={styles.closeButton}>
@@ -22,10 +25,10 @@ export default function StoryDisplay({ image, modalVisible, onClose, Name, Messa
                     </View>
                     <View>
                     </View>
-                    <Text style={styles.MessageText}>{Message}</Text>
+                    {Message.trim() && <Text style={styles.MessageText}>{Message}</Text>}
                 </View>
-            </Modal>
-        </View>
+            </View>
+        </Modal>
     );
 }
 
@@ -63,8 +66,8 @@ const styles = StyleSheet.create({
     closeButton: {
         position: 'absolute',
         zIndex: 10,
-        top: 50,
-        right: 35,
+        top: 20,
+        right: 25,
         padding: 10,
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
         borderRadius: 5,
