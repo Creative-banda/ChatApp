@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 15,
         fontFamily: 'Lato',
-        backgroundColor: '#545',
+        backgroundColor: '#171616',
         width: '100%',
         textAlign: 'center',
         paddingVertical: 10

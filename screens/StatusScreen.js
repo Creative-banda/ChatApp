@@ -13,6 +13,7 @@ import DisplayAddStory from '../components/DisplayAddStory';
 import { useRoute } from '@react-navigation/native';
 import { MaterialIcons } from 'react-native-vector-icons';
 import { Ionicons } from 'react-native-vector-icons';
+import AddFriendIcon from '../assets/SVG/AddFriendIcon';
 
 const StoryStatusScreen = ({ navigation }) => {
     const route = useRoute();
@@ -38,12 +39,9 @@ const StoryStatusScreen = ({ navigation }) => {
                 const userData = snapshot.val();
                 const statusList = Object.values(userData);
                 SetStories(statusList);
-                console.log(statusList);
                 const userStatus = statusList.find(item => item.email === user.email);
                 if (userStatus) {
                     setMyStatus(userStatus || {});
-                    console.log(userStatus);
-
                 }
             } else {
                 console.log('No data available');
@@ -208,7 +206,12 @@ const StoryStatusScreen = ({ navigation }) => {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.header}>Stories</Text>
+            <View style={{ flexDirection: 'row', columnGap: 20, alignItems: 'center', paddingVertical: 8 }}>
+                <TouchableOpacity onPress={() => navigation.goBack()} style={{ paddingBottom: 15 }}>
+                    <Ionicons name='chevron-back-outline' size={25} color={'#fff'} />
+                </TouchableOpacity>
+                <Text style={styles.header}>Stories</Text>
+            </View>
             <TouchableOpacity style={styles.addStoryContainer} onPress={handleAddStory}>
                 <MaterialIcons name="manage-accounts" color="#fff" size={22} />
                 <Text style={styles.addStoryText}>
@@ -216,23 +219,26 @@ const StoryStatusScreen = ({ navigation }) => {
                 </Text>
             </TouchableOpacity>
 
-            {Stories != "" && <FlatList
+            <FlatList
                 data={Stories}
                 keyExtractor={(item) => item.email}
                 renderItem={renderStories}
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={styles.storyList}
-            />}
+            />
 
             <View style={styles.BottomIcons}>
                 <TouchableOpacity onPress={() => navigation.navigate('Home')}>
                     <UserIcon />
                 </TouchableOpacity>
                 <TouchableOpacity>
-                    <StatusIcon />
+                    <StatusIcon strokeWidth={3.5} />
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => navigation.navigate('Call', { uid: uid, user: user })}>
                     <CallIcon />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => navigation.navigate('AddFriend', { uid: uid, user: user })}>
+                    <AddFriendIcon />
                 </TouchableOpacity>
             </View>
 
@@ -291,6 +297,7 @@ const styles = StyleSheet.create({
         marginBottom: 16,
         fontFamily: 'Lato'
     },
+
     addStoryContainer: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -394,7 +401,8 @@ const styles = StyleSheet.create({
         marginLeft: 10,
     },
     icon: {
-        marginRight: 10,
+        position: 'absolute',
+        left: 20
     },
 });
 

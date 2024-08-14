@@ -56,8 +56,6 @@ const SignupPage = ({ navigation }) => {
   }
 
 
-
-
   return (
     <ImageBackground source={require('../assets/Images/Registration.jpg')} style={styles.BackgroundImage}>
       <TouchableOpacity style={{ position: 'absolute', top: 40, left: 30, zIndex: 2 }} onPress={() => { navigation.goBack() }}>
@@ -86,6 +84,7 @@ const SignupPage = ({ navigation }) => {
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
+            autoCapitalize='none'
           />
         </View>
 
@@ -168,6 +167,7 @@ const SignupPage = ({ navigation }) => {
           username={username}
           email={email} otp={otp}
           password={password}
+          navigation={navigation}
         />
       </View>
     </ImageBackground>

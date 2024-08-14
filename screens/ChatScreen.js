@@ -7,10 +7,13 @@ import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage
 import Back from '../assets/SVG/BackButton';
 import Icon from 'react-native-vector-icons/AntDesign';
 import Entypo from 'react-native-vector-icons/Entypo';
+import Feather from 'react-native-vector-icons/Ionicons';
 import CustomAlert from '../components/CustomAlert';
 import EmojiSelector from 'react-native-emoji-selector';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
+import DisplayImage from '../components/DisplayImage';
+import ThreeDotMenu from '../components/ThreeDotMenu';
 
 const ChatScreen = ({ navigation }) => {
     const [messages, setMessages] = useState([]);
@@ -20,8 +23,10 @@ const ChatScreen = ({ navigation }) => {
     const [alertVisible, setAlertVisible] = useState(false);
     const [IsMessage, setIsMessage] = useState(false)
     const [isPickerVisible, setIsPickerVisible] = useState(false);
+    const [displayImage, setDisplayImage] = useState('');
     const route = useRoute();
     const { chatId, name } = route.params;
+    console.log(chatId);
 
     useEffect(() => {
         const chatsRef = ref(database, `chats/${name.id}`);
@@ -35,7 +40,7 @@ const ChatScreen = ({ navigation }) => {
                         allChats.push(...chat);
                     } else {
                         allChats.push(chat);
-                        
+
                     }
                 });
 
@@ -47,7 +52,7 @@ const ChatScreen = ({ navigation }) => {
                 if (filteredChats.length === 0) {
                     setIsMessage(true)
                 }
-                else{
+                else {
                     setIsMessage(false)
                 }
                 setMessages(filteredChats.reverse());
@@ -92,9 +97,9 @@ const ChatScreen = ({ navigation }) => {
     };
 
     const deleteMessages = async (user, otherUser, messageIds) => {
-        console.log("User :",user);
-        console.log("Other User :",otherUser);
-        console.log("Message Id",messageIds);
+        console.log("User :", user);
+        console.log("Other User :", otherUser);
+        console.log("Message Id", messageIds);
         const userChatsRef = ref(database, `chats/${user.trim()}`);
         const otherUserChatsRef = ref(database, `chats/${otherUser.trim()}`);
 
@@ -138,6 +143,16 @@ const ChatScreen = ({ navigation }) => {
         setInputText(inputText + emoji);
         setIsPickerVisible(false);
     };
+
+    const handleSingleClick = (item) => {
+        if (isSelectionMode && item.from === name.username) {
+            toggleItemSelection(item.id);
+            return false;
+        }
+        if (item.messageType === 'image' && !isSelectionMode) {
+            setDisplayImage(item.message)
+        }
+    }
 
     function generateRandomId() {
         return Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
@@ -199,7 +214,7 @@ const ChatScreen = ({ navigation }) => {
 
             const blob = await response.blob();
             const filename = url.substring(url.lastIndexOf('/') + 1);
-            const storageReference = storageRef(storage, `images/${filename}`);
+            const storageReference = storageRef(storage, `/${filename}`);
 
             await uploadBytes(storageReference, blob);
             const downloadUrl = await getDownloadURL(storageReference);
@@ -220,7 +235,7 @@ const ChatScreen = ({ navigation }) => {
                 style={[styles.messageContainer, isMyMessage ? styles.myMessage : styles.otherMessage, isSelected && styles.selectedMessage]}
             >
                 {isMyMessage ? (
-                    <TouchableOpacity onLongPress={() => toggleSelectionMode(item.id)} onPress={() => { if (isSelectionMode) { toggleItemSelection(item.id); } }}>
+                    <TouchableOpacity onLongPress={() => toggleSelectionMode(item.id)} onPress={() => handleSingleClick(item)}>
                         {item.messageType === "text" ? (
                             <Text style={[styles.messageText, isSelected && styles.selectedMessageText]}>{item.message}</Text>
                         ) : (
@@ -228,7 +243,7 @@ const ChatScreen = ({ navigation }) => {
                         )}
                     </TouchableOpacity>
                 ) : (
-                    <TouchableOpacity onLongPress={() => toggleSelectionMode(item.id)} onPress={() => { if (isSelectionMode) { toggleItemSelection(item.id); } }}>
+                    <TouchableOpacity onPress={() => handleSingleClick(item)}>
                         {item.messageType === "text" ? (
                             <Text style={[styles.messageText, isSelected && styles.selectedMessageText]}>{item.message}</Text>
                         ) : (
@@ -236,6 +251,7 @@ const ChatScreen = ({ navigation }) => {
                         )}
                     </TouchableOpacity>
                 )}
+
             </View>
         );
     };
@@ -261,9 +277,13 @@ const ChatScreen = ({ navigation }) => {
                                 <Back />
                             </TouchableOpacity>
                             <Image source={chatId.image ? { uri: chatId.image } : require('../assets/icon.png')} style={styles.avatar} />
-                            <Text style={{ color: '#fff', fontSize: 22, fontFamily: 'Lato' }}>{chatId.username}</Text>
+                            <TouchableOpacity onPress={() => { navigation.navigate('OtherProfile', { uid: chatId.name }) }}>
+                                <Text style={{ color: '#fff', fontSize: 22, fontFamily: 'Lato' }}>{chatId.username}</Text>
+                            </TouchableOpacity>
+
                         </View>
                     )}
+                    <ThreeDotMenu />
                 </View>
 
                 {IsMessage && (
@@ -278,6 +298,7 @@ const ChatScreen = ({ navigation }) => {
                 <FlatList
                     data={messages}
                     renderItem={renderMessage}
+                    keyExtractor={item => item.id}
                     contentContainerStyle={styles.chatContainer}
                     inverted
                     onEndReachedThreshold={0.5}
@@ -292,6 +313,7 @@ const ChatScreen = ({ navigation }) => {
                         <TextInput
                             style={styles.input}
                             value={inputText}
+
                             onChangeText={setInputText}
                             placeholder="Message..."
                             placeholderTextColor="#999"
@@ -299,11 +321,11 @@ const ChatScreen = ({ navigation }) => {
                             numberOfLines={3}
                         />
                         <TouchableOpacity onPress={() => HandleFileAdd()} >
-                            <Entypo name='attachment' size={22} color='#fff'/>
+                            <Entypo name='attachment' size={22} color='#fff' />
                         </TouchableOpacity>
                     </View>
                     <TouchableOpacity style={styles.sendButton} onPress={() => handleSend(inputText, "text")}>
-                        <Text style={styles.sendButtonText}>Send</Text>
+                        <Feather name='send' color="#fff" size={20} />
                     </TouchableOpacity>
                 </View>
             </View>
@@ -323,6 +345,7 @@ const ChatScreen = ({ navigation }) => {
                     <EmojiSelector onEmojiSelected={handleEmojiSelect} />
                 </View>
             </Modal>
+            {displayImage !== '' && <DisplayImage imageUri={displayImage} setImageUri={setDisplayImage} />}
         </ImageBackground>
     );
 };
@@ -368,8 +391,8 @@ const styles = StyleSheet.create({
     image: {
         width: 200,
         height: 200,
-        resizeMode:'cover'
-        
+        resizeMode: 'cover'
+
     },
     InfoText: {
         color: '#FFFFFF',

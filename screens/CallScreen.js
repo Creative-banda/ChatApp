@@ -1,9 +1,11 @@
 import React from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import Icon from 'react-native-vector-icons/Ionicons';
 import CallIcon from '../assets/SVG/CallIcon';
 import StatusIcon from '../assets/SVG/StatusIcon';
 import UserIcon from '../assets/SVG/UserIcon';
+import AddFriendIcon from '../assets/SVG/AddFriendIcon';
 import { useRoute } from '@react-navigation/native';
 
 const callHistory = [
@@ -12,7 +14,7 @@ const callHistory = [
   { id: '3', name: 'Mike Johnson', type: 'outgoing', time: '1d ago' },
 ];
 
-const CallHistoryScreen = ({navigation}) => {
+const CallHistoryScreen = ({ navigation }) => {
   const route = useRoute();
   const { uid, user } = route.params;
   const renderCallTypeIcon = (type) => {
@@ -30,7 +32,12 @@ const CallHistoryScreen = ({navigation}) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Call History</Text>
+      <View style={{flexDirection:'row',columnGap:20, alignItems:'center',paddingVertical:8}}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={{paddingBottom:15}}>
+          <Icon name='chevron-back-outline' size={25} color={'#fff'} />
+        </TouchableOpacity>
+        <Text style={styles.header}>Call History</Text>
+      </View>
       <FlatList
         data={callHistory}
         keyExtractor={(item) => item.id}
@@ -48,16 +55,19 @@ const CallHistoryScreen = ({navigation}) => {
         contentContainerStyle={styles.callList}
       />
       <View style={styles.BottomIcons}>
-          <TouchableOpacity onPress={()=>{navigation.navigate("Home")}}>
-            <UserIcon />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={()=>{navigation.navigate("Status", { uid: uid, user: user })}}>
-            <StatusIcon />
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <CallIcon />
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity onPress={() => { navigation.navigate("Home") }}>
+          <UserIcon />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => { navigation.navigate("Status", { uid: uid, user: user }) }}>
+          <StatusIcon />
+        </TouchableOpacity>
+        <TouchableOpacity>
+          <CallIcon strokeWidth={3} />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate('AddFriend', { uid: uid, user: user })}>
+          <AddFriendIcon />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -69,7 +79,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   header: {
-    fontSize: 24, 
+    fontSize: 24,
     color: '#fff',
     marginBottom: 16,
     fontFamily: 'Lato'
@@ -109,11 +119,11 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   BottomIcons: {
-    position:'absolute',
-    bottom:10,
-    left:15,
+    position: 'absolute',
+    bottom: 10,
+    left: 15,
     flexDirection: "row",
-    width:'100%',
+    width: '100%',
     paddingHorizontal: 40,
     justifyContent: 'space-between',
     paddingVertical: 10,

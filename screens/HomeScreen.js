@@ -6,6 +6,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import UserIcon from '../assets/SVG/UserIcon';
 import StatusIcon from '../assets/SVG/StatusIcon';
 import CallIcon from '../assets/SVG/CallIcon';
+import AddFriendIcon from '../assets/SVG/AddFriendIcon';
 
 const ChatAppHomePage = ({ navigation, uid, email }) => {
   const [users, setUsers] = useState([]);
@@ -110,13 +111,16 @@ const ChatAppHomePage = ({ navigation, uid, email }) => {
 
         <View style={styles.BottomIcons}>
           <TouchableOpacity>
-            <UserIcon />
+            <UserIcon strokeWidth={0}/>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => { navigation.navigate("Status", { uid: uid, user: UserInfo }) }}>
-            <StatusIcon />
+            <StatusIcon  />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => { navigation.navigate("Call", { uid: uid, user: UserInfo }) }}>
             <CallIcon />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => { navigation.navigate("AddFriend", { uid: uid, user: UserInfo }) }}>
+            <AddFriendIcon />
           </TouchableOpacity>
         </View>
       </View>

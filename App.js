@@ -15,6 +15,8 @@ import Profile from './screens/Profile';
 import CallScreen from './screens/CallScreen';
 import StatusScreen from './screens/StatusScreen';
 import Forgetpassword from './screens/Forgetpassword'
+import OtherProfile from './screens/OtherProfile'
+import AddFriendsScreen from './screens/AddFriendsScreen';
 
 const Stack = createStackNavigator();
 
@@ -76,6 +78,8 @@ const App = () => {
         <Stack.Screen name="Status" component={StatusScreen} />
         <Stack.Screen name="Call" component={CallScreen} />
         <Stack.Screen name="ForgetPassword" component={Forgetpassword} />
+        <Stack.Screen name="OtherProfile" component={OtherProfile} />
+        <Stack.Screen name="AddFriend" component={AddFriendsScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

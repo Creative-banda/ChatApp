@@ -52,6 +52,7 @@ const styles = StyleSheet.create({
         top: 10,
         left: 10,
         padding: 10,
+        zIndex:20
     },
     doneButton: {
         position: 'absolute',

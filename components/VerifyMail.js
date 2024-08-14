@@ -4,7 +4,7 @@ import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { ref, set } from 'firebase/database';
 import { auth, database } from '../config'
 
-const VerifyEmailModal = ({ visible, onRequestClose, username, email, phoneNumber, gender, otp, password }) => {
+const VerifyEmailModal = ({ visible, onRequestClose, username, email, phoneNumber, gender, otp, password, navigation }) => {
   const [isVisible, setIsVisible] = useState(visible);
   const [enteredOtp, setEnteredOtp] = useState('');
   const slideAnim = React.useRef(new Animated.Value(0)).current;
@@ -47,7 +47,7 @@ const VerifyEmailModal = ({ visible, onRequestClose, username, email, phoneNumbe
         Gender: gender,
         Birthday: "",
         Status: {time : '', url : ''},
-        About: "",
+        About: "Hey I am Using ChitChat",
       });
 
       await set(ref(database, 'chats/' + user.uid), [
@@ -59,7 +59,8 @@ const VerifyEmailModal = ({ visible, onRequestClose, username, email, phoneNumbe
           messageType: "Dummy",
         }
       ]);
-
+      
+      navigation.navigate('Login')
       Alert.alert('Sign Up Success', 'User account created successfully');
       onRequestClose();
     } catch (error) {
