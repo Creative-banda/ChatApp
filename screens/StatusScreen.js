@@ -39,7 +39,6 @@ const StoryStatusScreen = ({ navigation }) => {
                 SetStories(statusList);
                 const userStatus = statusList.find(item => item.email === user.email);
                 if (userStatus) {
-                    console.log("My Status :",userStatus);
                     setMyStatus(userStatus);
                 }
             } else {

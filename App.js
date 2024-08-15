@@ -14,6 +14,7 @@ import SettingPage from './screens/SettingPage';
 import Profile from './screens/Profile';
 import CallScreen from './screens/CallScreen';
 import StatusScreen from './screens/StatusScreen';
+import RateUsScreen from './screens/RateUsScreen';
 
 const Stack = createStackNavigator();
 
@@ -74,6 +75,7 @@ const App = () => {
         <Stack.Screen name="Profile" component={Profile} />
         <Stack.Screen name="Status" component={StatusScreen} />
         <Stack.Screen name="Call" component={CallScreen} />
+        <Stack.Screen name="RateUs" component={RateUsScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

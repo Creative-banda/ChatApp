@@ -2,7 +2,7 @@ import { View, Text, ImageBackground, StyleSheet, SafeAreaView, TouchableOpacity
 import { useState } from "react";
 import { getAuth, signOut } from 'firebase/auth';
 import CustomAlert from '../components/CustomAlert';
-import CustomPrompt from '../components/CustomPrompt'; // Import the custom prompt
+import CustomPrompt from '../components/CustomPrompt';
 import { auth, firestore, database } from '../config';
 import { deleteUser, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 import { doc, deleteDoc } from 'firebase/firestore';
@@ -72,7 +72,7 @@ export default function SettingPage({ navigation }) {
 
                         <Text style={{ fontSize: 20, fontWeight: 'bold', color: 'rgba(255, 255, 255, 0.8)', marginLeft: 20, marginTop: 20 }}>Feedback</Text>
                         <SettingsItem title="Contact Us" IconName="mail" />
-                        <SettingsItem title="Rate Us" IconName="staro" />
+                        <SettingsItem title="Rate Us" IconName="staro" onPress={()=>navigation.navigate("RateUs")}/>
                     </View>
                 </View>
             </SafeAreaView>

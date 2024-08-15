@@ -85,7 +85,6 @@ export default function Profile({ navigation }) {
         if (!result.canceled) {
             const manipulatedImage = await ImageManipulator.manipulateAsync(result.assets[0].uri);
             setImageUri(manipulatedImage.uri);
-            console.log(manipulatedImage);
         }
     };
 
