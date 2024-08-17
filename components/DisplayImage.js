@@ -5,7 +5,7 @@ import BackButton from '../assets/SVG/BackButton';
 const DisplayImage = ({ imageUri, setImageUri, Done }) => {
     return (
         <Modal
-            animationType="slide"
+            animationType="fade"
             transparent={true}
             visible={imageUri !== ''}
             onRequestClose={() => setImageUri('')}

@@ -8,6 +8,7 @@ import Back from '../assets/SVG/BackButton';
 import Icon from 'react-native-vector-icons/AntDesign';
 import Entypo from 'react-native-vector-icons/Entypo';
 import Feather from 'react-native-vector-icons/Ionicons';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import CustomAlert from '../components/CustomAlert';
 import EmojiSelector from 'react-native-emoji-selector';
 import * as ImagePicker from 'expo-image-picker';
@@ -24,9 +25,10 @@ const ChatScreen = ({ navigation }) => {
     const [IsMessage, setIsMessage] = useState(false)
     const [isPickerVisible, setIsPickerVisible] = useState(false);
     const [displayImage, setDisplayImage] = useState('');
+    const [isTyping, setIsTyping] = useState(false);
+    const [ChatRoom, setChatroom] = useState('');
     const route = useRoute();
     const { chatId, name } = route.params;
-    console.log(chatId);
 
     useEffect(() => {
         const chatsRef = ref(database, `chats/${name.id}`);
@@ -61,6 +63,37 @@ const ChatScreen = ({ navigation }) => {
 
         return () => unsubscribe();
     }, [name, chatId]);
+
+    useEffect(() => {
+        const userRef = ref(database, `Users/${chatId.name}`);
+
+        const unsubscribe = onValue(userRef, (snapshot) => {
+            if (snapshot.exists()) {
+                const userdata = snapshot.val();
+                const currentTime = Date.now();
+
+                const timeDifference = currentTime - userdata.LastSeen;
+                console.log(timeDifference);
+
+
+                if (timeDifference < 7000) {
+                    setIsTyping(true);
+                } else {
+                    setIsTyping(false);
+                }
+            } else {
+                console.log('No such document!');
+                setIsTyping(false);
+            }
+        });
+
+        return () => unsubscribe();
+    }, [chatId.name]);
+
+    useEffect(() => {
+        createChatId(chatId.name, name.id)
+        handleTypingStatus(ChatRoom, name.id, false);
+    }, [])
 
 
     const toggleSelectionMode = (id) => {
@@ -97,16 +130,12 @@ const ChatScreen = ({ navigation }) => {
     };
 
     const deleteMessages = async (user, otherUser, messageIds) => {
-        console.log("User :", user);
-        console.log("Other User :", otherUser);
-        console.log("Message Id", messageIds);
         const userChatsRef = ref(database, `chats/${user.trim()}`);
         const otherUserChatsRef = ref(database, `chats/${otherUser.trim()}`);
 
         try {
             await deleteFromChat(userChatsRef, messageIds);
             await deleteFromChat(otherUserChatsRef, messageIds);
-            console.log('Messages deleted successfully from both users');
             setSelectedItems([]);
             setIsSelectionMode(false);
             setAlertVisible(false);
@@ -226,6 +255,17 @@ const ChatScreen = ({ navigation }) => {
     };
 
 
+    const createChatId = (userId1, userId2) => {
+        let chatId;
+        if (userId1 < userId2) {
+            chatId = `${userId1}_${userId2}`;
+        } else {
+            chatId = `${userId2}_${userId1}`;
+        }
+        setChatroom(chatId);
+        console.log(chatId);
+    };
+
     const renderMessage = ({ item }) => {
         const isMyMessage = item.from.trim().toLowerCase() === name.username.trim().toLowerCase();
         const isSelected = selectedItems.includes(item.id);
@@ -256,6 +296,30 @@ const ChatScreen = ({ navigation }) => {
         );
     };
 
+    const handleTypingStatus = async (chatRoom, userId, isTyping) => {
+        try {
+            // Ensure chatRoom and userId are defined and not empty
+            if (!chatRoom ) {
+                console.log('ChatRoom is not defined');
+                return;
+            }
+            else if (!userId){
+                console.log("UserId not defined")
+                return
+            }
+    
+            // Reference to the typing status for the specific chat room and user
+            const typingStatusRef = ref(database, `TypingStatus/${chatRoom}/${userId}`);
+            
+            // Set the typing status
+            await set(typingStatusRef, isTyping);
+    
+            console.log('Typing status updated successfully');
+        } catch (error) {
+            console.error('Error updating typing status:', error);
+        }
+    };
+
     return (
         <ImageBackground source={require('../assets/Images/background.jpg')} style={styles.container}>
             <StatusBar barStyle="light-content" backgroundColor="#000000" />
@@ -272,18 +336,32 @@ const ChatScreen = ({ navigation }) => {
                             </TouchableOpacity>
                         </View>
                     ) : (
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%' }}>
                             <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginHorizontal: 5, marginRight: 10 }}>
                                 <Back />
                             </TouchableOpacity>
                             <Image source={chatId.image ? { uri: chatId.image } : require('../assets/icon.png')} style={styles.avatar} />
+
                             <TouchableOpacity onPress={() => { navigation.navigate('OtherProfile', { uid: chatId.name }) }}>
                                 <Text style={{ color: '#fff', fontSize: 22, fontFamily: 'Lato' }}>{chatId.username}</Text>
+                                <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center' }}>
+                                    {isTyping ? (
+                                        <>
+                                            <FontAwesome name='dot-circle-o' size={16} color='green' />
+                                            <Text style={{ color: '#fff' }}>Online</Text>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <FontAwesome name='dot-circle-o' size={16} color='red' />
+                                            <Text style={{ color: '#fff' }}>Offline</Text>
+                                        </>
+                                    )}
+                                </View>
                             </TouchableOpacity>
 
+                            <ThreeDotMenu />
                         </View>
                     )}
-                    <ThreeDotMenu />
                 </View>
 
                 {IsMessage && (

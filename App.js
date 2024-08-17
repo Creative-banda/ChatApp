@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View, StatusBar } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator, CardStyleInterpolators } from '@react-navigation/stack';
 import { initializeApp } from 'firebase/app';
@@ -17,6 +17,8 @@ import StatusScreen from './screens/StatusScreen';
 import Forgetpassword from './screens/Forgetpassword'
 import OtherProfile from './screens/OtherProfile'
 import AddFriendsScreen from './screens/AddFriendsScreen';
+import RateUsScreen from './screens/RateUsScreen'
+import { AppProvider } from './AppContext';
 
 const Stack = createStackNavigator();
 
@@ -52,36 +54,41 @@ const App = () => {
   if (initializing || !fontsLoaded) {
     return (
       <View style={styles.container}>
+        <StatusBar color='dark'/>
         <ActivityIndicator size="large" color="#0000ff" />
       </View>
     );
   }
 
   return (
-    <NavigationContainer>
-      <Stack.Navigator
-        initialRouteName={user ? "Home" : "Login"}
-        screenOptions={{
-          headerShown: false,
-          gestureEnabled: true,
-          cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
-        }}
-      >
-        <Stack.Screen name="Home">
-          {(props) => <ChatAppHomePage {...props} uid={user ? user.uid : null} user={user} email={user ? user.email : null} />}
-        </Stack.Screen>
-        <Stack.Screen name="Login" component={LoginPage} />
-        <Stack.Screen name="SignUp" component={SignUp} />
-        <Stack.Screen name="ChatScreen" component={ChatScreen} />
-        <Stack.Screen name="SettingPage" component={SettingPage} />
-        <Stack.Screen name="Profile" component={Profile} />
-        <Stack.Screen name="Status" component={StatusScreen} />
-        <Stack.Screen name="Call" component={CallScreen} />
-        <Stack.Screen name="ForgetPassword" component={Forgetpassword} />
-        <Stack.Screen name="OtherProfile" component={OtherProfile} />
-        <Stack.Screen name="AddFriend" component={AddFriendsScreen} />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <AppProvider uid={user ? user.uid : null}>
+      <NavigationContainer>
+
+        <Stack.Navigator
+          initialRouteName={user ? "Home" : "Login"}
+          screenOptions={{
+            headerShown: false,
+            gestureEnabled: true,
+            cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
+          }}
+        >
+          <Stack.Screen name="Home">
+            {(props) => <ChatAppHomePage {...props} uid={user ? user.uid : null} user={user} email={user ? user.email : null} />}
+          </Stack.Screen>
+          <Stack.Screen name="Login" component={LoginPage} />
+          <Stack.Screen name="SignUp" component={SignUp} />
+          <Stack.Screen name="ChatScreen" component={ChatScreen} />
+          <Stack.Screen name="SettingPage" component={SettingPage} />
+          <Stack.Screen name="Profile" component={Profile} />
+          <Stack.Screen name="Status" component={StatusScreen} />
+          <Stack.Screen name="Call" component={CallScreen} />
+          <Stack.Screen name="ForgetPassword" component={Forgetpassword} />
+          <Stack.Screen name="OtherProfile" component={OtherProfile} />
+          <Stack.Screen name="AddFriend" component={AddFriendsScreen} />
+          <Stack.Screen name="RateUs" component={RateUsScreen} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </AppProvider>
   );
 };
 
@@ -90,6 +97,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor:'#000'
   },
 });
 

@@ -78,7 +78,7 @@ export default function SettingPage({ navigation }) {
 
                         <Text style={{ fontSize: 20, fontWeight: 'bold', color: 'rgba(255, 255, 255, 0.8)', marginLeft: 20, marginTop: 20 }}>Feedback</Text>
                         <SettingsItem title="Contact Us" IconName="mail" onPress={handleContactUs}/>
-                        <SettingsItem title="Rate Us" IconName="staro" />
+                        <SettingsItem title="Rate Us" IconName="staro"  onPress={()=>{navigation.navigate('RateUs', { uid: uid })}}/>
                     </View>
                 </View>
             </SafeAreaView>

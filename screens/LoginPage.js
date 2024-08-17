@@ -25,14 +25,17 @@ const LoginPage = ({ navigation }) => {
       setLoading(true);
       setDisable(true);
       try {
-        console.log("Attempting to login");
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
         navigation.navigate("Home", { uid: user.uid });
       } catch (error) {
+        handleAuthError(error);
+      }
+      finally{
         setLoading(false);
         setDisable(false);
-        handleAuthError(error);
+        setEmail('');
+        setPassword('')
       }
     }
   };
