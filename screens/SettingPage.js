@@ -77,17 +77,8 @@ export default function SettingPage({ navigation }) {
                         <SettingsItem title="Delete Account" IconName="delete" onPress={() => setPromptVisible(true)}/>
 
                         <Text style={{ fontSize: 20, fontWeight: 'bold', color: 'rgba(255, 255, 255, 0.8)', marginLeft: 20, marginTop: 20 }}>Feedback</Text>
-<<<<<<< HEAD
-                        <SettingsItem title="Contact Us" IconName="mail" />
-                        <SettingsItem title="Rate Us" IconName="staro" onPress={()=>navigation.navigate("RateUs")}/>
-=======
                         <SettingsItem title="Contact Us" IconName="mail" onPress={handleContactUs}/>
-<<<<<<< HEAD
-                        <SettingsItem title="Rate Us" IconName="staro" />
->>>>>>> 8b2e5012b02bdfae41864a39ad5cd419048431be
-=======
                         <SettingsItem title="Rate Us" IconName="staro"  onPress={()=>{navigation.navigate('RateUs', { uid: uid })}}/>
->>>>>>> 8217a0e4d7f8370530f4d95d67a7566fca6bded6
                     </View>
                 </View>
             </SafeAreaView>

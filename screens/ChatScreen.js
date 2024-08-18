@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef  } from 'react';
 import { View, FlatList, TextInput, TouchableOpacity, Text, StyleSheet, StatusBar, Image, ImageBackground, Modal } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { database, storage } from '../config';
@@ -25,8 +25,10 @@ const ChatScreen = ({ navigation }) => {
     const [IsMessage, setIsMessage] = useState(false)
     const [isPickerVisible, setIsPickerVisible] = useState(false);
     const [displayImage, setDisplayImage] = useState('');
-    const [isTyping, setIsTyping] = useState(false);
+    const [isActive, setisActive] = useState(false);
     const [ChatRoom, setChatroom] = useState('');
+    const [IsotherTyping, SetotherTyping] = useState(false);
+    const typingTimeoutRef = useRef(null);
     const route = useRoute();
     const { chatId, name } = route.params;
 
@@ -47,8 +49,8 @@ const ChatScreen = ({ navigation }) => {
                 });
 
                 const filteredChats = allChats.filter(chat =>
-                    (chat.To?.trim() === name.username.trim() && chat.from?.trim() === chatId.username.trim()) ||
-                    (chat.To?.trim() === chatId.username.trim() && chat.from?.trim() === name.username.trim())
+                    (chat.To?.trim() === name.id.trim() && chat.from?.trim() === chatId.name.trim()) ||
+                    (chat.To?.trim() === chatId.name.trim() && chat.from?.trim() === name.id.trim())
                 );
 
                 if (filteredChats.length === 0) {
@@ -73,17 +75,16 @@ const ChatScreen = ({ navigation }) => {
                 const currentTime = Date.now();
 
                 const timeDifference = currentTime - userdata.LastSeen;
-                console.log(timeDifference);
 
 
                 if (timeDifference < 7000) {
-                    setIsTyping(true);
+                    setisActive(true);
                 } else {
-                    setIsTyping(false);
+                    setisActive(false);
                 }
             } else {
                 console.log('No such document!');
-                setIsTyping(false);
+                setisActive(false);
             }
         });
 
@@ -92,8 +93,16 @@ const ChatScreen = ({ navigation }) => {
 
     useEffect(() => {
         createChatId(chatId.name, name.id)
-        handleTypingStatus(ChatRoom, name.id, false);
     }, [])
+
+    useEffect(() => {
+        if (typeof ChatRoom !== 'string' || typeof chatId.name !== 'string') {
+            console.error('ChatRoom or name.id is not a string', { ChatRoom, userId: chatId.name });
+            return;
+        }
+        const removeListener = setupTypingStatusListener(ChatRoom, chatId.name);
+        return removeListener;
+    }, [ChatRoom, chatId.name]);
 
 
     const toggleSelectionMode = (id) => {
@@ -174,7 +183,7 @@ const ChatScreen = ({ navigation }) => {
     };
 
     const handleSingleClick = (item) => {
-        if (isSelectionMode && item.from === name.username) {
+        if (isSelectionMode && item.from === name.id) {
             toggleItemSelection(item.id);
             return false;
         }
@@ -195,19 +204,20 @@ const ChatScreen = ({ navigation }) => {
             const newMessage = [{
                 id: Id,
                 message: inputText,
-                from: name.username,
-                To: chatId.username,
+                from: name.id,
+                To: chatId.name,
                 messageType: messageType,
                 time: new Date().toISOString()
             }];
 
             try {
                 const newMessageRef = push(ref(database, `chats/${name.id.trim()}`));
-                if (name.username.trim() !== chatId.username.trim()) {
+                if (name.id.trim() !== chatId.name.trim()) {
                     const otherMessageRef = push(ref(database, `chats/${chatId.name.trim()}`));
                     await set(otherMessageRef, newMessage);
                 }
                 await set(newMessageRef, newMessage);
+                handleTypingStatus(ChatRoom, name.id, false);
             } catch (error) {
                 console.error("Error sending message: ", error);
             }
@@ -254,6 +264,16 @@ const ChatScreen = ({ navigation }) => {
         }
     };
 
+    const setupTypingStatusListener = (chatRoom, userId) => {
+        const typingStatusRef = ref(database, `TypingStatus/${chatRoom}/${userId}`);
+        
+        const listener = onValue(typingStatusRef, (snapshot) => {
+            const Typing = snapshot.val();
+            SetotherTyping(Typing)
+        });
+    
+        return () => listener();
+    };
 
     const createChatId = (userId1, userId2) => {
         let chatId;
@@ -263,11 +283,11 @@ const ChatScreen = ({ navigation }) => {
             chatId = `${userId2}_${userId1}`;
         }
         setChatroom(chatId);
-        console.log(chatId);
+        handleTypingStatus(chatId, name.id, false);
     };
 
     const renderMessage = ({ item }) => {
-        const isMyMessage = item.from.trim().toLowerCase() === name.username.trim().toLowerCase();
+        const isMyMessage = item.from.trim().toLowerCase() === name.id.trim().toLowerCase();
         const isSelected = selectedItems.includes(item.id);
 
         return (
@@ -296,25 +316,29 @@ const ChatScreen = ({ navigation }) => {
         );
     };
 
+    const handleTextChange = (newText) => {
+        lasttype = Date.now()
+        if (typingTimeoutRef.current) {
+            clearTimeout(typingTimeoutRef.current);
+        }
+        setInputText(newText);
+        if (!newText){
+            handleTypingStatus(ChatRoom, name.id, false);
+        }
+        else{
+            handleTypingStatus(ChatRoom, name.id, true);
+        }
+
+        typingTimeoutRef.current = setTimeout(() => {
+            handleTypingStatus(ChatRoom, name.id, false);
+        }, 1000);
+      };
+
     const handleTypingStatus = async (chatRoom, userId, isTyping) => {
         try {
-            // Ensure chatRoom and userId are defined and not empty
-            if (!chatRoom ) {
-                console.log('ChatRoom is not defined');
-                return;
-            }
-            else if (!userId){
-                console.log("UserId not defined")
-                return
-            }
-    
-            // Reference to the typing status for the specific chat room and user
             const typingStatusRef = ref(database, `TypingStatus/${chatRoom}/${userId}`);
-            
-            // Set the typing status
+
             await set(typingStatusRef, isTyping);
-    
-            console.log('Typing status updated successfully');
         } catch (error) {
             console.error('Error updating typing status:', error);
         }
@@ -322,7 +346,7 @@ const ChatScreen = ({ navigation }) => {
 
     return (
         <ImageBackground source={require('../assets/Images/background.jpg')} style={styles.container}>
-            <StatusBar barStyle="light-content" backgroundColor="#000000" />
+            <StatusBar barStyle="light-content" backgroundColor="#000" />
             <View style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.4)' }}>
 
                 <View style={styles.header}>
@@ -343,9 +367,9 @@ const ChatScreen = ({ navigation }) => {
                             <Image source={chatId.image ? { uri: chatId.image } : require('../assets/icon.png')} style={styles.avatar} />
 
                             <TouchableOpacity onPress={() => { navigation.navigate('OtherProfile', { uid: chatId.name }) }}>
-                                <Text style={{ color: '#fff', fontSize: 22, fontFamily: 'Lato' }}>{chatId.username}</Text>
+                                <Text style={{ color: '#fff', fontSize: 20, fontFamily: 'Lato' }}>{chatId.username}</Text>
                                 <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center' }}>
-                                    {isTyping ? (
+                                    {isActive ? (
                                         <>
                                             <FontAwesome name='dot-circle-o' size={16} color='green' />
                                             <Text style={{ color: '#fff' }}>Online</Text>
@@ -356,6 +380,7 @@ const ChatScreen = ({ navigation }) => {
                                             <Text style={{ color: '#fff' }}>Offline</Text>
                                         </>
                                     )}
+                                    {IsotherTyping && <Text style={{color:'#fff'}}>Typing...</Text>}
                                 </View>
                             </TouchableOpacity>
 
@@ -392,7 +417,7 @@ const ChatScreen = ({ navigation }) => {
                             style={styles.input}
                             value={inputText}
 
-                            onChangeText={setInputText}
+                            onChangeText={handleTextChange}
                             placeholder="Message..."
                             placeholderTextColor="#999"
                             multiline={true}

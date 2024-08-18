@@ -14,18 +14,11 @@ import SettingPage from './screens/SettingPage';
 import Profile from './screens/Profile';
 import CallScreen from './screens/CallScreen';
 import StatusScreen from './screens/StatusScreen';
-<<<<<<< HEAD
-import RateUsScreen from './screens/RateUsScreen';
-=======
 import Forgetpassword from './screens/Forgetpassword'
 import OtherProfile from './screens/OtherProfile'
 import AddFriendsScreen from './screens/AddFriendsScreen';
-<<<<<<< HEAD
->>>>>>> 8b2e5012b02bdfae41864a39ad5cd419048431be
-=======
 import RateUsScreen from './screens/RateUsScreen'
 import { AppProvider } from './AppContext';
->>>>>>> 8217a0e4d7f8370530f4d95d67a7566fca6bded6
 
 const Stack = createStackNavigator();
 
@@ -68,36 +61,6 @@ const App = () => {
   }
 
   return (
-<<<<<<< HEAD
-    <NavigationContainer>
-      <Stack.Navigator
-        initialRouteName={user ? "Home" : "Login"}
-        screenOptions={{
-          headerShown: false,
-          gestureEnabled: true,
-          cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
-        }}
-      >
-        <Stack.Screen name="Home">
-          {(props) => <ChatAppHomePage {...props} uid={user ? user.uid : null} user={user} email={user ? user.email : null} />}
-        </Stack.Screen>
-        <Stack.Screen name="Login" component={LoginPage} />
-        <Stack.Screen name="SignUp" component={SignUp} />
-        <Stack.Screen name="ChatScreen" component={ChatScreen} />
-        <Stack.Screen name="SettingPage" component={SettingPage} />
-        <Stack.Screen name="Profile" component={Profile} />
-        <Stack.Screen name="Status" component={StatusScreen} />
-        <Stack.Screen name="Call" component={CallScreen} />
-<<<<<<< HEAD
-        <Stack.Screen name="RateUs" component={RateUsScreen} />
-=======
-        <Stack.Screen name="ForgetPassword" component={Forgetpassword} />
-        <Stack.Screen name="OtherProfile" component={OtherProfile} />
-        <Stack.Screen name="AddFriend" component={AddFriendsScreen} />
->>>>>>> 8b2e5012b02bdfae41864a39ad5cd419048431be
-      </Stack.Navigator>
-    </NavigationContainer>
-=======
     <AppProvider uid={user ? user.uid : null}>
       <NavigationContainer>
 
@@ -126,7 +89,6 @@ const App = () => {
         </Stack.Navigator>
       </NavigationContainer>
     </AppProvider>
->>>>>>> 8217a0e4d7f8370530f4d95d67a7566fca6bded6
   );
 };
 

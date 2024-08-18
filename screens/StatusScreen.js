@@ -41,11 +41,7 @@ const StoryStatusScreen = ({ navigation }) => {
                 SetStories(statusList);
                 const userStatus = statusList.find(item => item.email === user.email);
                 if (userStatus) {
-<<<<<<< HEAD
-                    setMyStatus(userStatus);
-=======
                     setMyStatus(userStatus || {});
->>>>>>> 8b2e5012b02bdfae41864a39ad5cd419048431be
                 }
             } else {
                 console.log('No data available');
