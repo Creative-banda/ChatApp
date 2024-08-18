@@ -28,17 +28,37 @@ const LoginPage = ({ navigation }) => {
         console.log("Attempting to login");
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
-        navigation.navigate("Home",{uid : user.uid})
-      } finally {
+        navigation.navigate("Home", { uid: user.uid });
+      } catch (error) {
         setLoading(false);
         setDisable(false);
+        handleAuthError(error);
       }
     }
   };
 
+  const handleAuthError = (error) => {
+    let message = "";
+    let title = "Login Error";
+  
+    switch (error.code) {
+      case 'auth/invalid-credential':
+        message = 'The credential provided is invalid. Please try again.';
+        title = 'Invalid Credential';
+        break;
+      default:
+        message = `An unexpected error occurred: ${error.message}`;
+        break;
+    }
+  
+    setAlertMessage(message);
+    setAlertTitle(title);
+    setAlertVisible(true);
+  };
+    
+
   return (
     <ImageBackground source={require('../assets/Images/Registration.jpg')} style={styles.BackgroundImage}>
-
       <View style={styles.gradient}>
         <StatusBar barStyle="light-content" />
         <KeyboardAvoidingView
@@ -87,6 +107,9 @@ const LoginPage = ({ navigation }) => {
           <TouchableOpacity onPress={() => navigation.navigate("SignUp")}>
             <Text style={styles.newUserText}>Click Here If You Are New User</Text>
           </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate("ForgetPassword")} style={{paddingVertical:15}}>
+            <Text style={styles.newUserText}>ForgetPassword ?</Text>
+          </TouchableOpacity>
         </KeyboardAvoidingView>
         <SimpleAlert
           Title={alertTitle}
@@ -104,7 +127,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     backgroundColor: '#1e1e1e',
-
   },
   gradient: {
     flex: 1,
@@ -122,14 +144,14 @@ const styles = StyleSheet.create({
     fontSize: 32,
     color: '#fff',
     marginBottom: 8,
-    fontFamily: 'Lato'
+    fontFamily: 'Lato',
   },
   subtitle: {
     fontSize: 16,
     color: '#a0a0a0',
   },
   inputContainer: {
-    marginBottom: 24,
+    marginBottom: 18,
   },
   inputWrapper: {
     flexDirection: 'row',
@@ -147,6 +169,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingRight: 10,
     fontSize: 16,
+    fontFamily: 'Nunito',
   },
   eyeIcon: {
     padding: 10,
@@ -167,7 +190,7 @@ const styles = StyleSheet.create({
     color: '#a0a0a0',
     textAlign: 'center',
     fontSize: 14,
-    fontFamily: 'Lato'
+    fontFamily: 'Lato',
   },
 });
 

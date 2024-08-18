@@ -1,17 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, Modal, Alert, ActivityIndicator } from 'react-native';
 import { storage, database } from '../config';
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import { ref, uploadBytes, getDownloadURL, deleteObject, getStorage } from 'firebase/storage';
 import { ref as databaseRef, update, get } from 'firebase/database';
 import CallIcon from '../assets/SVG/CallIcon';
 import StatusIcon from '../assets/SVG/StatusIcon';
 import UserIcon from '../assets/SVG/UserIcon';
-import PlusIcon from '../assets/SVG/PlusIcon';
 import StoryDisplay from '../components/StoryDisplay';
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as ImagePicker from 'expo-image-picker';
 import DisplayAddStory from '../components/DisplayAddStory';
 import { useRoute } from '@react-navigation/native';
+import { MaterialIcons } from 'react-native-vector-icons';
+import { Ionicons } from 'react-native-vector-icons';
+import AddFriendIcon from '../assets/SVG/AddFriendIcon';
 
 const StoryStatusScreen = ({ navigation }) => {
     const route = useRoute();
@@ -39,7 +41,11 @@ const StoryStatusScreen = ({ navigation }) => {
                 SetStories(statusList);
                 const userStatus = statusList.find(item => item.email === user.email);
                 if (userStatus) {
+<<<<<<< HEAD
                     setMyStatus(userStatus);
+=======
+                    setMyStatus(userStatus || {});
+>>>>>>> 8b2e5012b02bdfae41864a39ad5cd419048431be
                 }
             } else {
                 console.log('No data available');
@@ -48,6 +54,32 @@ const StoryStatusScreen = ({ navigation }) => {
             console.error("Error fetching data: ", error);
         }
     };
+
+    const deleteImageFromStorage = async () => {
+        const storage = getStorage();
+
+        try {
+            const url = myStatus.Status.url;
+            const path = url.split('/o/')[1].split('?')[0].replace(/%2F/g, '/');
+
+            console.log("Extracted Path:", path);
+
+            const storageRef = ref(storage, path);
+
+            await deleteObject(storageRef);
+
+            console.log('Image deleted successfully');
+            return true;
+        } catch (error) {
+            if (error.code === 'storage/object-not-found') {
+            } else {
+                console.error('Error deleting image:', error);
+            }
+            return false;
+        }
+    };
+
+
 
     const handleAddStory = () => {
         setStoryActionModalVisible(true);
@@ -62,15 +94,19 @@ const StoryStatusScreen = ({ navigation }) => {
         });
 
         if (!result.canceled) {
-            const manipulatedImage = await ImageManipulator.manipulateAsync(
-                result.assets[0].uri
+            const compressedImage = await ImageManipulator.manipulateAsync(
+                result.assets[0].uri,
+                [{ resize: { width: result.assets[0].width * 0.5 } }],  // Resize to 50% of original size
+                { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }  // Compress to 70% quality
             );
 
-            setImageUri(manipulatedImage.uri);
+            setImageUri(compressedImage.uri);
         }
     };
 
     const handleViewStory = async () => {
+        console.log("My Status");
+
         setSelectedStory(myStatus);
         setModalVisible(true);
     }
@@ -82,14 +118,15 @@ const StoryStatusScreen = ({ navigation }) => {
             const snapshot = await get(statusRef);
 
             if (snapshot.exists()) {
-                await update(statusRef, { url: "", time: "", message: "" });
+                await update(statusRef, { url: "", time: "  ", message: "" });
                 let imageUrl = snapshot.val().url;
-                // Remove from storage
                 if (snapshot.val().url) {
                     const storageRef = ref(storage, imageUrl);
                     await deleteObject(storageRef);
                     console.log("Deleted Sucessfully");
-                    Alert.alert("Sucessfully","Story Deleted Sucessfully")
+                    Alert.alert("Sucessfully", "Story Deleted Sucessfully")
+                    deleteImageFromStorage()
+                    initializingUsers()
                 } else {
                     Alert.alert("No Story", "Sorry You Did Not Upload Any Story")
                 }
@@ -97,9 +134,9 @@ const StoryStatusScreen = ({ navigation }) => {
                 console.log("No story to remove");
             }
         } catch (error) {
-            console.error("Error updating story URL: ", error);
+            console.log("Error");
         }
-        finally{
+        finally {
             SetUploading(false);
             setStoryActionModalVisible(false);
         }
@@ -140,24 +177,26 @@ const StoryStatusScreen = ({ navigation }) => {
         } catch (error) {
             console.error("Error uploading image:", error);
         }
-        finally{
+        finally {
             SetUploading(false);
         }
     };
 
     const handleStoryPress = (item) => {
+        console.log("Selecting Other Story");
+
         setSelectedStory(item);
         setModalVisible(true);
     };
 
     const renderStories = ({ item }) => {
-        if (item.email.trim() === user.email.trim() || !item.Status) {
+        if (item.email.trim() === user.email.trim() || !item.Status.url) {
             return null;
         }
-    
+
         return (
             <TouchableOpacity style={styles.storyContainer} onPress={() => handleStoryPress(item)}>
-                <Image source={{ uri: item.Status.url }} style={styles.storyImage} />
+                <Image source={{ uri: item?.Status.url }} style={styles.storyImage} />
                 <View style={styles.storyTextContainer}>
                     <Text style={styles.storyName}>{item.username}</Text>
                     <Text style={styles.storyTime}>
@@ -171,9 +210,14 @@ const StoryStatusScreen = ({ navigation }) => {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.header}>Stories</Text>
+            <View style={{ flexDirection: 'row', columnGap: 20, alignItems: 'center', paddingVertical: 8 }}>
+                <TouchableOpacity onPress={() => navigation.goBack()} style={{ paddingBottom: 15 }}>
+                    <Ionicons name='chevron-back-outline' size={25} color={'#fff'} />
+                </TouchableOpacity>
+                <Text style={styles.header}>Stories</Text>
+            </View>
             <TouchableOpacity style={styles.addStoryContainer} onPress={handleAddStory}>
-                <PlusIcon />
+                <MaterialIcons name="manage-accounts" color="#fff" size={22} />
                 <Text style={styles.addStoryText}>
                     {myStatus?.Status.url ? 'Manage Story' : 'Add Story'}
                 </Text>
@@ -192,16 +236,19 @@ const StoryStatusScreen = ({ navigation }) => {
                     <UserIcon />
                 </TouchableOpacity>
                 <TouchableOpacity>
-                    <StatusIcon />
+                    <StatusIcon strokeWidth={3.5} />
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => navigation.navigate('Call', { uid: uid, user: user })}>
                     <CallIcon />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => navigation.navigate('AddFriend', { uid: uid, user: user })}>
+                    <AddFriendIcon />
                 </TouchableOpacity>
             </View>
 
             {imageUri && <DisplayAddStory imageUri={imageUri} setImageUri={setImageUri} Done={uploadImage} IsUploading={IsUploading} inputText={inputText} setInputText={setInputText} />}
             {selectedStory && <StoryDisplay image={selectedStory.Status.url} modalVisible={modalVisible} onClose={() => { setSelectedStory(''); setModalVisible(false); }} Name={selectedStory.username} Message={selectedStory.Status.message} />}
-            {selectedStory && <StoryDisplay image={myStatus.Status.url} modalVisible={modalVisible} onClose={() => setModalVisible(false)} Name={selectedStory.username} Message={selectedStory.Status.message} />}
+            {selectedStory && <StoryDisplay image={selectedStory.Status.url} modalVisible={modalVisible} onClose={() => setModalVisible(false)} Name={selectedStory.username} Message={selectedStory.Status.message} />}
 
             <Modal
                 animationType="slide"
@@ -212,17 +259,24 @@ const StoryStatusScreen = ({ navigation }) => {
                 <View style={styles.modalContainer}>
                     <View style={styles.modalContent}>
                         <TouchableOpacity onPress={handleImagePick} style={styles.modalButton}>
+                            <Ionicons name="image-outline" size={24} color="#fff" style={styles.icon} />
                             <Text style={styles.modalButtonText}>Add Story</Text>
                         </TouchableOpacity>
 
-                        { myStatus?.Status.url && <TouchableOpacity onPress={handleViewStory} style={styles.modalButton}>
+                        {myStatus?.Status.url && <TouchableOpacity onPress={handleViewStory} style={styles.modalButton}>
+                            <Ionicons name="eye-outline" size={24} color="#fff" style={styles.icon} />
                             <Text style={styles.modalButtonText}>View Story</Text>
                         </TouchableOpacity>}
 
-                        { myStatus?.Status.url && <TouchableOpacity onPress={handleRemoveStory} style={styles.modalButton}>
-                            {IsUploading ? <ActivityIndicator size='small'/> : <Text style={styles.modalButtonText}>Remove Story</Text>}
+                        {myStatus?.Status.url && <TouchableOpacity onPress={handleRemoveStory} style={styles.modalButton}>
+                            {IsUploading ? <ActivityIndicator size='small' color="#fff" /> : <>
+                                <Ionicons name="trash-outline" size={24} color="#fff" style={styles.icon} />
+                                <Text style={styles.modalButtonText}>Remove Story</Text>
+                            </>}
                         </TouchableOpacity>}
-                        <TouchableOpacity onPress={() => setStoryActionModalVisible(false)} style={styles.modalButton}>
+
+                        <TouchableOpacity onPress={() => setStoryActionModalVisible(false)} style={[styles.modalButton, styles.cancelButton]}>
+                            <Ionicons name="close-outline" size={24} color="#fff" style={styles.icon} />
                             <Text style={styles.modalButtonText}>Cancel</Text>
                         </TouchableOpacity>
                     </View>
@@ -231,6 +285,8 @@ const StoryStatusScreen = ({ navigation }) => {
         </View>
     );
 };
+
+
 
 
 const styles = StyleSheet.create({
@@ -245,6 +301,7 @@ const styles = StyleSheet.create({
         marginBottom: 16,
         fontFamily: 'Lato'
     },
+
     addStoryContainer: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -318,23 +375,38 @@ const styles = StyleSheet.create({
     },
     modalContent: {
         width: '80%',
-        backgroundColor: '#1e1e1e',
+        backgroundColor: '#252525',
         padding: 20,
-        borderRadius: 10,
+        borderRadius: 12,
         alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.8,
+        shadowRadius: 4,
+        elevation: 5,
     },
     modalButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
         width: '100%',
         padding: 15,
         marginVertical: 10,
         backgroundColor: '#333',
         borderRadius: 8,
-        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    cancelButton: {
+        backgroundColor: '#ff4d4d',
     },
     modalButtonText: {
         color: '#fff',
         fontSize: 16,
-        fontFamily: 'Nunito'
+        fontFamily: 'Nunito',
+        marginLeft: 10,
+    },
+    icon: {
+        position: 'absolute',
+        left: 20
     },
 });
 

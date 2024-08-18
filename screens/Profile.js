@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Image, StyleSheet, ImageBackground, TouchableOpacity, KeyboardAvoidingView, ScrollView } from 'react-native';
 import BackButton from '../assets/SVG/BackButton';
-import Icon from 'react-native-vector-icons/MaterialIcons';
 import Antdesign from 'react-native-vector-icons/FontAwesome'
 import * as ImagePicker from 'expo-image-picker';
 import { storage, database } from '../config';
@@ -22,10 +21,8 @@ export default function Profile({ navigation }) {
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [PhoneNumber, setPhoneNumber] = useState('');
+    const [About, setAbout] = useState('');
     const [Gender, setGender] = useState('');
-    const [showGenderDropdown, setShowGenderDropdown] = useState(false);
-
-    const genderOptions = ['Male', 'Female', 'Other'];
 
     useEffect(() => {
         fetchUserData();
@@ -36,6 +33,7 @@ export default function Profile({ navigation }) {
             setUsername(userInfo.username || '');
             setEmail(userInfo.email || '');
             setPhoneNumber(userInfo.PhoneNumber || '');
+            setAbout(userInfo.About || '');
             setGender(userInfo.Gender || '');
         }
     }, [userInfo]);
@@ -59,14 +57,14 @@ export default function Profile({ navigation }) {
     };
 
     const handleSave = () => {
-        if (username && email && PhoneNumber && Gender) {
+        if (username && email && PhoneNumber && About) {
             setEdit(false);
             const userRef = databaseRef(database, `Users/${uid}`);
             update(userRef, {
                 username,
                 email,
                 PhoneNumber,
-                Gender,
+                About,
             });
             fetchUserData();
             console.log("Updated");
@@ -136,33 +134,9 @@ export default function Profile({ navigation }) {
                         <InputBox placeholder={email} editable={false} value={email} onChangeText={setEmail} />
                         <InputBox placeholder={username} editable={edit} value={username} onChangeText={setUsername} />
                         <InputBox placeholder={PhoneNumber} editable={edit} value={PhoneNumber} onChangeText={setPhoneNumber} />
-                        
-                        {/* Gender Dropdown */}
-                        <TouchableOpacity
-                            style={styles.dropdownContainer}
-                            onPress={() => setShowGenderDropdown(!showGenderDropdown)}
-                        >
-                            <Antdesign name="user" size={26} color="#888" style={styles.icon} />
-                            <Text style={styles.dropdownText}>{Gender || 'Select Gender'}</Text>
-                            <Icon name="arrow-drop-down" size={24} color="#FFF8F2" style={styles.icon} />
-                        </TouchableOpacity>
-
-                        {showGenderDropdown && (
-                            <View style={styles.dropdownOptions}>
-                                {genderOptions.map((option) => (
-                                    <TouchableOpacity
-                                        key={option}
-                                        style={styles.dropdownOption}
-                                        onPress={() => {
-                                            setGender(option);
-                                            setShowGenderDropdown(false);
-                                        }}
-                                    >
-                                        <Text style={styles.dropdownOptionText}>{option}</Text>
-                                    </TouchableOpacity>
-                                ))}
-                            </View>
-                        )}
+                        <InputBox placeholder={About} editable={edit} value={About} onChangeText={setAbout} />
+                        <InputBox placeholder={Gender} editable={false} value={Gender} onChangeText={setGender} />
+                    
 
                         <TouchableOpacity style={styles.EditButton} onPress={edit ? handleSave : EditProfile}>
                             <Text style={styles.EditText}>{edit ? "Save" : "Edit Profile"}</Text>
@@ -172,8 +146,7 @@ export default function Profile({ navigation }) {
                 </ScrollView>
             </KeyboardAvoidingView>
         </ImageBackground>
-    );
-}
+    );}
 
 const styles = StyleSheet.create({
     BackgroundImage: {
@@ -233,18 +206,6 @@ const styles = StyleSheet.create({
         fontSize: 15,
         fontFamily: 'Lato',
     },
-    dropdownContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: 10,
-        borderRadius: 5,
-        marginTop: 10,
-    },
-    dropdownText: {
-        flex: 1,
-        fontSize: 16,
-        color: '#888',
-    },
     icon: {
         marginHorizontal: 10,
     },
@@ -252,12 +213,5 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         width: '100%',
         backgroundColor:'rgba(0,0,0,0.3)'
-    },
-    dropdownOption: {
-        padding: 10,
-    },
-    dropdownOptionText: {
-        fontSize: 16,
-        color: '#ABA6A2',
-    },
+    }
 });

@@ -1,4 +1,4 @@
-import { View, Text, ImageBackground, StyleSheet, SafeAreaView, TouchableOpacity, Alert } from "react-native";
+import { View, Text, ImageBackground, StyleSheet, SafeAreaView, TouchableOpacity, Alert,Linking } from "react-native";
 import { useState } from "react";
 import { getAuth, signOut } from 'firebase/auth';
 import CustomAlert from '../components/CustomAlert';
@@ -54,6 +54,12 @@ export default function SettingPage({ navigation }) {
             Alert.alert('Error', 'Failed to delete account. Please try again.');
         }
     };
+    
+
+    const handleContactUs = () => {
+        const recipient = 'khanahtesham0769@gmail.com';
+        Linking.openURL(`mailto:${recipient}`);
+      };
 
     return (
         <ImageBackground source={require('../assets/Images/background.jpg')} style={styles.backgroundImage}>
@@ -71,8 +77,13 @@ export default function SettingPage({ navigation }) {
                         <SettingsItem title="Delete Account" IconName="delete" onPress={() => setPromptVisible(true)}/>
 
                         <Text style={{ fontSize: 20, fontWeight: 'bold', color: 'rgba(255, 255, 255, 0.8)', marginLeft: 20, marginTop: 20 }}>Feedback</Text>
+<<<<<<< HEAD
                         <SettingsItem title="Contact Us" IconName="mail" />
                         <SettingsItem title="Rate Us" IconName="staro" onPress={()=>navigation.navigate("RateUs")}/>
+=======
+                        <SettingsItem title="Contact Us" IconName="mail" onPress={handleContactUs}/>
+                        <SettingsItem title="Rate Us" IconName="staro" />
+>>>>>>> 8b2e5012b02bdfae41864a39ad5cd419048431be
                     </View>
                 </View>
             </SafeAreaView>

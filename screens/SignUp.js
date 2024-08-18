@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ImageBackground, ActivityIndicator } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import Antdesign from 'react-native-vector-icons/FontAwesome'
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { ref, set } from 'firebase/database';
-import { auth, database } from '../config';
+import Antdesign from 'react-native-vector-icons/FontAwesome';
 import BackButton from '../assets/SVG/BackButton'
+import VerifyEmailModal from '../components/VerifyMail';
 
 const SignupPage = ({ navigation }) => {
   const [username, setUsername] = useState('');
@@ -18,6 +16,8 @@ const SignupPage = ({ navigation }) => {
   const [IsPasswordVisible, setIsPasswordVisible] = useState(false);
   const [IsConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false);
   const [IsLoading, setIsloading] = useState(false);
+  const [VeriftVisible, SetVerifyVisible] = useState(false);
+  const [otp, setotp] = useState(0);
 
   const genderOptions = ['Male', 'Female', 'Other'];
 
@@ -34,48 +34,31 @@ const SignupPage = ({ navigation }) => {
     }
 
     else {
-      try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-        console.log(user);
-
-        await set(ref(database, ('Users/' + user.uid)), {
-          id: user.uid,
-          username: username,
-          email: email,
-          ProfilePic: "",
-          PhoneNumber: phoneNumber,
-          Gender: gender,
-          Birthday: "",
-          Status: [],
-          About: "",
-        });
-
-        await set(ref(database, ('chats/' + user.uid)), [
-          {
-            To: "Dummy",
-            from: "Dummy",
-            id: "Dummy",
-            message: "Dummy",
-            messageType: "Dummy",
-
-          }
-        ]);
-
-        Alert.alert('Sign Up Success', 'User account created successfully');
-        navigation.navigate("Login");
-      } catch (error) {
-        Alert.alert('Sign Up Error', error.message);
-        console.log(error.message);
+      const ConfirmOTP = Math.floor(1000 + Math.random() * 9000).toString();
+      setotp(ConfirmOTP)
+      const url = 'https://script.google.com/macros/s/AKfycbwKUbMXI53zf9Q5AaK2t_BsL-7TlwGtkUwa5ZWzs6Un7srIDn7FNKwtNfqXhWjRbkAnrQ/exec'
+      const res = await fetch(`${url}?recipient=${encodeURIComponent(email)}&otpCode=${encodeURIComponent(ConfirmOTP)}&username=${encodeURIComponent(username)}`);
+      if (res.status == 200) {
+        Alert.alert(
+          "Email Sent",
+          "OTP Sent to " + email,
+          [
+            {
+              text: "OK",
+              onPress: () => SetVerifyVisible(true)
+            }
+          ]
+        );
       }
-    }
-    setIsloading(false);
-  };
+      setIsloading(false);
+    };
+
+  }
 
 
   return (
     <ImageBackground source={require('../assets/Images/Registration.jpg')} style={styles.BackgroundImage}>
-      <TouchableOpacity style={{position:'absolute',top:40, left:30, zIndex:2}} onPress={()=>{navigation.goBack()}}>
+      <TouchableOpacity style={{ position: 'absolute', top: 40, left: 30, zIndex: 2 }} onPress={() => { navigation.goBack() }}>
         <BackButton />
       </TouchableOpacity>
       <View style={styles.container}>
@@ -101,6 +84,7 @@ const SignupPage = ({ navigation }) => {
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
+            autoCapitalize='none'
           />
         </View>
 
@@ -171,11 +155,20 @@ const SignupPage = ({ navigation }) => {
             ))}
           </View>
         )}
-
         <TouchableOpacity style={styles.signupButton} onPress={handleSignUp}>
-
           {IsLoading ? <ActivityIndicator size="small" /> : <Text style={styles.signupButtonText}>Sign Up</Text>}
         </TouchableOpacity>
+
+        <VerifyEmailModal
+          visible={VeriftVisible}
+          onRequestClose={() => SetVerifyVisible(false)}
+          phoneNumber={phoneNumber}
+          gender={gender}
+          username={username}
+          email={email} otp={otp}
+          password={password}
+          navigation={navigation}
+        />
       </View>
     </ImageBackground>
   );
@@ -225,7 +218,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 16,
     padding: 2,
-    backgroundColor: 'rgba(255, 255, 255, 1)',
+    backgroundColor: 'rgba(255, 255, 255,0.1)',
     borderWidth: 0.3
   },
   dropdownText: {
