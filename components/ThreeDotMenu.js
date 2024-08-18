@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
 import { View, TouchableOpacity, Text, Modal, StyleSheet } from 'react-native';
-import Entypo from 'react-native-vector-icons/Entypo'
+import Entypo from 'react-native-vector-icons/Entypo';
 
 const ThreeDotMenu = () => {
   const [modalVisible, setModalVisible] = useState(false);
-  console.log('ThreeDotMenu component rendering');
+
   return (
-    
     <View style={styles.container}>
-      <Text> ThreeDotMenu</Text>
-      <TouchableOpacity onPress={() => setModalVisible(true)}>
+      <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.iconButton}>
         <Entypo name="dots-three-vertical" size={24} color="#fff" />
       </TouchableOpacity>
 
@@ -22,16 +20,17 @@ const ThreeDotMenu = () => {
         <TouchableOpacity
           style={styles.modalOverlay}
           onPress={() => setModalVisible(false)}
+          activeOpacity={1} // Prevents accidental closing
         >
           <View style={styles.menu}>
-            <TouchableOpacity onPress={() => alert('Option 1')}>
-              <Text style={styles.menuItem}>Option 1</Text>
+            <TouchableOpacity onPress={() => alert('Option 1')} style={styles.menuItem}>
+              <Text style={styles.menuText}>Option 1</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => alert('Option 2')}>
-              <Text style={styles.menuItem}>Option 2</Text>
+            <TouchableOpacity onPress={() => alert('Option 2')} style={styles.menuItem}>
+              <Text style={styles.menuText}>Option 2</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => alert('Option 3')}>
-              <Text style={styles.menuItem}>Option 3</Text>
+            <TouchableOpacity onPress={() => alert('Option 3')} style={styles.menuItem}>
+              <Text style={styles.menuText}>Option 3</Text>
             </TouchableOpacity>
           </View>
         </TouchableOpacity>
@@ -42,27 +41,39 @@ const ThreeDotMenu = () => {
 
 const styles = StyleSheet.create({
   container: {
-    position:'absolute',
-    zIndex:10,
+    position: 'absolute',
+    zIndex: 10,
     right: 10,
+    top: 10,
+  },
+  iconButton: {
+    padding: 8,
+    borderRadius: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.3)',
   },
   modalOverlay: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.5)',
   },
   menu: {
+    position: 'absolute',
+    right: 10,
+    top: 50,
     width: 150,
-    backgroundColor: 'white',
-    borderRadius: 10,
-    padding: 10,
-    alignItems: 'flex-start',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderRadius: 8,
   },
   menuItem: {
-    paddingVertical: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#444',
+  },
+  menuText: {
     fontSize: 16,
     color: '#fff',
+    fontWeight: '600',
   },
 });
 

@@ -1,23 +1,34 @@
 import React, { useState } from "react";
 import { View, TextInput, Text, Alert, TouchableOpacity, StyleSheet, ImageBackground } from "react-native";
-import { fullAuth } from "../config"; // Import fullAuth from your config
+import { getAuth,sendPasswordResetEmail } from "firebase/auth";
 
-const ForgotPasswordScreen = () => {
+const ForgotPasswordScreen = ({ navigation }) => {
     const [email, setEmail] = useState("");
 
     const handlePasswordReset = () => {
-        if (!email) {
-            Alert.alert("Error", "Please enter your email address.");
+        const auth = getAuth()
+        if (email === '') {
+            Alert.alert('Please enter your email');
             return;
         }
 
-        fullAuth
-            .sendPasswordResetEmail(email)
+        sendPasswordResetEmail(auth,email) 
             .then(() => {
-                Alert.alert("Success", "Password reset email sent!");
+                Alert.alert('Password Reset Email Sent!', 'Please check your email.');
+                navigation.goBack();
             })
-            .catch((error) => {
-                Alert.alert("Error", error.message);
+            .catch(error => {
+                switch (error.code) {
+                    case 'auth/invalid-email':
+                        Alert.alert('Invalid Email', 'Please enter a valid email address.');
+                        break;
+                    case 'auth/user-not-found':
+                        Alert.alert('User Not Found', 'There is no user corresponding to this email.');
+                        break;
+                    default:
+                        Alert.alert('Error', error.message);
+                        break;
+                }
             });
     };
 

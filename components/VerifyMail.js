@@ -45,6 +45,7 @@ const VerifyEmailModal = ({ visible, onRequestClose, username, email, phoneNumbe
         ProfilePic: "",
         PhoneNumber: phoneNumber,
         Gender: gender,
+        LastSeen: "",
         Birthday: "",
         Status: {time : '', url : ''},
         About: "Hey I am Using ChitChat",
