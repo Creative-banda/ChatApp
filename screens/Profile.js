@@ -9,7 +9,7 @@ import DisplayImage from '../components/DisplayImage';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { ref as databaseRef, update, get } from 'firebase/database';
 import { useRoute } from '@react-navigation/native';
-import InputBox from '../components/InputBox'; 
+import InputBox from '../components/InputBox';
 
 export default function Profile({ navigation }) {
     const route = useRoute();
@@ -23,6 +23,7 @@ export default function Profile({ navigation }) {
     const [PhoneNumber, setPhoneNumber] = useState('');
     const [About, setAbout] = useState('');
     const [Gender, setGender] = useState('');
+    const [Isloading, SetLoading] = useState(false);
 
     useEffect(() => {
         fetchUserData();
@@ -81,12 +82,13 @@ export default function Profile({ navigation }) {
         });
 
         if (!result.canceled) {
-            const manipulatedImage = await ImageManipulator.manipulateAsync(result.assets[0].uri);
+            const manipulatedImage = await ImageManipulator.manipulateAsync(result.assets[0].uri, [], { compress: 0.5 });
             setImageUri(manipulatedImage.uri);
         }
     };
 
     const uploadImage = async () => {
+        SetLoading(true);
         if (!imageUri) return;
 
         try {
@@ -103,7 +105,11 @@ export default function Profile({ navigation }) {
         } catch (error) {
             console.error("Error uploading image: ", error);
         }
+        finally{
+            SetLoading(false);
+        }
     };
+
 
     const updateProfilePic = async (url) => {
         try {
@@ -136,17 +142,18 @@ export default function Profile({ navigation }) {
                         <InputBox placeholder={PhoneNumber} editable={edit} value={PhoneNumber} onChangeText={setPhoneNumber} />
                         <InputBox placeholder={About} editable={edit} value={About} onChangeText={setAbout} />
                         <InputBox placeholder={Gender} editable={false} value={Gender} onChangeText={setGender} />
-                    
+
 
                         <TouchableOpacity style={styles.EditButton} onPress={edit ? handleSave : EditProfile}>
                             <Text style={styles.EditText}>{edit ? "Save" : "Edit Profile"}</Text>
                         </TouchableOpacity>
                     </View>
-                    {imageUri && <DisplayImage imageUri={imageUri} setImageUri={setImageUri} Done={uploadImage} />}
+                    {imageUri && <DisplayImage imageUri={imageUri} setImageUri={setImageUri} Done={uploadImage} Isloading={Isloading} />}
                 </ScrollView>
             </KeyboardAvoidingView>
         </ImageBackground>
-    );}
+    );
+}
 
 const styles = StyleSheet.create({
     BackgroundImage: {
@@ -209,9 +216,9 @@ const styles = StyleSheet.create({
     icon: {
         marginHorizontal: 10,
     },
-    dropdownOptions:{
+    dropdownOptions: {
         borderRadius: 5,
         width: '100%',
-        backgroundColor:'rgba(0,0,0,0.3)'
+        backgroundColor: 'rgba(0,0,0,0.3)'
     }
 });

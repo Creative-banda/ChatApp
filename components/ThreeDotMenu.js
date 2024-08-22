@@ -1,9 +1,22 @@
 import React, { useState } from 'react';
-import { View, TouchableOpacity, Text, Modal, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, Text, Modal, StyleSheet, Linking } from 'react-native';
 import Entypo from 'react-native-vector-icons/Entypo';
 
-const ThreeDotMenu = () => {
+const ThreeDotMenu = ({ UserNumber, ViewProfile }) => {
   const [modalVisible, setModalVisible] = useState(false);
+
+  const makePhoneCall = (phoneNumber) => {
+    let phoneUrl = `tel:${phoneNumber}`;
+    Linking.openURL(phoneUrl)
+      .then((supported) => {
+        if (!supported) {
+          console.log('Phone number is not available');
+        } else {
+          return Linking.openURL(phoneUrl);
+        }
+      })
+      .catch((err) => console.log(err));
+  };
 
   return (
     <View style={styles.container}>
@@ -20,17 +33,17 @@ const ThreeDotMenu = () => {
         <TouchableOpacity
           style={styles.modalOverlay}
           onPress={() => setModalVisible(false)}
-          activeOpacity={1} // Prevents accidental closing
+          activeOpacity={1}
         >
           <View style={styles.menu}>
-            <TouchableOpacity onPress={() => alert('Option 1')} style={styles.menuItem}>
-              <Text style={styles.menuText}>Option 1</Text>
+            <TouchableOpacity style={styles.menuItem} onPress={ViewProfile}>
+              <Text style={styles.menuText}>View Profile</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => alert('Option 2')} style={styles.menuItem}>
-              <Text style={styles.menuText}>Option 2</Text>
+            <TouchableOpacity onPress={() => makePhoneCall(UserNumber)} style={styles.menuItem}>
+              <Text style={styles.menuText}>Call</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => alert('Option 3')} style={styles.menuItem}>
-              <Text style={styles.menuText}>Option 3</Text>
+            <TouchableOpacity onPress={() => alert('Block')} style={styles.menuItem}>
+              <Text style={styles.menuText}>Block</Text>
             </TouchableOpacity>
           </View>
         </TouchableOpacity>

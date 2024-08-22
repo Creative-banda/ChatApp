@@ -19,6 +19,7 @@ import OtherProfile from './screens/OtherProfile'
 import AddFriendsScreen from './screens/AddFriendsScreen';
 import RateUsScreen from './screens/RateUsScreen'
 import { AppProvider } from './AppContext';
+import FriendRequestScreen from './screens/FriendRequestScreen';
 
 const Stack = createStackNavigator();
 
@@ -55,7 +56,7 @@ const App = () => {
     return (
       <View style={styles.container}>
         <StatusBar color='dark'/>
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color="#fff" />
       </View>
     );
   }
@@ -86,6 +87,7 @@ const App = () => {
           <Stack.Screen name="OtherProfile" component={OtherProfile} />
           <Stack.Screen name="AddFriend" component={AddFriendsScreen} />
           <Stack.Screen name="RateUs" component={RateUsScreen} />
+          <Stack.Screen name="FriendRequest" component={FriendRequestScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </AppProvider>

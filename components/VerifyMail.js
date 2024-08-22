@@ -36,7 +36,6 @@ const VerifyEmailModal = ({ visible, onRequestClose, username, email, phoneNumbe
       SetLoading(true);
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      console.log(user);
 
       await set(ref(database, 'Users/' + user.uid), {
         id: user.uid,

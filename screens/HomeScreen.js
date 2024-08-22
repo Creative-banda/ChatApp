@@ -27,7 +27,7 @@ const ChatAppHomePage = ({ navigation, uid, email }) => {
       if (snapshot.exists()) {
         const UserData = snapshot.val();
         const keys = Object.keys(UserData);
-        const usersList = keys.map(key => ({ id: UserData[key].email, name: key, image: UserData[key].ProfilePic, username: UserData[key].username }));
+        const usersList = keys.map(key => ({ id: UserData[key].email, name: key, image: UserData[key].ProfilePic, username: UserData[key].username, Phone : UserData[key].PhoneNumber }));
         setUsers(usersList);
       } else {
         console.log('No data available');

@@ -1,8 +1,8 @@
-import React, { useEffect, useState, useRef  } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { View, FlatList, TextInput, TouchableOpacity, Text, StyleSheet, StatusBar, Image, ImageBackground, Modal } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { database, storage } from '../config';
-import { ref, push, set, onValue, update, get } from 'firebase/database';
+import { ref, set, onValue, update, remove } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import Back from '../assets/SVG/BackButton';
 import Icon from 'react-native-vector-icons/AntDesign';
@@ -28,7 +28,13 @@ const ChatScreen = ({ navigation }) => {
     const [isActive, setisActive] = useState(false);
     const [ChatRoom, setChatroom] = useState('');
     const [IsotherTyping, SetotherTyping] = useState(false);
+    const [IsEditing, SetEditing] = useState(false);
+    const [EditText, setEditText] = useState('');
+    const [editTextList, setEditList] = useState([]);
+
+
     const typingTimeoutRef = useRef(null);
+    const statusTimeoutRef = useRef(null);
     const route = useRoute();
     const { chatId, name } = route.params;
 
@@ -53,6 +59,7 @@ const ChatScreen = ({ navigation }) => {
                     (chat.To?.trim() === chatId.name.trim() && chat.from?.trim() === name.id.trim())
                 );
 
+
                 if (filteredChats.length === 0) {
                     setIsMessage(true)
                 }
@@ -69,13 +76,15 @@ const ChatScreen = ({ navigation }) => {
     useEffect(() => {
         const userRef = ref(database, `Users/${chatId.name}`);
 
+        if (statusTimeoutRef.current) {
+            clearTimeout(statusTimeoutRef.current);
+        }
+
         const unsubscribe = onValue(userRef, (snapshot) => {
             if (snapshot.exists()) {
                 const userdata = snapshot.val();
                 const currentTime = Date.now();
-
                 const timeDifference = currentTime - userdata.LastSeen;
-
 
                 if (timeDifference < 7000) {
                     setisActive(true);
@@ -86,9 +95,26 @@ const ChatScreen = ({ navigation }) => {
                 console.log('No such document!');
                 setisActive(false);
             }
+            if (typingTimeoutRef.current) {
+                clearTimeout(typingTimeoutRef.current);
+            }
+
+            typingTimeoutRef.current = setTimeout(() => {
+                setisActive(false);
+                console.log("Set to False due to inactivity");
+            }, 12000);
         });
 
-        return () => unsubscribe();
+        // Cleanup on component unmount
+        return () => {
+            unsubscribe();
+            if (typingTimeoutRef.current) {
+                clearTimeout(typingTimeoutRef.current);
+            }
+            if (statusTimeoutRef.current) {
+                clearTimeout(statusTimeoutRef.current);
+            }
+        };
     }, [chatId.name]);
 
     useEffect(() => {
@@ -105,9 +131,12 @@ const ChatScreen = ({ navigation }) => {
     }, [ChatRoom, chatId.name]);
 
 
-    const toggleSelectionMode = (id) => {
+    const toggleSelectionMode = (id, Text, MessageType) => {
         setIsSelectionMode(true);
         toggleItemSelection(id);
+        if (MessageType === 'text') {
+            setEditList(prevList => [...prevList, Text]);
+        }
     };
 
     const toggleItemSelection = (id) => {
@@ -127,6 +156,7 @@ const ChatScreen = ({ navigation }) => {
     const handleDeselect = () => {
         setSelectedItems([]);
         setIsSelectionMode(false);
+        setEditList([]);
     };
 
     const handleDelete = async () => {
@@ -139,12 +169,14 @@ const ChatScreen = ({ navigation }) => {
     };
 
     const deleteMessages = async (user, otherUser, messageIds) => {
-        const userChatsRef = ref(database, `chats/${user.trim()}`);
-        const otherUserChatsRef = ref(database, `chats/${otherUser.trim()}`);
-
+        console.log(selectedItems);
+        
+        const userChatsPath = `chats/${user.trim()}`;
+        const otherUserChatsPath = `chats/${otherUser.trim()}`;
+    
         try {
-            await deleteFromChat(userChatsRef, messageIds);
-            await deleteFromChat(otherUserChatsRef, messageIds);
+            await deleteFromChat(userChatsPath, messageIds);
+            await deleteFromChat(otherUserChatsPath, messageIds);
             setSelectedItems([]);
             setIsSelectionMode(false);
             setAlertVisible(false);
@@ -152,28 +184,18 @@ const ChatScreen = ({ navigation }) => {
             console.error('Error deleting messages from both users:', error);
         }
     };
-
-    const deleteFromChat = async (chatRef, messageIds) => {
-        const snapshot = await get(chatRef);
-        if (snapshot.exists()) {
-            const chatsData = snapshot.val();
-            const updates = {};
-
-            Object.keys(chatsData).forEach(key => {
-                const messages = chatsData[key];
-                if (Array.isArray(messages)) {
-                    const updatedMessages = messages.filter(message => !messageIds.includes(message.id));
-                    if (updatedMessages.length > 0) {
-                        updates[`${key}`] = updatedMessages;
-                    } else {
-                        updates[`${key}`] = null;
-                    }
-                }
-            });
-
-            if (Object.keys(updates).length > 0) {
-                await update(chatRef, updates);
+    
+    const deleteFromChat = async (chatPath, messageIds) => {
+        try {
+            for (const messageId of messageIds) {
+                // Create a reference to the specific message you want to delete
+                const messageRef = ref(database, `${chatPath}/${messageId}`);
+                
+                // Delete the message
+                await remove(messageRef);
             }
+        } catch (error) {
+            console.error("Error deleting messages:", error);
         }
     };
 
@@ -201,22 +223,21 @@ const ChatScreen = ({ navigation }) => {
 
         setInputText('');
         if (inputText.trim() !== '') {
-            const newMessage = [{
+            const newMessage = {
                 id: Id,
                 message: inputText,
                 from: name.id,
                 To: chatId.name,
                 messageType: messageType,
                 time: new Date().toISOString()
-            }];
+            };
 
             try {
-                const newMessageRef = push(ref(database, `chats/${name.id.trim()}`));
-                if (name.id.trim() !== chatId.name.trim()) {
-                    const otherMessageRef = push(ref(database, `chats/${chatId.name.trim()}`));
-                    await set(otherMessageRef, newMessage);
-                }
+                const newMessageRef = ref(database, `chats/${name.id.trim()}/${Id}`);
+                const otherMessageRef = ref(database, `chats/${chatId.name.trim()}/${Id}`);
+                await set(otherMessageRef, newMessage);
                 await set(newMessageRef, newMessage);
+
                 handleTypingStatus(ChatRoom, name.id, false);
             } catch (error) {
                 console.error("Error sending message: ", error);
@@ -266,12 +287,12 @@ const ChatScreen = ({ navigation }) => {
 
     const setupTypingStatusListener = (chatRoom, userId) => {
         const typingStatusRef = ref(database, `TypingStatus/${chatRoom}/${userId}`);
-        
+
         const listener = onValue(typingStatusRef, (snapshot) => {
             const Typing = snapshot.val();
             SetotherTyping(Typing)
         });
-    
+
         return () => listener();
     };
 
@@ -286,6 +307,48 @@ const ChatScreen = ({ navigation }) => {
         handleTypingStatus(chatId, name.id, false);
     };
 
+    const handleTextChange = (newText) => {
+        lasttype = Date.now()
+        if (typingTimeoutRef.current) {
+            clearTimeout(typingTimeoutRef.current);
+        }
+        setInputText(newText);
+        if (!newText) {
+            handleTypingStatus(ChatRoom, name.id, false);
+        }
+        else {
+            handleTypingStatus(ChatRoom, name.id, true);
+        }
+
+        typingTimeoutRef.current = setTimeout(() => {
+            handleTypingStatus(ChatRoom, name.id, false);
+        }, 1000);
+    };
+
+    const handleTypingStatus = async (chatRoom, userId, isTyping) => {
+        try {
+            const typingStatusRef = ref(database, `TypingStatus/${chatRoom}/${userId}`);
+
+            await set(typingStatusRef, isTyping);
+        } catch (error) {
+            console.error('Error updating typing status:', error);
+        }
+    };
+
+    const handleEdit = async () => {
+        console.log(chatId.name);
+        console.log(selectedItems[0]);
+
+        const userRef = ref(database, `chats/${name.id}/${selectedItems[0]}`);
+        await update(userRef, { message: EditText });
+        SetEditing(false);
+        const Otherref = ref(database, `chats/${chatId.name}/${selectedItems[0]}`);
+        await update(Otherref, { message: EditText });
+        handleDeselect()
+
+    }
+
+
     const renderMessage = ({ item }) => {
         const isMyMessage = item.from.trim().toLowerCase() === name.id.trim().toLowerCase();
         const isSelected = selectedItems.includes(item.id);
@@ -295,7 +358,7 @@ const ChatScreen = ({ navigation }) => {
                 style={[styles.messageContainer, isMyMessage ? styles.myMessage : styles.otherMessage, isSelected && styles.selectedMessage]}
             >
                 {isMyMessage ? (
-                    <TouchableOpacity onLongPress={() => toggleSelectionMode(item.id)} onPress={() => handleSingleClick(item)}>
+                    <TouchableOpacity onLongPress={() => toggleSelectionMode(item.id, item.message, item.messageType)} onPress={() => handleSingleClick(item)}>
                         {item.messageType === "text" ? (
                             <Text style={[styles.messageText, isSelected && styles.selectedMessageText]}>{item.message}</Text>
                         ) : (
@@ -316,38 +379,11 @@ const ChatScreen = ({ navigation }) => {
         );
     };
 
-    const handleTextChange = (newText) => {
-        lasttype = Date.now()
-        if (typingTimeoutRef.current) {
-            clearTimeout(typingTimeoutRef.current);
-        }
-        setInputText(newText);
-        if (!newText){
-            handleTypingStatus(ChatRoom, name.id, false);
-        }
-        else{
-            handleTypingStatus(ChatRoom, name.id, true);
-        }
-
-        typingTimeoutRef.current = setTimeout(() => {
-            handleTypingStatus(ChatRoom, name.id, false);
-        }, 1000);
-      };
-
-    const handleTypingStatus = async (chatRoom, userId, isTyping) => {
-        try {
-            const typingStatusRef = ref(database, `TypingStatus/${chatRoom}/${userId}`);
-
-            await set(typingStatusRef, isTyping);
-        } catch (error) {
-            console.error('Error updating typing status:', error);
-        }
-    };
-
     return (
         <ImageBackground source={require('../assets/Images/background.jpg')} style={styles.container}>
             <StatusBar barStyle="light-content" backgroundColor="#000" />
             <View style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.4)' }}>
+
 
                 <View style={styles.header}>
                     {isSelectionMode ? (
@@ -355,6 +391,11 @@ const ChatScreen = ({ navigation }) => {
                             <TouchableOpacity onPress={handleDeselect} style={styles.selectionModeButton}>
                                 <Icon name="back" size={24} color="#fff" />
                             </TouchableOpacity>
+                            {selectedItems.length == 1 && editTextList.length != 0 && <TouchableOpacity onPress={() => {
+                                SetEditing(true); setEditText(editTextList[0]); console.log(editTextList);
+                            }} style={{ paddingVertical: 10 }}>
+                                <Icon name="edit" size={24} color="#fff" />
+                            </TouchableOpacity>}
                             <TouchableOpacity onPress={handleDelete} style={{ paddingVertical: 10 }}>
                                 <Icon name="delete" size={24} color="#fff" />
                             </TouchableOpacity>
@@ -380,7 +421,7 @@ const ChatScreen = ({ navigation }) => {
                                             <Text style={{ color: '#fff' }}>Offline</Text>
                                         </>
                                     )}
-                                    {IsotherTyping && <Text style={{color:'#fff'}}>Typing...</Text>}
+                                    {IsotherTyping && <Text style={{ color: '#fff' }}>Typing...</Text>}
                                 </View>
                             </TouchableOpacity>
 
@@ -448,6 +489,30 @@ const ChatScreen = ({ navigation }) => {
                     <EmojiSelector onEmojiSelected={handleEmojiSelect} />
                 </View>
             </Modal>
+            {/* This is for Editing Mode */}
+            {IsEditing && <View style={styles.EditContainer}>
+                <TouchableOpacity onPress={() => { SetEditing(false); }} style={{ left: 20, top: 30 }}>
+                    <Icon name="back" size={24} color="#fff" />
+                </TouchableOpacity>
+                <View style={styles.EditMain}>
+                    <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', marginLeft: 10, borderWidth: 1, borderColor: '#fff', borderRadius: 20, paddingHorizontal: 8 }}>
+                        <TextInput
+                            style={styles.input}
+                            value={EditText}
+
+                            onChangeText={setEditText}
+                            placeholder="Message..."
+                            placeholderTextColor="#999"
+                            multiline={true}
+                            numberOfLines={3}
+                        />
+
+                    </View>
+                    <TouchableOpacity style={styles.sendButton} onPress={() => handleEdit()}>
+                        <Icon name='edit' color="#fff" size={20} />
+                    </TouchableOpacity>
+                </View>
+            </View>}
             {displayImage !== '' && <DisplayImage imageUri={displayImage} setImageUri={setDisplayImage} />}
         </ImageBackground>
     );
@@ -458,6 +523,18 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#000',
+    },
+    EditContainer: {
+        width: '100%',
+        height: '100%',
+        position: 'absolute',
+        backgroundColor: 'rgba(0,0,0,0.8)'
+    },
+    EditMain: {
+        position: 'absolute',
+        bottom: 20,
+        width: '100%',
+        flexDirection: 'row'
     },
     chatContainer: {
         paddingVertical: 10,
@@ -578,6 +655,7 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         paddingVertical: 10,
         paddingHorizontal: 20,
+        marginHorizontal: 10
     },
     sendButtonText: {
         fontSize: 16,
@@ -593,6 +671,7 @@ const styles = StyleSheet.create({
         height: '50%',
         backgroundColor: 'rgba(0,0,0,0.5)',
     },
+
 
 
 });

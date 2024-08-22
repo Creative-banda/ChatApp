@@ -1,8 +1,8 @@
 import React from 'react';
-import { StyleSheet, View, Image, Modal, TouchableOpacity, Text } from 'react-native';
+import { StyleSheet, View, Image, Modal, TouchableOpacity, Text, ActivityIndicator } from 'react-native';
 import BackButton from '../assets/SVG/BackButton';
 
-const DisplayImage = ({ imageUri, setImageUri, Done }) => {
+const DisplayImage = ({ imageUri, setImageUri, Done, Isloading }) => {
     return (
         <Modal
             animationType="fade"
@@ -11,17 +11,20 @@ const DisplayImage = ({ imageUri, setImageUri, Done }) => {
             onRequestClose={() => setImageUri('')}
         >
 
-                <View style={styles.container}>
-                    <TouchableOpacity style={styles.backButton} onPress={() => setImageUri('')}>
-                        <BackButton />
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.doneButton} onPress={() => { Done() }}>
-                        {Done && <Text style={styles.doneText}>Done</Text>}
-                    </TouchableOpacity>
 
-                    <Image source={{ uri: imageUri }} style={styles.image} />
+            <View style={styles.container}>
+                <TouchableOpacity style={styles.backButton} onPress={() => setImageUri('')}>
+                    <BackButton />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.doneButton} onPress={() => { Done() }}>
+                    {Done && <Text style={styles.doneText}>Done</Text>}
+                </TouchableOpacity>
 
-                </View>
+                <Image source={{ uri: imageUri }} style={styles.image} />
+                {Isloading && <View style={{ position: 'absolute', backgroundColor: 'rgba(0,0,0,0.7)',width:'100%',height:'100%',justifyContent:'center',alignItems:'center' }}>
+                    <ActivityIndicator size='large' color='#fff'/>
+                </View>}
+            </View>
         </Modal>
     );
 }
