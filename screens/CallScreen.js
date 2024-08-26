@@ -1,59 +1,120 @@
-import React from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity,Image,Linking } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import Icon from 'react-native-vector-icons/Ionicons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import CallIcon from '../assets/SVG/CallIcon';
 import StatusIcon from '../assets/SVG/StatusIcon';
 import UserIcon from '../assets/SVG/UserIcon';
 import AddFriendIcon from '../assets/SVG/AddFriendIcon';
 import { useRoute } from '@react-navigation/native';
+import { ref, get } from 'firebase/database';
+import { database } from '../config';
 
-const callHistory = [
-  { id: '1', name: 'John Doe', type: 'missed', time: '2h ago' },
-  { id: '2', name: 'Jane Smith', type: 'incoming', time: '5h ago' },
-  { id: '3', name: 'Mike Johnson', type: 'outgoing', time: '1d ago' },
-];
 
 const CallHistoryScreen = ({ navigation }) => {
   const route = useRoute();
+  const [callHistory, setCallHistory] = useState([]);
   const { uid, user } = route.params;
-  const renderCallTypeIcon = (type) => {
-    switch (type) {
-      case 'missed':
-        return <MaterialIcons name="call-missed" size={24} color="red" />;
-      case 'incoming':
-        return <MaterialIcons name="call-received" size={24} color="green" />;
-      case 'outgoing':
-        return <MaterialIcons name="call-made" size={24} color="blue" />;
-      default:
-        return null;
+
+
+  useEffect(() => {
+    fetchUserHistory(uid)
+  }, [])
+
+  const fetchUserHistory = async (uid) => {
+    try {
+      const UserData = ref(database, `CallHistory/${uid}`);
+      const snapshot = await get(UserData);
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const formattedData = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+        formattedData.sort((a, b) =>  new Date(b.time) - new Date(a.time));
+        setCallHistory(formattedData);
+      } else {
+        console.log("No Data");
+
+      }
+    } catch (error) {
+      console.error("Error fetching user history: ", error);
     }
   };
 
+  const makePhoneCall = (phoneNumber) => {
+    let phoneUrl = `tel:${phoneNumber}`;
+    Linking.openURL(phoneUrl)
+      .then((supported) => {
+        if (!supported) {
+          console.log('Phone number is not available');
+        } else {
+          return Linking.openURL(phoneUrl);
+        }
+      })
+      .catch((err) => console.log(err));
+  };
+
+  const formatTimestamp = (timestamp) => {
+    const date = new Date(timestamp);
+
+    // Example formatting
+    const options = {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    };
+
+    return date.toLocaleString('en-US', options);
+  };
+
+  const renderCallItem = ({ item }) => {
+    MyCall = CurrentUser.username === item.From
+    const imageUri = item.Profile ? { uri: item.Profile } : require('../assets/icon.png');
+
+    const formattedDate = formatTimestamp(item.time);
+    return (
+      <TouchableOpacity style={styles.callContainer} onPress={() => { navigation.navigate('OtherProfile', { uid: item.FromUserId }) }}>
+        {MyCall ? <MaterialIcons name="call-made" size={24} color="blue" /> : <MaterialIcons name="call-received" size={24} color="green" />}
+        <View style={styles.callDetails}>
+          <View style={{flexDirection:'row',alignItems:'center'}}>
+          <Image source={imageUri} style={styles.avatar} />
+          <Text style={styles.callerName}>{item.From}</Text>
+          </View>
+          <Text style={styles.callTime}>{formattedDate}</Text>
+        </View>
+        <TouchableOpacity onPress={() => makePhoneCall(item.UserNumber)} >
+        <MaterialIcons name="phone" size={24} color="#fff" style={styles.callIcon} />
+        </TouchableOpacity>
+      </TouchableOpacity>
+    );
+  };
+
+
   return (
     <View style={styles.container}>
-      <View style={{flexDirection:'row',columnGap:20, alignItems:'center',paddingVertical:8}}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={{paddingBottom:15}}>
+      <View style={{ flexDirection: 'row', columnGap: 20, alignItems: 'center', paddingVertical: 8 }}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={{ paddingBottom: 15 }}>
           <Icon name='chevron-back-outline' size={25} color={'#fff'} />
         </TouchableOpacity>
         <Text style={styles.header}>Call History</Text>
       </View>
-      <FlatList
+      {callHistory && <FlatList
         data={callHistory}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <TouchableOpacity style={styles.callContainer}>
-            {renderCallTypeIcon(item.type)}
-            <View style={styles.callDetails}>
-              <Text style={styles.callerName}>{item.name}</Text>
-              <Text style={styles.callTime}>{item.time}</Text>
-            </View>
-            <MaterialIcons name="phone" size={24} color="#fff" style={styles.callIcon} />
-          </TouchableOpacity>
-        )}
+        renderItem={renderCallItem}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.callList}
-      />
+      />}
+      {!callHistory && <View style={styles.noHistoryContainer}>
+        <MaterialCommunityIcons name='clock-outline' color={'#fff'} size={60} />
+        <Text style={{ color: '#fff', paddingVertical: 20, fontSize: 15, fontFamily: 'Nunito' }}> Your Call History is Empty</Text>
+        <Text style={styles.noHistoryText}> No Call History</Text>
+      </View>}
+
+
       <View style={styles.BottomIcons}>
         <TouchableOpacity onPress={() => { navigation.navigate("Home") }}>
           <UserIcon />
@@ -129,7 +190,24 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 30,
     backgroundColor: 'rgba(0, 0, 0, 0.4)',
-  }
+  },
+  noHistoryContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 3
+  },
+  noHistoryText: {
+    color: '#fff',
+    fontSize: 24,
+    fontFamily: "Lato"
+  },
+  avatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 16,
+  },
 });
 
 export default CallHistoryScreen;

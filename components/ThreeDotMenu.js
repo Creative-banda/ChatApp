@@ -1,9 +1,43 @@
 import React, { useState } from 'react';
 import { View, TouchableOpacity, Text, Modal, StyleSheet, Linking } from 'react-native';
 import Entypo from 'react-native-vector-icons/Entypo';
+import { ref, set} from 'firebase/database';
+import { database } from '../config';
 
-const ThreeDotMenu = ({ UserNumber, ViewProfile }) => {
+const ThreeDotMenu = ({ ViewProfile, CurrentUser, OtherUser }) => {
   const [modalVisible, setModalVisible] = useState(false);
+  
+  
+  
+
+
+  function generateRandomId() {
+    return Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
+}
+
+  const handleCallHistory = async () => {
+    const Id = generateRandomId();
+    const newMessage = {
+      id: Id,
+      From: CurrentUser.username,
+      FromUserId : CurrentUser.id,
+      UserNumber : CurrentUser.PhoneNumber,
+      To: OtherUser.name,
+      Profile : CurrentUser.ProfilePic,
+      time: new Date().toISOString()
+    };
+
+    try {
+      const newMessageRef = ref(database, `CallHistory/${CurrentUser.id}/${Id}`);
+      const otherMessageRef = ref(database, `CallHistory/${OtherUser.name}/${Id}`);
+      await set(otherMessageRef, newMessage);
+      await set(newMessageRef, newMessage);
+      ;
+    } catch (error) {
+      console.error("Error while writing call history: ", error);
+    }
+
+  };
 
   const makePhoneCall = (phoneNumber) => {
     let phoneUrl = `tel:${phoneNumber}`;
@@ -12,6 +46,7 @@ const ThreeDotMenu = ({ UserNumber, ViewProfile }) => {
         if (!supported) {
           console.log('Phone number is not available');
         } else {
+          handleCallHistory()
           return Linking.openURL(phoneUrl);
         }
       })
@@ -39,7 +74,7 @@ const ThreeDotMenu = ({ UserNumber, ViewProfile }) => {
             <TouchableOpacity style={styles.menuItem} onPress={ViewProfile}>
               <Text style={styles.menuText}>View Profile</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => makePhoneCall(UserNumber)} style={styles.menuItem}>
+            <TouchableOpacity onPress={() => makePhoneCall(OtherUser.Phone)} style={styles.menuItem}>
               <Text style={styles.menuText}>Call</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => alert('Block')} style={styles.menuItem}>

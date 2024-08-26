@@ -34,7 +34,6 @@ const LoginPage = ({ navigation }) => {
       finally{
         setLoading(false);
         setDisable(false);
-        setEmail('');
         setPassword('')
       }
     }
@@ -100,6 +99,9 @@ const LoginPage = ({ navigation }) => {
               </TouchableOpacity>
             </View>
           </View>
+          <TouchableOpacity onPress={() => navigation.navigate("ForgetPassword")} style={{width:'100%',alignItems:'flex-end',paddingBottom:20}}>
+            <Text style={styles.newUserText}>ForgetPassword ?</Text>
+          </TouchableOpacity>
           <TouchableOpacity style={styles.loginButton} onPress={handleLogin} disabled={disable}>
             {loading ? (
               <ActivityIndicator size="small" color="#fff" />
@@ -107,12 +109,13 @@ const LoginPage = ({ navigation }) => {
               <Text style={styles.buttonText}>Login</Text>
             )}
           </TouchableOpacity>
+          <View style = {{flexDirection:'row',width:'100%',alignItems:'center',justifyContent:'center',paddingTop:20}}>
+            <Text style={{color:'#CFCECD',fontFamily:'Lato',paddingHorizontal:10}}>Click here</Text>
           <TouchableOpacity onPress={() => navigation.navigate("SignUp")}>
-            <Text style={styles.newUserText}>Click Here If You Are New User</Text>
+            <Text style={styles.newUserText}>SignUp</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate("ForgetPassword")} style={{paddingVertical:15}}>
-            <Text style={styles.newUserText}>ForgetPassword ?</Text>
-          </TouchableOpacity>
+          </View>
+
         </KeyboardAvoidingView>
         <SimpleAlert
           Title={alertTitle}
@@ -154,14 +157,14 @@ const styles = StyleSheet.create({
     color: '#a0a0a0',
   },
   inputContainer: {
-    marginBottom: 18,
+    marginBottom: 5,
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 12,
-    marginBottom: 16,
+    marginBottom: 12,
   },
   icon: {
     padding: 10,
@@ -178,7 +181,7 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   loginButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#1E90FF',
     paddingVertical: 16,
     borderRadius: 12,
     marginBottom: 16,
@@ -190,11 +193,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   newUserText: {
-    color: '#a0a0a0',
+    color: '#48A3D9',
     textAlign: 'center',
     fontSize: 14,
     fontFamily: 'Lato',
   },
+
 });
 
 export default LoginPage;

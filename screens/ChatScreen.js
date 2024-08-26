@@ -37,6 +37,7 @@ const ChatScreen = ({ navigation }) => {
     const statusTimeoutRef = useRef(null);
     const route = useRoute();
     const { chatId, name } = route.params;
+    
 
     useEffect(() => {
         const chatsRef = ref(database, `chats/${name.id}`);
@@ -44,22 +45,23 @@ const ChatScreen = ({ navigation }) => {
             if (snapshot.exists()) {
                 const chatsData = snapshot.val();
                 let allChats = [];
-
+    
                 Object.values(chatsData).forEach(chat => {
                     if (Array.isArray(chat)) {
                         allChats.push(...chat);
                     } else {
                         allChats.push(chat);
-
                     }
                 });
-
+    
+                // Sort chats by time
+                allChats.sort((a, b) => new Date(a.time) - new Date(b.time));
+    
                 const filteredChats = allChats.filter(chat =>
                     (chat.To?.trim() === name.id.trim() && chat.from?.trim() === chatId.name.trim()) ||
                     (chat.To?.trim() === chatId.name.trim() && chat.from?.trim() === name.id.trim())
                 );
-
-
+    
                 if (filteredChats.length === 0) {
                     setIsMessage(true)
                 }
@@ -69,9 +71,10 @@ const ChatScreen = ({ navigation }) => {
                 setMessages(filteredChats.reverse());
             }
         });
-
+    
         return () => unsubscribe();
     }, [name, chatId]);
+    
 
     useEffect(() => {
         const userRef = ref(database, `Users/${chatId.name}`);
@@ -139,6 +142,21 @@ const ChatScreen = ({ navigation }) => {
         }
     };
 
+    const formatTimeOnly = (timestamp) => {
+        const date = new Date(timestamp);
+    
+        let hours = date.getHours();
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+      
+        hours = hours % 12;
+        hours = hours ? hours : 12;
+        
+        const formattedTime = `${hours}:${minutes} ${ampm}`;
+      
+        return formattedTime;
+      };
+      
     const toggleItemSelection = (id) => {
         setSelectedItems(prevSelectedItems => {
             if (prevSelectedItems.includes(id)) {
@@ -173,13 +191,13 @@ const ChatScreen = ({ navigation }) => {
         
         const userChatsPath = `chats/${user.trim()}`;
         const otherUserChatsPath = `chats/${otherUser.trim()}`;
+        setAlertVisible(false);
     
         try {
             await deleteFromChat(userChatsPath, messageIds);
             await deleteFromChat(otherUserChatsPath, messageIds);
             setSelectedItems([]);
             setIsSelectionMode(false);
-            setAlertVisible(false);
         } catch (error) {
             console.error('Error deleting messages from both users:', error);
         }
@@ -352,10 +370,13 @@ const ChatScreen = ({ navigation }) => {
     const renderMessage = ({ item }) => {
         const isMyMessage = item.from.trim().toLowerCase() === name.id.trim().toLowerCase();
         const isSelected = selectedItems.includes(item.id);
+        const isImage = item.messageType === 'image'
+        timeing = formatTimeOnly(item.time)
+
 
         return (
             <View
-                style={[styles.messageContainer, isMyMessage ? styles.myMessage : styles.otherMessage, isSelected && styles.selectedMessage]}
+                style={[isImage ? styles.imageContainer : styles.messageContainer, isMyMessage ? styles.myMessage : styles.otherMessage, isSelected && styles.selectedMessage]}
             >
                 {isMyMessage ? (
                     <TouchableOpacity onLongPress={() => toggleSelectionMode(item.id, item.message, item.messageType)} onPress={() => handleSingleClick(item)}>
@@ -374,7 +395,7 @@ const ChatScreen = ({ navigation }) => {
                         )}
                     </TouchableOpacity>
                 )}
-
+            <Text style = {{fontSize:12,position:'absolute', bottom:0,right: 5,}}>{timeing}</Text>
             </View>
         );
     };
@@ -425,7 +446,7 @@ const ChatScreen = ({ navigation }) => {
                                 </View>
                             </TouchableOpacity>
 
-                            <ThreeDotMenu />
+                            <ThreeDotMenu ViewProfile={()=>{ navigation.navigate('OtherProfile', { uid: chatId.name}) }} CurrentUser = {name} OtherUser = {chatId}/>
                         </View>
                     )}
                 </View>
@@ -556,6 +577,8 @@ const styles = StyleSheet.create({
     },
     messageContainer: {
         marginBottom: 10,
+        flexDirection:'row',
+        paddingRight:50
     },
     InfoContainer: {
         alignItems: 'center',
@@ -568,6 +591,11 @@ const styles = StyleSheet.create({
         fontSize: 22,
         fontFamily: 'Lato',
     },
+    imageContainer : {
+        justifyContent:'center',
+        backgroundColor:'#000'
+    },
+
     image: {
         width: 200,
         height: 200,
@@ -592,10 +620,11 @@ const styles = StyleSheet.create({
         marginVertical: 5,
         maxWidth: '75%',
         borderTopLeftRadius: 20,
-        borderBottomRightRadius: 20,
+        borderBottomRightRadius: 10,
         borderBottomLeftRadius: 20,
         paddingHorizontal: 20,
         paddingLeft: 20,
+        paddingBottom:15
     },
     selectionModeButton: {
         paddingVertical: 10,
@@ -605,16 +634,16 @@ const styles = StyleSheet.create({
     otherMessage: {
         alignSelf: 'flex-start',
         backgroundColor: '#FFFFFF',
-        padding: 7,
+        padding: 3,
         paddingHorizontal: 20,
         borderTopRightRadius: 30,
-        borderBottomRightRadius: 30,
+        borderBottomRightRadius: 10,
         borderBottomLeftRadius: 20,
         marginVertical: 5,
         paddingTop: 10,
         maxWidth: '75%',
         fontSize: 16,
-        paddingRight: 40,
+        paddingBottom:15
     },
     selectionModeContainer: {
         flex: 1,

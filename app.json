@@ -18,13 +18,19 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/Test.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.ahz_khn_05.ChatApp"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
       "expo-font"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "23ec305d-f020-4de8-b990-f9f8a9af8aa8"
+      }
+    }
   }
 }

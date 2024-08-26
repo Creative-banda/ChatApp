@@ -4,6 +4,8 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import Antdesign from 'react-native-vector-icons/FontAwesome';
 import BackButton from '../assets/SVG/BackButton'
 import VerifyEmailModal from '../components/VerifyMail';
+import auth from '../config';
+import { fetchSignInMethodsForEmail } from 'firebase/auth';
 
 const SignupPage = ({ navigation }) => {
   const [username, setUsername] = useState('');
@@ -25,35 +27,44 @@ const SignupPage = ({ navigation }) => {
     setIsloading(true);
     if (username.trim() === "" || email.trim() === "" || password.trim() === "" || gender.trim() === "" || phoneNumber.trim() === "" || confirmPassword.trim() === "") {
       Alert.alert('Input Error', 'Please fill all fields');
-    }
-    else if (password.trim() !== confirmPassword.trim()) {
-      Alert.alert("Password Error", "Password and Confirm Password does not match")
-    }
-    else if (password.trim().length < 6) {
-      Alert.alert("Password Error", "Password must contain 6 letter")
-    }
-
-    else {
-      const ConfirmOTP = Math.floor(1000 + Math.random() * 9000).toString();
-      setotp(ConfirmOTP)
-      const url = 'https://script.google.com/macros/s/AKfycbwKUbMXI53zf9Q5AaK2t_BsL-7TlwGtkUwa5ZWzs6Un7srIDn7FNKwtNfqXhWjRbkAnrQ/exec'
-      const res = await fetch(`${url}?recipient=${encodeURIComponent(email)}&otpCode=${encodeURIComponent(ConfirmOTP)}&username=${encodeURIComponent(username)}`);
-      if (res.status == 200) {
-        Alert.alert(
-          "Email Sent",
-          "OTP Sent to " + email,
-          [
-            {
-              text: "OK",
-              onPress: () => SetVerifyVisible(true)
-            }
-          ]
-        );
-      }
       setIsloading(false);
-    };
+      return;
+    }
+    if (password.trim() !== confirmPassword.trim()) {
+      Alert.alert("Password Error", "Password and Confirm Password do not match");
+      setIsloading(false);
+      return;
+    }
+    if (password.trim().length < 6) {
+      Alert.alert("Password Error", "Password must contain at least 6 characters");
+      setIsloading(false);
+      return;
+    }
 
-  }
+    try {
+        const ConfirmOTP = Math.floor(1000 + Math.random() * 9000).toString();
+        setotp(ConfirmOTP);
+        const url = 'https://script.google.com/macros/s/AKfycbwKUbMXI53zf9Q5AaK2t_BsL-7TlwGtkUwa5ZWzs6Un7srIDn7FNKwtNfqXhWjRbkAnrQ/exec';
+        const res = await fetch(`${url}?recipient=${encodeURIComponent(email)}&otpCode=${encodeURIComponent(ConfirmOTP)}&username=${encodeURIComponent(username)}`);
+        if (res.status == 200) {
+          Alert.alert(
+            "Email Sent",
+            "OTP Sent to " + email,
+            [
+              {
+                text: "OK",
+                onPress: () => SetVerifyVisible(true)
+              }
+            ]
+          );
+        }
+    } catch (error) {
+      console.error('Error occurred during signup:', error);
+    } finally {
+      setIsloading(false);
+    }
+  };
+
 
 
   return (

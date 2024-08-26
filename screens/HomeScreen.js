@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet, StatusBar, ImageBackground } from 'react-native';
 import { database } from '../config';
-import { ref, get } from 'firebase/database';
+import { ref, get, onValue  } from 'firebase/database';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import UserIcon from '../assets/SVG/UserIcon';
 import StatusIcon from '../assets/SVG/StatusIcon';
@@ -13,30 +13,50 @@ const ChatAppHomePage = ({ navigation, uid, email }) => {
   const [username, setUsername] = useState('');
   const [UserInfo, SetUserInfo] = useState('');
 
-  useEffect(() => {
-    initializingUsers();
-    if (uid) {
-      fetchUsername(uid);
-    }
-  }, [uid]);
 
-  const initializingUsers = async () => {
-    try {
-      let UserData = ref(database, 'Users');
-      const snapshot = await get(UserData);
-      if (snapshot.exists()) {
-        const UserData = snapshot.val();
-        const keys = Object.keys(UserData);
-        const usersList = keys.map(key => ({ id: UserData[key].email, name: key, image: UserData[key].ProfilePic, username: UserData[key].username, Phone : UserData[key].PhoneNumber }));
-        setUsers(usersList);
-      } else {
-        console.log('No data available');
-      }
-    } catch (error) {
-      console.error("Error fetching data: ", error);
-    }
-  };
+useEffect(() => {
+  initializingUsers();
+  if (uid) {
+    fetchUsername(uid);
+  }
 
+  const userStatusListener = ref(database, 'Users');
+  const unsubscribe = onValue(userStatusListener, (snapshot) => {
+    if (snapshot.exists()) {
+      const UserData = snapshot.val();
+      const keys = Object.keys(UserData);
+      const usersList = keys.map(key => ({ id: UserData[key].email, name: key, image: UserData[key].ProfilePic, username: UserData[key].username, Phone: UserData[key].PhoneNumber, LastSeen: UserData[key].LastSeen
+      }));
+      setUsers(usersList);
+    }
+  });
+
+  return () => unsubscribe();
+}, [uid]);
+
+const initializingUsers = async () => {
+  try {
+    let UserData = ref(database, 'Users');
+    const snapshot = await get(UserData);
+    if (snapshot.exists()) {
+      const UserData = snapshot.val();
+      const keys = Object.keys(UserData);
+      const usersList = keys.map(key => ({
+        id: UserData[key].email,
+        name: key,
+        image: UserData[key].ProfilePic,
+        username: UserData[key].username,
+        Phone: UserData[key].PhoneNumber,
+        LastSeen: UserData[key].LastSeen
+      }));
+      setUsers(usersList);
+    } else {
+      console.log('No data available');
+    }
+  } catch (error) {
+    console.error("Error fetching data: ", error);
+  }
+};
 
   const fetchUsername = async (uid) => {
     try {
@@ -53,24 +73,29 @@ const ChatAppHomePage = ({ navigation, uid, email }) => {
       console.error("Error fetching username: ", error);
     }
   };
-  
+
   const renderChatItem = ({ item }) => {
-    if (!item || !item.id || !item.username) {
-      return null; 
+    if (!item || !item.id || !item.username) { return null; }
+
+    if (item.id === email) { return null; }
+    const currentTime = Date.now();
+    const timeDifference = currentTime - item.LastSeen;
+    Active = false
+
+    if (timeDifference < 12000) {
+    Active = true
     }
-  
-    if (item.id === email) {
-      return null; 
-    }
-    
-  
-    const imageUri = item.image && item.image !== ''? { uri: item.image } : require('../assets/icon.png');
-  
+
+    const imageUri = item.image && item.image !== '' ? { uri: item.image } : require('../assets/icon.png');
+
     return (
       <TouchableOpacity
         style={styles.card}
         onPress={() => navigation.navigate("ChatScreen", { chatId: item, name: UserInfo })}
       >
+        {Active && <TouchableOpacity style={{ position: 'absolute', right: 20 }}>
+          <Icon name='dot-circle-o' color='green' size={15} />
+        </TouchableOpacity>}
         <View style={styles.textContainer}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Image source={imageUri} style={styles.avatar} />
@@ -80,7 +105,7 @@ const ChatAppHomePage = ({ navigation, uid, email }) => {
       </TouchableOpacity>
     );
   };
-  
+
 
   return (
 
@@ -92,7 +117,7 @@ const ChatAppHomePage = ({ navigation, uid, email }) => {
     >
 
       <View style={styles.container}>
-        {users.length === 1 && <Text style={{position:'absolute', color:'#fff',fontSize:18 ,top:'50%', fontFamily:'Nunito', alignSelf:'center'}}>Sorry No User Is There 😥</Text>}
+        {users.length === 1 && <Text style={{ position: 'absolute', color: '#fff', fontSize: 18, top: '50%', fontFamily: 'Nunito', alignSelf: 'center' }}>Sorry No User Is There 😥</Text>}
         <StatusBar barStyle="light-content" backgroundColor="#121212" />
         <View style={styles.header}>
           {username ?
@@ -111,10 +136,10 @@ const ChatAppHomePage = ({ navigation, uid, email }) => {
 
         <View style={styles.BottomIcons}>
           <TouchableOpacity>
-            <UserIcon strokeWidth={0}/>
+            <UserIcon strokeWidth={0} />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => { navigation.navigate("Status", { uid: uid, user: UserInfo }) }}>
-            <StatusIcon  />
+            <StatusIcon />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => { navigation.navigate("Call", { uid: uid, user: UserInfo }) }}>
             <CallIcon />

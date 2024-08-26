@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, ImageBackground, StatusBar, Text, FlatList, TouchableOpacity, Image } from 'react-native';
 import { database } from '../config';
-import { ref, get } from 'firebase/database';
+import { ref, get, set } from 'firebase/database';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useRoute } from '@react-navigation/native';
 import UserIcon from '../assets/SVG/UserIcon';
@@ -13,24 +13,23 @@ const AddFriendsScreen = ({ navigation }) => {
     const route = useRoute();
     const { uid, user } = route.params;
     const [users, setUsers] = useState([]);
+    const [addedFriends, setAddedFriends] = useState([]);
 
     useEffect(() => {
+        initCurrentUser()
         initializingUsers();
     }, []);
 
-
     const initializingUsers = async () => {
         try {
-            let UserData = ref(database, 'Users');
-            const snapshot = await get(UserData);
+            const userDataRef = ref(database, 'Users');
+            const snapshot = await get(userDataRef);
             if (snapshot.exists()) {
-                const UserData = snapshot.val();
-                const keys = Object.keys(UserData);
-                
-                const usersList = keys.map(key => ({ mail: UserData[key].email, id: key, image: UserData[key].ProfilePic, username: UserData[key].username, id : UserData[key].id }));
+                const userData = snapshot.val();
+                const keys = Object.keys(userData);
+
+                const usersList = keys.map(key => ({ mail: userData[key].email, id: key, image: userData[key].ProfilePic, username: userData[key].username }));
                 setUsers(usersList);
-                console.log(usersList);
-                
             } else {
                 console.log('No data available');
             }
@@ -39,20 +38,64 @@ const AddFriendsScreen = ({ navigation }) => {
         }
     };
 
+    const initCurrentUser = async () => {
+        try {
+            const currentuserRef = ref(database, `FriendList/${uid}`);
+            const snapshot = await get(currentuserRef);
+
+            if (snapshot.exists()) {
+                const userData = snapshot.val();
+                const keys = Object.keys(userData);
+                setAddedFriends(keys);  // Set as an array of keys
+            } else {
+                console.log('No data available');
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    };
+
+    const handleAddFriend = async (friendId) => {
+        const newMessage = {
+            id: uid,
+            From: user.username,
+            Profile: user.ProfilePic,
+            time: new Date().toISOString(),
+            Status: 'pending'
+        };
+
+        try {
+            const newMessageRef = ref(database, `FriendList/${uid}/${friendId}`);
+            const otherMessageRef = ref(database, `FriendList/${friendId}/${uid}`);
+            await set(otherMessageRef, newMessage);
+            await set(newMessageRef, newMessage);
+
+            setAddedFriends((prevState) => [...prevState, friendId]); 
+        } catch (error) {
+            console.error("Error while adding friend: ", error);
+        }
+    };
+
     const renderFriendItem = ({ item }) => {
+        if (item.id == uid){return false}
         const imageUri = item.image && item.image !== '' ? { uri: item.image } : require('../assets/icon.png');
 
+        const isFriendAdded = addedFriends.includes(item.id);  
+
         return (
-            <TouchableOpacity style={styles.friendItem} onPress={()=>{ navigation.navigate('OtherProfile', { uid: item.id }) }}>
+            <TouchableOpacity style={styles.friendItem} onPress={() => { navigation.navigate('OtherProfile', { uid: item.id }) }}>
                 <Image source={imageUri} style={styles.avatar} />
                 <Text style={styles.friendName}>{item.username}</Text>
-                <TouchableOpacity style={styles.addButton}>
-                    <Text style={styles.addButtonText}>Add Friend +</Text>
+                <TouchableOpacity 
+                    style={styles.addButton}
+                    onPress={() => handleAddFriend(item.id)}
+                    disabled={isFriendAdded} 
+                >
+                    <Text style={styles.addButtonText}>{isFriendAdded ? 'Added' : 'Add Friend +'}</Text>
                 </TouchableOpacity>
             </TouchableOpacity>
         );
     };
-
 
     return (
         <ImageBackground source={require('../assets/Images/AddFriendBackground.jpg')} style={{ flex: 1 }}>
@@ -62,8 +105,8 @@ const AddFriendsScreen = ({ navigation }) => {
                     <TouchableOpacity onPress={() => navigation.goBack()}>
                         <Icon name='chevron-back-outline' size={25} color={'#fff'} />
                     </TouchableOpacity>
-                    <Text style={styles.header}>Add Friends </Text>
-                    <TouchableOpacity style={{position:'absolute',right: 8,top:10}} onPress={()=>{navigation.navigate('FriendRequest')}}>
+                    <Text style={styles.header}>Add Friends</Text>
+                    <TouchableOpacity style={{ position: 'absolute', right: 8, top: 10 }} onPress={() => { navigation.navigate('FriendRequest', {uid : uid}) }}>
                         <Icon name='notifications-circle' size={30} color='#E7F573' />
                     </TouchableOpacity>
                 </View>
@@ -83,14 +126,14 @@ const AddFriendsScreen = ({ navigation }) => {
                     <TouchableOpacity onPress={() => { navigation.navigate("Call", { uid: uid, user: user }) }}>
                         <CallIcon />
                     </TouchableOpacity>
-                    <TouchableOpacity >
+                    <TouchableOpacity>
                         <AddFriendIcon />
                     </TouchableOpacity>
                 </View>
             </View>
         </ImageBackground>
     );
-}
+};
 
 const styles = StyleSheet.create({
     holder: {
@@ -143,7 +186,8 @@ const styles = StyleSheet.create({
     },
     addButtonText: {
         fontFamily: 'Lato',
-        fontSize: 15
+        fontSize: 15,
+        color: '#fff'
     },
     BottomIcons: {
         position: 'absolute',
@@ -157,7 +201,6 @@ const styles = StyleSheet.create({
         borderRadius: 30,
         backgroundColor: 'rgba(0, 0, 0, 0.4)',
     }
-
 });
 
 export default AddFriendsScreen;
