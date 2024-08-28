@@ -20,6 +20,7 @@ import AddFriendsScreen from './screens/AddFriendsScreen';
 import RateUsScreen from './screens/RateUsScreen'
 import { AppProvider } from './AppContext';
 import FriendRequestScreen from './screens/FriendRequestScreen';
+import SendRequestScreen from './screens/SendRequestScreen'
 
 const Stack = createStackNavigator();
 
@@ -88,6 +89,7 @@ const App = () => {
           <Stack.Screen name="AddFriend" component={AddFriendsScreen} />
           <Stack.Screen name="RateUs" component={RateUsScreen} />
           <Stack.Screen name="FriendRequest" component={FriendRequestScreen} />
+          <Stack.Screen name="SendRequest" component={SendRequestScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </AppProvider>

@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, ImageBackground, TouchableOpacity, FlatList, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { ref, get,update } from 'firebase/database';
+import { ref, get, remove  } from 'firebase/database';
 import { database } from '../config';
-import { useRoute } from '@react-navigation/native';
+import { useRoute, useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-const FriendRequestScreen = ({ navigation }) => {
+const FriendRequestScreen = () => {
     const [UserList, SetUserlist] = useState([]);
     const route = useRoute();
+    const navigation = useNavigation();
     const { uid } = route.params;
+    console.log(uid);
+    
+    
 
     useEffect(() => {
         initializingUsers();
@@ -25,10 +29,8 @@ const FriendRequestScreen = ({ navigation }) => {
                     key: key,
                     ...userData[key]
                 }));
-                const users = userListArray.filter(item => item.Status !== "Accept" && item.senderuid !== uid);
-
-
-                SetUserlist(users)
+                const users = userListArray.filter(item => item.Status !== "Accept" && item.receiveruid !== uid);
+                SetUserlist(users);
             } else {
                 console.log('No data available');
             }
@@ -37,34 +39,35 @@ const FriendRequestScreen = ({ navigation }) => {
         }
     };
 
-    const handleAddFriend = async(senderuid, receiveruid, messageId) => {
-        const Myreq = ref(database, `FriendList/${senderuid}/${messageId}`);
-        const Otherreq = ref(database, `FriendList/${receiveruid}/${messageId}`);
 
-        await update(Myreq, { Status: 'Accept' });
-        await update(Otherreq, { Status: 'Accept' });
-
-        const users = UserList.filter(user => user.requestId != messageId);
-
-        SetUserlist(users)
-
+    const handleCancel = async(item)=>{
+        try {
+                const requestRef = ref(database, `FriendList/${item.senderuid}/${item.requestId}`);
+                const otherrequestRef = ref(database, `FriendList/${item.receiveruid}/${item.requestId}`);
+                
+                await remove(requestRef);
+                await remove(otherrequestRef);
+                await initializingUsers()
+            
+        } catch (error) {
+            console.error("Error deleting messages:", error);
+        }
     }
 
     const renderFriendItem = ({ item }) => {
 
-        console.log(item);
-        const imageUri = item.senderprofile && item.senderprofile !== '' ? { uri: item.senderprofile } : require('../assets/icon.png');
+        const imageUri = item.receiverprofile && item.receiverprofile !== '' ? { uri: item.receiverprofile } : require('../assets/icon.png');
 
         return (
             <View style={styles.friendItemContainer}>
                 <TouchableOpacity style={styles.friendItem} onPress={() => { navigation.navigate('OtherProfile', { uid: item.id }) }}>
                     <Image source={imageUri} style={styles.avatar} />
-                    <Text style={styles.friendName}>{item.senderusername}</Text>
+                    <Text style={styles.friendName}>{item.receiverusername}</Text>
                     <TouchableOpacity
                         style={styles.addButton}
-                        onPress={() => handleAddFriend(item.senderuid, item.receiveruid, item.requestId)}
+                        onPress={() => handleCancel(item)}
                     >
-                        <Text style={styles.addButtonText}>Confirm</Text>
+                        <Text style={styles.addButtonText}>Cancel</Text>
                     </TouchableOpacity>
                 </TouchableOpacity>
             </View>
@@ -74,7 +77,7 @@ const FriendRequestScreen = ({ navigation }) => {
     const renderEmptyComponent = () => (
         <View style={styles.emptyContainer}>
             <Icon name="sad-outline" size={50} color="#fff" />
-            <Text style={styles.emptyText}>No Friend Requests</Text>
+            <Text style={styles.emptyText}>You Did'nt Send Any Friend Request</Text>
         </View>
     );
 
@@ -92,11 +95,11 @@ const FriendRequestScreen = ({ navigation }) => {
                         <Text style={styles.header}>Friend Requests</Text>
                     </View>
                     <View style={styles.TopContainer}>
-                        <TouchableOpacity>
-                            <Text style={styles.TopButtons}>Receive</Text>
+                        <TouchableOpacity onPress={() => { navigation.navigate('FriendRequest', { uid: uid }) }}>
+                            <Text style={{ paddingLeft: 5, color: '#fff' }}>Receive</Text>
                         </TouchableOpacity>
                         <TouchableOpacity>
-                            <Text style={{ paddingLeft: 20, color: '#fff' }} onPress={() => { navigation.navigate('SendRequest', { uid: uid }) }}>
+                            <Text style={styles.TopButtons}>
                                 Send
                             </Text>
                         </TouchableOpacity>
@@ -154,8 +157,8 @@ const styles = StyleSheet.create({
     },
     friendItemContainer: {
         marginBottom: 20,
-        backgroundColor: '#fff',
-        borderRadius: 15,
+        backgroundColor: 'rgba(255,255,255,0.7)',
+        borderRadius: 14,
         overflow: 'hidden',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
@@ -212,16 +215,17 @@ const styles = StyleSheet.create({
         width: '95%',
         flexDirection: 'row',
         paddingVertical: 15,
-        gap: 14,
+        gap: 20,
         alignSelf: 'center',
-        paddingLeft: 20
+        paddingLeft: 10,
+        alignItems: 'center'
     },
     TopButtons: {
         color: '#B8579F',
         fontSize: 15,
         fontWeight: 'bold',
         borderBottomWidth: 2,
-        borderColor: '#B8579F'
+        borderColor: '#B8579F',
     }
 });
 
