@@ -19,7 +19,7 @@ export const AppProvider = ({ children, uid }) => {
 
     useEffect(() => {
         if (uid) {
-            const interval = setInterval(updateStatus, 5000);
+            const interval = setInterval(updateStatus, 8000);
             return () => clearInterval(interval);
         }
     }, [uid]);

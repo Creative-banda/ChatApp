@@ -49,7 +49,7 @@ const LoginPage = ({ navigation }) => {
         title = 'Invalid Credential';
         break;
       default:
-        message = `An unexpected error occurred: ${error.message}`;
+        message = `Not Able to Login Please check your mail and password`;
         break;
     }
   
@@ -110,7 +110,7 @@ const LoginPage = ({ navigation }) => {
             )}
           </TouchableOpacity>
           <View style = {{flexDirection:'row',width:'100%',alignItems:'center',justifyContent:'center',paddingTop:20}}>
-            <Text style={{color:'#CFCECD',fontFamily:'Lato',paddingHorizontal:10}}>Click here</Text>
+            <Text style={{color:'#CFCECD',fontFamily:'Lato',paddingHorizontal:10}}>Click here for</Text>
           <TouchableOpacity onPress={() => navigation.navigate("SignUp")}>
             <Text style={styles.newUserText}>SignUp</Text>
           </TouchableOpacity>
@@ -155,6 +155,7 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     color: '#a0a0a0',
+    paddingLeft:5
   },
   inputContainer: {
     marginBottom: 5,

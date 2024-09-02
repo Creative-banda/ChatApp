@@ -8,8 +8,6 @@ const ThreeDotMenu = ({ ViewProfile, CurrentUser, OtherUser }) => {
   const [modalVisible, setModalVisible] = useState(false);
   
   
-  
-
 
   function generateRandomId() {
     return Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
@@ -19,11 +17,14 @@ const ThreeDotMenu = ({ ViewProfile, CurrentUser, OtherUser }) => {
     const Id = generateRandomId();
     const newMessage = {
       id: Id,
-      From: CurrentUser.username,
-      FromUserId : CurrentUser.id,
-      UserNumber : CurrentUser.PhoneNumber,
-      To: OtherUser.name,
-      Profile : CurrentUser.ProfilePic,
+      senderusername: CurrentUser.username,
+      senderuid : CurrentUser.id,
+      sendernumber : CurrentUser.PhoneNumber,
+      senderprofile : CurrentUser.ProfilePic,
+      receiverusername : OtherUser.username,
+      receiveruid: OtherUser.name,
+      receivernumber : OtherUser.Phone,
+      receiverprofile : OtherUser.image,
       time: new Date().toISOString()
     };
 

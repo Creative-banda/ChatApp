@@ -57,7 +57,7 @@ const AddFriendsScreen = ({ navigation }) => {
                 });
                 setUniqueUidList(Array.from(uniqueUids));
                 
-
+                
             } else {
                 console.log('No data available');
             }

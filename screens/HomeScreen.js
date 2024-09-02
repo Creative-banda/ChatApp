@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet, StatusBar, ImageBackground } from 'react-native';
 import { database } from '../config';
-import { ref, get, onValue  } from 'firebase/database';
+import { ref, get, onValue } from 'firebase/database';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import UserIcon from '../assets/SVG/UserIcon';
 import StatusIcon from '../assets/SVG/StatusIcon';
@@ -11,61 +11,100 @@ import AddFriendIcon from '../assets/SVG/AddFriendIcon';
 const ChatAppHomePage = ({ navigation, uid, email }) => {
   const [users, setUsers] = useState([]);
   const [username, setUsername] = useState('');
-  const [UserInfo, SetUserInfo] = useState('');
+  const [UserInfo, setUserInfo] = useState('');
 
-
-useEffect(() => {
-  initializingUsers();
-  if (uid) {
-    fetchUsername(uid);
-  }
-
-  const userStatusListener = ref(database, 'Users');
-  const unsubscribe = onValue(userStatusListener, (snapshot) => {
-    if (snapshot.exists()) {
-      const UserData = snapshot.val();
-      const keys = Object.keys(UserData);
-      const usersList = keys.map(key => ({ id: UserData[key].email, name: key, image: UserData[key].ProfilePic, username: UserData[key].username, Phone: UserData[key].PhoneNumber, LastSeen: UserData[key].LastSeen
-      }));
-      setUsers(usersList);
+  useEffect(() => {
+    if (uid) {
+      
+      fetchUsername(uid);
+      fetchFriendsAndUsers(uid);  // Initial fetch
     }
-  });
+  
+    // Listen for changes in the Users table
+    const userStatusListener = ref(database, 'Users');
+    const unsubscribe = onValue(userStatusListener, async (snapshot) => {
+      if (snapshot.exists()) {
+        const userData = snapshot.val();
+        const keys = Object.keys(userData);
+  
+        const currentuserRef = ref(database, `FriendList/${uid}`);
+        const friendSnapshot = await get(currentuserRef);
+  
+        if (friendSnapshot.exists()) {
+          const friendData = friendSnapshot.val();
+          const filteredFriends = Object.values(friendData).filter(item => item.Status === "Accept");
+  
+          const uniqueUids = new Set();
+          filteredFriends.forEach(item => {
+            uniqueUids.add(item.senderuid);
+            uniqueUids.add(item.receiveruid);
+          });
+  
+          const filteredUsers = keys.map(key => ({
+            id: userData[key].email,
+            name: key,
+            image: userData[key].ProfilePic,
+            username: userData[key].username,
+            Phone: userData[key].PhoneNumber,
+            LastSeen: userData[key].LastSeen
+          })).filter(user => uniqueUids.has(user.name));
+  
+          setUsers(filteredUsers);
+        }
+      }
+    });
+    return () => unsubscribe();
+  }, [uid]);
+  
+  const fetchFriendsAndUsers = async (uid) => {
+    try {
+      const currentuserRef = ref(database, `FriendList/${uid}`);
+      const friendSnapshot = await get(currentuserRef);
 
-  return () => unsubscribe();
-}, [uid]);
+      if (friendSnapshot.exists()) {
+        const friendData = friendSnapshot.val();
+        const filteredFriends = Object.values(friendData).filter(item => item.Status === "Accept");
 
-const initializingUsers = async () => {
-  try {
-    let UserData = ref(database, 'Users');
-    const snapshot = await get(UserData);
-    if (snapshot.exists()) {
-      const UserData = snapshot.val();
-      const keys = Object.keys(UserData);
-      const usersList = keys.map(key => ({
-        id: UserData[key].email,
-        name: key,
-        image: UserData[key].ProfilePic,
-        username: UserData[key].username,
-        Phone: UserData[key].PhoneNumber,
-        LastSeen: UserData[key].LastSeen
-      }));
-      setUsers(usersList);
-    } else {
-      console.log('No data available');
+        const uniqueUids = new Set();
+        filteredFriends.forEach(item => {
+          uniqueUids.add(item.senderuid);
+          uniqueUids.add(item.receiveruid);
+        });
+
+        const usersRef = ref(database, 'Users');
+        const userSnapshot = await get(usersRef);
+
+        if (userSnapshot.exists()) {
+          const userData = userSnapshot.val();
+          const keys = Object.keys(userData);
+
+          const filteredUsers = keys.map(key => ({
+            id: userData[key].email,
+            name: key,
+            image: userData[key].ProfilePic,
+            username: userData[key].username,
+            Phone: userData[key].PhoneNumber,
+            LastSeen: userData[key].LastSeen
+          })).filter(user => uniqueUids.has(user.name));
+
+          setUsers(filteredUsers);
+        }
+      } else {
+        console.log('No friend data available');
+      }
+    } catch (error) {
+      console.error('Error fetching friends and users:', error);
     }
-  } catch (error) {
-    console.error("Error fetching data: ", error);
-  }
-};
+  };
 
   const fetchUsername = async (uid) => {
     try {
       let UserData = ref(database, `Users/${uid}`);
       const snapshot = await get(UserData);
       if (snapshot.exists()) {
-        CurrentUser = snapshot.val()
-        setUsername(CurrentUser.username)
-        SetUserInfo(CurrentUser)
+        const CurrentUser = snapshot.val();
+        setUsername(CurrentUser.username);
+        setUserInfo(CurrentUser);
       } else {
         console.log('No such document!');
       }
@@ -75,16 +114,11 @@ const initializingUsers = async () => {
   };
 
   const renderChatItem = ({ item }) => {
-    if (!item || !item.id || !item.username) { return null; }
+    if (!item || !item.id || item.id === email) return null;
 
-    if (item.id === email) { return null; }
     const currentTime = Date.now();
     const timeDifference = currentTime - item.LastSeen;
-    Active = false
-
-    if (timeDifference < 12000) {
-    Active = true
-    }
+    const isActive = timeDifference < 12000;
 
     const imageUri = item.image && item.image !== '' ? { uri: item.image } : require('../assets/icon.png');
 
@@ -93,9 +127,11 @@ const initializingUsers = async () => {
         style={styles.card}
         onPress={() => navigation.navigate("ChatScreen", { chatId: item, name: UserInfo })}
       >
-        {Active && <TouchableOpacity style={{ position: 'absolute', right: 20 }}>
-          <Icon name='dot-circle-o' color='green' size={15} />
-        </TouchableOpacity>}
+        {isActive && (
+          <TouchableOpacity style={{ position: 'absolute', right: 20 }}>
+            <Icon name='dot-circle-o' color='green' size={15} />
+          </TouchableOpacity>
+        )}
         <View style={styles.textContainer}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Image source={imageUri} style={styles.avatar} />
@@ -106,45 +142,55 @@ const initializingUsers = async () => {
     );
   };
 
-
   return (
-
     <ImageBackground
       source={require('../assets/Images/background.jpg')}
       style={styles.backgroundImage}
       resizeMode="stretch"
-
     >
-
       <View style={styles.container}>
-        {users.length === 1 && <Text style={{ position: 'absolute', color: '#fff', fontSize: 18, top: '50%', fontFamily: 'Nunito', alignSelf: 'center' }}>Sorry No User Is There 😥</Text>}
+        {!users.length && (
+          <Text style={{ position: 'absolute', color: '#fff', fontSize: 16, top: '50%', fontFamily: 'Nunito', alignSelf: 'center' }}>
+            Sorry, Currently You Don't have any friend
+          </Text>
+        )}
         <StatusBar barStyle="light-content" backgroundColor="#121212" />
         <View style={styles.header}>
-          {username ?
-            <Text style={styles.title}>Hii, {username}</Text> :
+          {username ? (
+            <Text style={styles.title}>Hii, {username}</Text>
+          ) : (
             <Text></Text>
-          }
-          <Icon name="gear" size={30} color="#ffffff" onPress={() => navigation.navigate('SettingPage', { uid: uid, user: UserInfo })} style={styles.icon} />
+          )}
+          <Icon
+            name="gear"
+            size={30}
+            color="#ffffff"
+            onPress={() => navigation.navigate('SettingPage', { uid: uid, user: UserInfo })}
+            style={styles.icon}
+          />
         </View>
         <FlatList
           data={users}
           renderItem={renderChatItem}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.flatListContent}
+          ListEmptyComponent={() => (
+            <View>
+              <Text>No Data Available</Text>
+            </View>
+          )}
         />
-
-
         <View style={styles.BottomIcons}>
           <TouchableOpacity>
             <UserIcon strokeWidth={0} />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => { navigation.navigate("Status", { uid: uid, user: UserInfo }) }}>
+          <TouchableOpacity onPress={() => navigation.navigate("Status", { uid: uid, user: UserInfo })}>
             <StatusIcon />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => { navigation.navigate("Call", { uid: uid, user: UserInfo }) }}>
+          <TouchableOpacity onPress={() => navigation.navigate("Call", { uid: uid, user: UserInfo })}>
             <CallIcon />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => { navigation.navigate("AddFriend", { uid: uid, user: UserInfo }) }}>
+          <TouchableOpacity onPress={() => navigation.navigate("AddFriend", { uid: uid, user: UserInfo })}>
             <AddFriendIcon />
           </TouchableOpacity>
         </View>
