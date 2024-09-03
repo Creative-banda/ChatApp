@@ -17,7 +17,7 @@ const ChatAppHomePage = ({ navigation, uid, email }) => {
     if (uid) {
       
       fetchUsername(uid);
-      fetchFriendsAndUsers(uid);  // Initial fetch
+      fetchFriendsAndUsers(uid); 
     }
   
     // Listen for changes in the Users table
@@ -46,7 +46,8 @@ const ChatAppHomePage = ({ navigation, uid, email }) => {
             image: userData[key].ProfilePic,
             username: userData[key].username,
             Phone: userData[key].PhoneNumber,
-            LastSeen: userData[key].LastSeen
+            LastSeen: userData[key].LastSeen,
+            Status : userData[key].Status
           })).filter(user => uniqueUids.has(user.name));
   
           setUsers(filteredUsers);
@@ -84,10 +85,13 @@ const ChatAppHomePage = ({ navigation, uid, email }) => {
             image: userData[key].ProfilePic,
             username: userData[key].username,
             Phone: userData[key].PhoneNumber,
-            LastSeen: userData[key].LastSeen
+            LastSeen: userData[key].LastSeen,
+            Status : userData[key].Status
           })).filter(user => uniqueUids.has(user.name));
 
           setUsers(filteredUsers);
+
+          
         }
       } else {
         console.log('No friend data available');
@@ -184,7 +188,7 @@ const ChatAppHomePage = ({ navigation, uid, email }) => {
           <TouchableOpacity>
             <UserIcon strokeWidth={0} />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate("Status", { uid: uid, user: UserInfo })}>
+          <TouchableOpacity onPress={() => navigation.navigate("Status", { uid: uid, user: UserInfo, friendList : users })}>
             <StatusIcon />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => navigation.navigate("Call", { uid: uid, user: UserInfo })}>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {  useState } from 'react';
 import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, Modal, Alert, ActivityIndicator } from 'react-native';
 import { storage, database } from '../config';
 import { ref, uploadBytes, getDownloadURL, deleteObject, getStorage } from 'firebase/storage';
@@ -14,56 +14,28 @@ import { useRoute } from '@react-navigation/native';
 import { MaterialIcons } from 'react-native-vector-icons';
 import { Ionicons } from 'react-native-vector-icons';
 import AddFriendIcon from '../assets/SVG/AddFriendIcon';
+import { err } from 'react-native-svg';
 
 const StoryStatusScreen = ({ navigation }) => {
     const route = useRoute();
-    const { uid, user } = route.params;
-    const [Stories, SetStories] = useState([]);
+    const { uid, user, friendList } = route.params;
     const [selectedStory, setSelectedStory] = useState(null);
     const [modalVisible, setModalVisible] = useState(false);
     const [imageUri, setImageUri] = useState('');
     const [IsUploading, SetUploading] = useState(false);
     const [inputText, setInputText] = useState('');
     const [storyActionModalVisible, setStoryActionModalVisible] = useState(false);
-    const [myStatus, setMyStatus] = useState(null);
-
-    useEffect(() => {
-        initializingUsers();
-    }, []);
-
-    const initializingUsers = async () => {
-        try {
-            let UserData = databaseRef(database, 'Users');
-            const snapshot = await get(UserData);
-            if (snapshot.exists()) {
-                const userData = snapshot.val();
-                const statusList = Object.values(userData);
-                SetStories(statusList);
-                const userStatus = statusList.find(item => item.email === user.email);
-                if (userStatus) {
-                    setMyStatus(userStatus || {});
-                }
-            } else {
-                console.log('No data available');
-            }
-        } catch (error) {
-            console.error("Error fetching data: ", error);
-        }
-    };
-
+    
+    
     const deleteImageFromStorage = async () => {
         const storage = getStorage();
 
         try {
-            const url = myStatus.Status.url;
+            const url = user.Status.url;
             const path = url.split('/o/')[1].split('?')[0].replace(/%2F/g, '/');
 
-            console.log("Extracted Path:", path);
-
             const storageRef = ref(storage, path);
-
             await deleteObject(storageRef);
-
             console.log('Image deleted successfully');
             return true;
         } catch (error) {
@@ -74,7 +46,6 @@ const StoryStatusScreen = ({ navigation }) => {
             return false;
         }
     };
-
 
 
     const handleAddStory = () => {
@@ -101,9 +72,7 @@ const StoryStatusScreen = ({ navigation }) => {
     };
 
     const handleViewStory = async () => {
-        console.log("My Status");
-
-        setSelectedStory(myStatus);
+        setSelectedStory(user);
         setModalVisible(true);
     }
 
@@ -130,7 +99,7 @@ const StoryStatusScreen = ({ navigation }) => {
                 console.log("No story to remove");
             }
         } catch (error) {
-            console.log("Error");
+            console.log("Error",error);
         }
         finally {
             SetUploading(false);
@@ -166,7 +135,6 @@ const StoryStatusScreen = ({ navigation }) => {
             const storageRef = ref(storage, filename);
             await uploadBytes(storageRef, blob);
             const url = await getDownloadURL(storageRef);
-            console.log("Download Link:", url);
 
             await UpdatingDatabase(url);
             setImageUri(null);
@@ -179,14 +147,13 @@ const StoryStatusScreen = ({ navigation }) => {
     };
 
     const handleStoryPress = (item) => {
-        console.log("Selecting Other Story");
 
         setSelectedStory(item);
         setModalVisible(true);
     };
 
     const renderStories = ({ item }) => {
-        if (item.email.trim() === user.email.trim() || !item.Status.url) {
+        if (item.id === user.email || !item.Status.url) {
             return null;
         }
 
@@ -215,13 +182,13 @@ const StoryStatusScreen = ({ navigation }) => {
             <TouchableOpacity style={styles.addStoryContainer} onPress={handleAddStory}>
                 <MaterialIcons name="manage-accounts" color="#fff" size={22} />
                 <Text style={styles.addStoryText}>
-                    {myStatus?.Status.url ? 'Manage Story' : 'Add Story'}
+                    {user?.Status.url ? 'Manage Story' : 'Add Story'}
                 </Text>
             </TouchableOpacity>
 
             <FlatList
-                data={Stories}
-                keyExtractor={(item) => item.email}
+                data={friendList}
+                keyExtractor={(item) => item.id}
                 renderItem={renderStories}
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={styles.storyList}
@@ -259,12 +226,12 @@ const StoryStatusScreen = ({ navigation }) => {
                             <Text style={styles.modalButtonText}>Add Story</Text>
                         </TouchableOpacity>
 
-                        {myStatus?.Status.url && <TouchableOpacity onPress={handleViewStory} style={styles.modalButton}>
+                        {user?.Status.url && <TouchableOpacity onPress={handleViewStory} style={styles.modalButton}>
                             <Ionicons name="eye-outline" size={24} color="#fff" style={styles.icon} />
                             <Text style={styles.modalButtonText}>View Story</Text>
                         </TouchableOpacity>}
 
-                        {myStatus?.Status.url && <TouchableOpacity onPress={handleRemoveStory} style={styles.modalButton}>
+                        {user?.Status.url && <TouchableOpacity onPress={handleRemoveStory} style={styles.modalButton}>
                             {IsUploading ? <ActivityIndicator size='small' color="#fff" /> : <>
                                 <Ionicons name="trash-outline" size={24} color="#fff" style={styles.icon} />
                                 <Text style={styles.modalButtonText}>Remove Story</Text>

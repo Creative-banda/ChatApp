@@ -16,6 +16,7 @@ const CallHistoryScreen = ({ navigation }) => {
   const route = useRoute();
   const [callHistory, setCallHistory] = useState([]);
   const { uid, user } = route.params;
+  
 
 
   useEffect(() => {
@@ -31,10 +32,10 @@ const CallHistoryScreen = ({ navigation }) => {
         const formattedData = Object.keys(data).map(key => ({ id: key, ...data[key] }));
         formattedData.sort((a, b) =>  new Date(b.time) - new Date(a.time));
         
+        
         setCallHistory(formattedData);
       } else {
         console.log("No Data");
-
       }
     } catch (error) {
       console.error("Error fetching user history: ", error);
@@ -57,7 +58,6 @@ const CallHistoryScreen = ({ navigation }) => {
   const formatTimestamp = (timestamp) => {
     const date = new Date(timestamp);
 
-    // Example formatting
     const options = {
       year: 'numeric',
       month: '2-digit',
@@ -73,8 +73,8 @@ const CallHistoryScreen = ({ navigation }) => {
 
   const renderCallItem = ({ item }) => {
     
-    const isCurrentUser = user.id === item.senderuid;
-    console.log(isCurrentUser);
+    let isCurrentUser = uid == item.senderuid;
+    console.log("Current User Is there",isCurrentUser);
     
     const profilePic = isCurrentUser ? item.receiverprofile : item.senderprofile;
     const name = isCurrentUser ? item.receiverusername : item.senderusername;
