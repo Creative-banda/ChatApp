@@ -1,4 +1,4 @@
-import React, {  useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, Modal, Alert, ActivityIndicator } from 'react-native';
 import { storage, database } from '../config';
 import { ref, uploadBytes, getDownloadURL, deleteObject, getStorage } from 'firebase/storage';
@@ -14,7 +14,6 @@ import { useRoute } from '@react-navigation/native';
 import { MaterialIcons } from 'react-native-vector-icons';
 import { Ionicons } from 'react-native-vector-icons';
 import AddFriendIcon from '../assets/SVG/AddFriendIcon';
-import { err } from 'react-native-svg';
 
 const StoryStatusScreen = ({ navigation }) => {
     const route = useRoute();
@@ -25,8 +24,18 @@ const StoryStatusScreen = ({ navigation }) => {
     const [IsUploading, SetUploading] = useState(false);
     const [inputText, setInputText] = useState('');
     const [storyActionModalVisible, setStoryActionModalVisible] = useState(false);
-    
-    
+    const [filteredFriendList, setFilteredFriendList] = useState([]);
+
+    useEffect(() => {
+        setFilteredFriendList(filterFriendList(friendList));
+    }, [friendList, user.email]);
+
+
+    const filterFriendList = (list) => {
+        return list.filter(item => item.id !== user.email && item.Status.url);
+    };
+
+
     const deleteImageFromStorage = async () => {
         const storage = getStorage();
 
@@ -99,7 +108,7 @@ const StoryStatusScreen = ({ navigation }) => {
                 console.log("No story to remove");
             }
         } catch (error) {
-            console.log("Error",error);
+            console.log("Error", error);
         }
         finally {
             SetUploading(false);
@@ -151,11 +160,13 @@ const StoryStatusScreen = ({ navigation }) => {
         setSelectedStory(item);
         setModalVisible(true);
     };
+    const EmptyListComponent = () => (
+        <View style={styles.noStoriesContainer}>
+            <Text style={styles.noStoriesText}>Looks like it's quiet here... for now</Text>
+        </View>
+    );
 
     const renderStories = ({ item }) => {
-        if (item.id === user.email || !item.Status.url) {
-            return null;
-        }
 
         return (
             <TouchableOpacity style={styles.storyContainer} onPress={() => handleStoryPress(item)}>
@@ -187,11 +198,12 @@ const StoryStatusScreen = ({ navigation }) => {
             </TouchableOpacity>
 
             <FlatList
-                data={friendList}
+                data={filteredFriendList}
                 keyExtractor={(item) => item.id}
                 renderItem={renderStories}
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={styles.storyList}
+                ListEmptyComponent={EmptyListComponent}
             />
 
             <View style={styles.BottomIcons}>
@@ -370,6 +382,17 @@ const styles = StyleSheet.create({
     icon: {
         position: 'absolute',
         left: 20
+    },
+    noStoriesContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingTop:50
+    },
+    noStoriesText: {
+        fontSize: 18,
+        color: '#fff',
+        fontFamily: 'Nunito',
     },
 });
 

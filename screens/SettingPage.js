@@ -1,4 +1,4 @@
-import { View, Text, ImageBackground, StyleSheet, SafeAreaView, TouchableOpacity, Alert,Linking } from "react-native";
+import { View, Text, ImageBackground, StyleSheet, SafeAreaView, TouchableOpacity, Alert, Linking } from "react-native";
 import { useState } from "react";
 import { getAuth, signOut } from 'firebase/auth';
 import CustomAlert from '../components/CustomAlert';
@@ -10,6 +10,9 @@ import { ref, remove } from 'firebase/database';
 import BackButton from '../assets/SVG/BackButton';
 import SettingsItem from '../components/SettingsItem';
 import { useRoute } from '@react-navigation/native';
+import AntDesign from 'react-native-vector-icons/AntDesign'
+import { LinearGradient } from 'expo-linear-gradient';
+
 
 export default function SettingPage({ navigation }) {
     const [alertVisible, setAlertVisible] = useState(false);
@@ -54,12 +57,12 @@ export default function SettingPage({ navigation }) {
             Alert.alert('Error', 'Failed to delete account. Please try again.');
         }
     };
-    
+
 
     const handleContactUs = () => {
         const recipient = 'khanahtesham0769@gmail.com';
         Linking.openURL(`mailto:${recipient}`);
-      };
+    };
 
     return (
         <ImageBackground source={require('../assets/Images/background.jpg')} style={styles.backgroundImage}>
@@ -74,11 +77,36 @@ export default function SettingPage({ navigation }) {
                         <SettingsItem title="Profile" IconName="user" onPress={() => navigation.navigate('Profile', { uid: uid })} />
                         <SettingsItem title="Notification" IconName="notification" />
                         <SettingsItem title="Logout" IconName="logout" onPress={handleLogout} />
-                        <SettingsItem title="Delete Account" IconName="delete" onPress={() => setPromptVisible(true)}/>
+                        <SettingsItem title="Delete Account" IconName="delete" onPress={() => setPromptVisible(true)} />
 
                         <Text style={{ fontSize: 20, fontWeight: 'bold', color: 'rgba(255, 255, 255, 0.8)', marginLeft: 20, marginTop: 20 }}>Feedback</Text>
-                        <SettingsItem title="Contact Us" IconName="mail" onPress={handleContactUs}/>
-                        <SettingsItem title="Rate Us" IconName="staro"  onPress={()=>{navigation.navigate('RateUs', { uid: uid })}}/>
+                        <SettingsItem title="Contact Us" IconName="mail" onPress={handleContactUs} />
+                        <SettingsItem title="Rate Us" IconName="staro" onPress={() => { navigation.navigate('RateUs', { uid: uid }) }} />
+                    </View>
+                    <View style={styles.bottomContainer}>
+                        <TouchableOpacity onPress={()=>{Linking.openURL('https://www.instagram.com/ahz_khn_05/')}}>
+
+                            <LinearGradient
+                                colors={['#405DE6', '#5B51D8', '#833AB4', "#C13584", "#E1306C", "#FD1D1D", "#F56040", "#777737"]}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 1, y: 1 }}
+                                style={{
+                                    padding: 4,
+                                    borderRadius: 10,
+                                }}
+                            >
+                                <AntDesign name="instagram" color={'#fff'} size={28} />
+                            </LinearGradient>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity onPress={()=>{Linking.openURL('https://github.com/Creative-banda')}}>
+                        <AntDesign name="github" color={'#fff'} size={28} />
+                        </TouchableOpacity>
+
+                        <TouchableOpacity onPress={()=>{Linking.openURL('https://www.linkedin.com/in/ahtesham-khan-808260311/')}}>
+                        <AntDesign name="linkedin-square" color={'#58A7E3'} size={28} />
+                        </TouchableOpacity>
+
                     </View>
                 </View>
             </SafeAreaView>
@@ -141,11 +169,18 @@ const styles = StyleSheet.create({
         color: 'rgba(255, 255, 255, 0.8)',
         marginTop: 30,
         marginLeft: 30,
-        marginBottom: 20,
     },
     settingContainer: {
         flex: 1,
         backgroundColor: 'rgba(22, 23, 24, 0.5)',
         padding: 20,
     },
+    bottomContainer: {
+        position: 'absolute',
+        bottom: 30,
+        width: '100%',
+        justifyContent: 'space-around',
+        alignItems: 'center',
+        flexDirection: 'row',
+    }
 });

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity,Image,Linking } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, Image, Linking } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import Icon from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -16,7 +16,7 @@ const CallHistoryScreen = ({ navigation }) => {
   const route = useRoute();
   const [callHistory, setCallHistory] = useState([]);
   const { uid, user } = route.params;
-  
+
 
 
   useEffect(() => {
@@ -30,9 +30,10 @@ const CallHistoryScreen = ({ navigation }) => {
       if (snapshot.exists()) {
         const data = snapshot.val();
         const formattedData = Object.keys(data).map(key => ({ id: key, ...data[key] }));
-        formattedData.sort((a, b) =>  new Date(b.time) - new Date(a.time));
-        
-        
+        formattedData.sort((a, b) => new Date(b.time) - new Date(a.time));
+
+
+
         setCallHistory(formattedData);
       } else {
         console.log("No Data");
@@ -71,42 +72,53 @@ const CallHistoryScreen = ({ navigation }) => {
     return date.toLocaleString('en-US', options);
   };
 
-  const renderCallItem = ({ item }) => {
-    
-    let isCurrentUser = uid == item.senderuid;
-    console.log("Current User Is there",isCurrentUser);
-    
-    const profilePic = isCurrentUser ? item.receiverprofile : item.senderprofile;
-    const name = isCurrentUser ? item.receiverusername : item.senderusername;
-    const imageUri = profilePic ? { uri: profilePic } : require('../assets/icon.png');
-  
-    const formattedDate = formatTimestamp(item.time);
-  
-    return (
-      <TouchableOpacity
-        style={styles.callContainer}
-        onPress={() => navigation.navigate('OtherProfile', { uid: item.FromUserId })}
-      >
-        {isCurrentUser ? (
-          <MaterialIcons name="call-made" size={24} color="green" />
-        ) : (
-          <MaterialIcons name="call-received" size={24} color="blue" />
-        )}
-        <View style={styles.callDetails}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Image source={imageUri} style={styles.avatar} />
-            <Text style={styles.callerName}>{name}</Text>
-          </View>
-          <Text style={styles.callTime}>{formattedDate}</Text>
-        </View>
-        <TouchableOpacity onPress={() => makePhoneCall(item.UserNumber)}>
-          <MaterialIcons name="phone" size={24} color="#fff" style={styles.callIcon} />
-        </TouchableOpacity>
-      </TouchableOpacity>
-    );
-  };
-  
+ const renderCallItem = ({ item }) => {
+    const isCurrentUser = uid === item.senderuid;
 
+    console.log("UID:", uid);
+    console.log("Sender UID:", item.senderuid);
+    console.log("Receiver UID:", item.receiveruid);
+    console.log("Is Current User:", isCurrentUser);
+
+    let profilePic = '';
+    let name = '';
+
+    if (isCurrentUser) {
+        profilePic = item.receiverprofile;
+        name = item.receiverusername;
+        console.log("Current User (Receiver):", name);
+    } else {
+        profilePic = item.senderprofile;
+        name = item.senderusername;
+        console.log("Other User (Sender):", name);
+    }
+
+    const imageUri = profilePic ? { uri: profilePic } : require('../assets/icon.png');
+    const formattedDate = formatTimestamp(item.time);
+
+    return (
+        <TouchableOpacity
+            style={styles.callContainer}
+            onPress={() => navigation.navigate('OtherProfile', { uid: isCurrentUser ? item.receiveruid : item.senderuid })}
+        >
+            {isCurrentUser ? (
+                <MaterialIcons name="call-made" size={24} color="green" />
+            ) : (
+                <MaterialIcons name="call-received" size={24} color="blue" />
+            )}
+            <View style={styles.callDetails}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Image source={imageUri} style={styles.avatar} />
+                    <Text style={styles.callerName}>{name}</Text>
+                </View>
+                <Text style={styles.callTime}>{formattedDate}</Text>
+            </View>
+            <TouchableOpacity onPress={() => makePhoneCall(item.UserNumber)}>
+                <MaterialIcons name="phone" size={24} color="#fff" style={styles.callIcon} />
+            </TouchableOpacity>
+        </TouchableOpacity>
+    );
+};
 
   return (
     <View style={styles.container}>
@@ -116,7 +128,7 @@ const CallHistoryScreen = ({ navigation }) => {
         </TouchableOpacity>
         <Text style={styles.header}>Call History</Text>
       </View>
-      {callHistory.length !=0 && <FlatList
+      {callHistory.length != 0 && <FlatList
         data={callHistory}
         keyExtractor={(item) => item.id}
         renderItem={renderCallItem}

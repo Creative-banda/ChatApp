@@ -13,11 +13,9 @@ const AddFriendsScreen = ({ navigation }) => {
     const route = useRoute();
     const { uid, user } = route.params;
     const [users, setUsers] = useState([]);
-    const [uniqueUidList, setUniqueUidList] = useState([]);
 
     useEffect(() => {
         fetchUsers();
-        fetchCurrentUserFriends();
     }, []);
 
     const fetchUsers = async () => {
@@ -32,7 +30,12 @@ const AddFriendsScreen = ({ navigation }) => {
                     image: userData[key].ProfilePic,
                     username: userData[key].username,
                 }));
-                setUsers(usersList);
+                
+                // Filter out users who are already friends
+                const uniqueUids = await fetchCurrentUserFriends();
+                const filteredUsers = usersList.filter(user => user.id !== uid && !uniqueUids.has(user.id));
+
+                setUsers(filteredUsers);
 
             } else {
                 console.log('No data available');
@@ -49,22 +52,24 @@ const AddFriendsScreen = ({ navigation }) => {
             if (snapshot.exists()) {
                 const userData = snapshot.val();
 
-                const filteredUsers = Object.values(userData);
                 const uniqueUids = new Set();
-                filteredUsers.forEach(item => {
+                Object.values(userData).forEach(item => {
                     uniqueUids.add(item.receiveruid);
                     uniqueUids.add(item.senderuid);
                 });
-                setUniqueUidList(Array.from(uniqueUids));
                 
+                return uniqueUids;
                 
             } else {
                 console.log('No data available');
+                return new Set(); // Return an empty set if no data is available
             }
         } catch (error) {
             console.error('Error fetching data:', error);
+            return new Set(); // Return an empty set if an error occurs
         }
     };
+    
     function generateRandomId() {
         return Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
     }
@@ -96,10 +101,6 @@ const AddFriendsScreen = ({ navigation }) => {
     };
 
     const renderFriendItem = ({ item }) => {
-        if (item.id === uid || uniqueUidList.includes(item.id)) {
-            return null;
-        }
-    
         const imageUri = item.image && item.image !== '' ? { uri: item.image } : require('../assets/icon.png');
     
         return (

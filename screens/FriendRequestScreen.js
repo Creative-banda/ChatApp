@@ -45,7 +45,8 @@ const FriendRequestScreen = ({ navigation }) => {
         await update(Otherreq, { Status: 'Accept' });
 
         const users = UserList.filter(user => user.requestId != messageId);
-
+    
+        
         SetUserlist(users)
 
     }
