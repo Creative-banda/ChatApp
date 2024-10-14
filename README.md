@@ -33,16 +33,16 @@ This is a fully-featured chat application built using **React Native** and **Fir
 ## 📸 Screenshots
 
 
-<img src="https://github.com/user-attachments/assets/efa1f983-cf63-4403-a77e-28ab4be2a6a1" alt="Login" width="300"/>
-<img src="https://github.com/user-attachments/assets/9af56700-af7a-4750-8a39-2db0a5aab98e" alt="SignUp" width="300"/>
-<img src="https://github.com/user-attachments/assets/694ff1db-a4cf-455a-bf3f-430743c2f567" alt="ForgetPassword" width="300"/>
-<img src="https://github.com/user-attachments/assets/bd767220-e480-4ee9-b116-4ca70157f053" alt="HomeScreen" width="300"/>
-<img src="https://github.com/user-attachments/assets/198ae3c8-29be-48e2-aebc-18e3a14ee666" alt="StatusScreen" width="300"/>
-<img src="https://github.com/user-attachments/assets/1b155313-9804-4ddf-8032-202b39360985" alt="CallHistory" width="300"/>
-<img src="https://github.com/user-attachments/assets/95f10726-935a-47da-8d77-bb8bc9bf3133" alt="AddFriend" width="300"/>
-<img src="https://github.com/user-attachments/assets/75141054-a6f2-4701-8582-2e17ecd3c529" alt="SendRecvRequest" width="300"/>
-<img src="https://github.com/user-attachments/assets/480fdab0-b322-4148-9f3c-0a26c4b72c9f" alt="Setting" width="300"/>
-<img src="https://github.com/user-attachments/assets/d4095a5f-62fe-485a-9446-82608df8a311" alt="EditProfile" width="300"/>
+<img src="https://github.com/user-attachments/assets/10ac91dd-e97b-4901-8795-d1bc087604fd" alt="Login" width="300"/>
+<img src="https://github.com/user-attachments/assets/c03715f8-8335-4d20-a045-1533c839bf94" alt="SignUp" width="300"/>
+<img src="https://github.com/user-attachments/assets/928a7b7c-280a-4c2a-9cac-fb9085732eea" alt="ForgetPassword" width="300"/>
+<img src="https://github.com/user-attachments/assets/77a579b0-82b2-49b9-8df7-d49694177c80" alt="HomeScreen" width="300"/>
+<img src="https://github.com/user-attachments/assets/0ebe0c07-b3be-4cde-9978-0a2b41d47910" alt="StatusScreen" width="300"/>
+<img src="https://github.com/user-attachments/assets/42ffa78d-d2f5-4bb4-bbeb-24f501c29fb8" alt="CallHistory" width="300"/>
+<img src="https://github.com/user-attachments/assets/6d84eb7a-fdaf-447d-b511-8dff78917b94" alt="AddFriend" width="300"/>
+<img src="https://github.com/user-attachments/assets/d9051fcd-0cdb-4ac4-844f-59903ce95817" alt="SendRecvRequest" width="300"/>
+<img src="https://github.com/user-attachments/assets/690bdaef-3fb1-4723-9397-cda821f218eb" alt="Setting" width="300"/>
+<img src="https://github.com/user-attachments/assets/40de8acc-8e63-459d-a77f-1b6eac30d998" alt="EditProfile" width="300"/>
 
 
 
