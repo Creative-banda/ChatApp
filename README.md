@@ -37,12 +37,14 @@ This is a fully-featured chat application built using **React Native** and **Fir
 <img src="https://github.com/user-attachments/assets/c03715f8-8335-4d20-a045-1533c839bf94" alt="SignUp" width="300"/>
 <img src="https://github.com/user-attachments/assets/928a7b7c-280a-4c2a-9cac-fb9085732eea" alt="ForgetPassword" width="300"/>
 <img src="https://github.com/user-attachments/assets/77a579b0-82b2-49b9-8df7-d49694177c80" alt="HomeScreen" width="300"/>
+<img src="https://github.com/user-attachments/assets/42c89e9e-2dd2-4723-8e93-dc6305d5b7db" alt="ChatScreen" width="300"/>
 <img src="https://github.com/user-attachments/assets/0ebe0c07-b3be-4cde-9978-0a2b41d47910" alt="StatusScreen" width="300"/>
 <img src="https://github.com/user-attachments/assets/42ffa78d-d2f5-4bb4-bbeb-24f501c29fb8" alt="CallHistory" width="300"/>
 <img src="https://github.com/user-attachments/assets/6d84eb7a-fdaf-447d-b511-8dff78917b94" alt="AddFriend" width="300"/>
 <img src="https://github.com/user-attachments/assets/d9051fcd-0cdb-4ac4-844f-59903ce95817" alt="SendRecvRequest" width="300"/>
 <img src="https://github.com/user-attachments/assets/690bdaef-3fb1-4723-9397-cda821f218eb" alt="Setting" width="300"/>
 <img src="https://github.com/user-attachments/assets/40de8acc-8e63-459d-a77f-1b6eac30d998" alt="EditProfile" width="300"/>
+
 
 
 
