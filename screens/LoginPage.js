@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, StatusBar, ActivityIndicator, ImageBackground } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Antdesign from 'react-native-vector-icons/FontAwesome';
@@ -27,11 +27,15 @@ const LoginPage = ({ navigation }) => {
       try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
-        navigation.navigate("Home", { uid: user.uid });
+        if (user.emailVerified) {
+          navigation.navigate("Home", { uid: user.uid });
+        } else {
+          console.log("User Not Verified");
+        }
       } catch (error) {
         handleAuthError(error);
       }
-      finally{
+      finally {
         setLoading(false);
         setDisable(false);
         setPassword('')
@@ -42,7 +46,7 @@ const LoginPage = ({ navigation }) => {
   const handleAuthError = (error) => {
     let message = "";
     let title = "Login Error";
-  
+
     switch (error.code) {
       case 'auth/invalid-credential':
         message = 'The credential provided is invalid. Please try again.';
@@ -52,12 +56,12 @@ const LoginPage = ({ navigation }) => {
         message = `Not Able to Login Please check your mail and password`;
         break;
     }
-  
+
     setAlertMessage(message);
     setAlertTitle(title);
     setAlertVisible(true);
   };
-    
+
 
   return (
     <ImageBackground source={require('../assets/Images/Registration.jpg')} style={styles.BackgroundImage}>
@@ -99,7 +103,7 @@ const LoginPage = ({ navigation }) => {
               </TouchableOpacity>
             </View>
           </View>
-          <TouchableOpacity onPress={() => navigation.navigate("ForgetPassword")} style={{width:'100%',alignItems:'flex-end',paddingBottom:20}}>
+          <TouchableOpacity onPress={() => navigation.navigate("ForgetPassword")} style={{ width: '100%', alignItems: 'flex-end', paddingBottom: 20 }}>
             <Text style={styles.newUserText}>ForgetPassword ?</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.loginButton} onPress={handleLogin} disabled={disable}>
@@ -109,11 +113,11 @@ const LoginPage = ({ navigation }) => {
               <Text style={styles.buttonText}>Login</Text>
             )}
           </TouchableOpacity>
-          <View style = {{flexDirection:'row',width:'100%',alignItems:'center',justifyContent:'center',paddingTop:20}}>
-            <Text style={{color:'#CFCECD',fontFamily:'Lato',paddingHorizontal:10}}>Click here for</Text>
-          <TouchableOpacity onPress={() => navigation.navigate("SignUp")}>
-            <Text style={styles.newUserText}>SignUp</Text>
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', width: '100%', alignItems: 'center', justifyContent: 'center', paddingTop: 20 }}>
+            <Text style={{ color: '#CFCECD', fontFamily: 'Lato', paddingHorizontal: 10 }}>Click here for</Text>
+            <TouchableOpacity onPress={() => navigation.navigate("SignUp")}>
+              <Text style={styles.newUserText}>SignUp</Text>
+            </TouchableOpacity>
           </View>
 
         </KeyboardAvoidingView>
@@ -155,7 +159,7 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     color: '#a0a0a0',
-    paddingLeft:5
+    paddingLeft: 5
   },
   inputContainer: {
     marginBottom: 5,

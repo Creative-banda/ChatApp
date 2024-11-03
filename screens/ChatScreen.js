@@ -37,6 +37,9 @@ const ChatScreen = ({ navigation }) => {
     const statusTimeoutRef = useRef(null);
     const route = useRoute();
     const { chatId, name } = route.params;
+
+    console.log(chatId.token);
+    
     
 
     useEffect(() => {
@@ -365,7 +368,6 @@ const ChatScreen = ({ navigation }) => {
         handleDeselect()
 
     }
-
 
     const renderMessage = ({ item }) => {
         const isMyMessage = item.from.trim().toLowerCase() === name.id.trim().toLowerCase();

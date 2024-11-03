@@ -1,17 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { StyleSheet, View, ImageBackground, StatusBar, Text, FlatList, TouchableOpacity, Image } from 'react-native';
 import { database } from '../config';
 import { ref, get, set } from 'firebase/database';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { useRoute } from '@react-navigation/native';
 import UserIcon from '../assets/SVG/UserIcon';
 import StatusIcon from '../assets/SVG/StatusIcon';
 import CallIcon from '../assets/SVG/CallIcon';
 import AddFriendIcon from '../assets/SVG/AddFriendIcon';
+import AppContext from '../AppContext'
 
 const AddFriendsScreen = ({ navigation }) => {
-    const route = useRoute();
-    const { uid, user } = route.params;
+    const { user } = useContext(AppContext)
     const [users, setUsers] = useState([]);
 
     useEffect(() => {
@@ -33,7 +32,7 @@ const AddFriendsScreen = ({ navigation }) => {
                 
                 // Filter out users who are already friends
                 const uniqueUids = await fetchCurrentUserFriends();
-                const filteredUsers = usersList.filter(user => user.id !== uid && !uniqueUids.has(user.id));
+                const filteredUsers = usersList.filter(user => user.id !== userUid && !uniqueUids.has(user.id));
 
                 setUsers(filteredUsers);
 
@@ -47,7 +46,7 @@ const AddFriendsScreen = ({ navigation }) => {
 
     const fetchCurrentUserFriends = async () => {
         try {
-            const currentuserRef = ref(database, `FriendList/${uid}`);
+            const currentuserRef = ref(database, `FriendList/${userUid}`);
             const snapshot = await get(currentuserRef);
             if (snapshot.exists()) {
                 const userData = snapshot.val();
@@ -77,7 +76,7 @@ const AddFriendsScreen = ({ navigation }) => {
     const handleAddFriend = async (friend) => {
         const id = generateRandomId();
         const request = {
-            senderuid: uid,
+            senderuid: userUid,
             senderusername: user.username,
             senderprofile: user.ProfilePic,
             time: new Date().toISOString(),
@@ -89,7 +88,7 @@ const AddFriendsScreen = ({ navigation }) => {
         };
 
         try {
-            const newMessageRef = ref(database, `FriendList/${uid}/${id}`);
+            const newMessageRef = ref(database, `FriendList/${userUid}/${id}`);
             const otherMessageRef = ref(database, `FriendList/${friend.id}/${id}`);
             await set(otherMessageRef, request);
             await set(newMessageRef, request);
@@ -127,7 +126,7 @@ const AddFriendsScreen = ({ navigation }) => {
                         <Icon name='chevron-back-outline' size={25} color={'#fff'} />
                     </TouchableOpacity>
                     <Text style={styles.header}>Add Friends</Text>
-                    <TouchableOpacity style={{ position: 'absolute', right: 8, top: 10 }} onPress={() => { navigation.navigate('FriendRequest', { uid: uid }) }}>
+                    <TouchableOpacity style={{ position: 'absolute', right: 8, top: 10 }} onPress={() => { navigation.navigate('FriendRequest') }}>
                         <Icon name='notifications-circle' size={30} color='#E7F573' />
                     </TouchableOpacity>
                 </View>
@@ -138,13 +137,13 @@ const AddFriendsScreen = ({ navigation }) => {
                     contentContainerStyle={styles.listContainer}
                 />
                 <View style={styles.BottomIcons}>
-                    <TouchableOpacity onPress={() => navigation.navigate("Home", { uid: uid, user: user })}>
+                    <TouchableOpacity onPress={() => navigation.navigate("Home")}>
                         <UserIcon />
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => navigation.navigate("Status", { uid: uid, user: user })}>
+                    <TouchableOpacity onPress={() => navigation.navigate("Status")}>
                         <StatusIcon />
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => navigation.navigate("Call", { uid: uid, user: user })}>
+                    <TouchableOpacity onPress={() => navigation.navigate("Call")}>
                         <CallIcon />
                     </TouchableOpacity>
                     <TouchableOpacity>
