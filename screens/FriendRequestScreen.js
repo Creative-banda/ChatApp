@@ -3,13 +3,11 @@ import { StyleSheet, View, Text, ImageBackground, TouchableOpacity, FlatList, Im
 import { LinearGradient } from 'expo-linear-gradient';
 import { ref, get,update } from 'firebase/database';
 import { database } from '../config';
-import { useRoute } from '@react-navigation/native';
+import { userUid } from '../AppContext';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 const FriendRequestScreen = ({ navigation }) => {
     const [UserList, SetUserlist] = useState([]);
-    const route = useRoute();
-    const { uid } = route.params;
 
     useEffect(() => {
         initializingUsers();
@@ -17,7 +15,7 @@ const FriendRequestScreen = ({ navigation }) => {
 
     const initializingUsers = async () => {
         try {
-            const userDataRef = ref(database, `FriendList/${uid}`);
+            const userDataRef = ref(database, `FriendList/${userUid}`);
             const snapshot = await get(userDataRef);
             if (snapshot.exists()) {
                 const userData = snapshot.val();
@@ -25,7 +23,7 @@ const FriendRequestScreen = ({ navigation }) => {
                     key: key,
                     ...userData[key]
                 }));
-                const users = userListArray.filter(item => item.Status !== "Accept" && item.senderuid !== uid);
+                const users = userListArray.filter(item => item.Status !== "Accept" && item.senderuid !== userUid);
 
 
                 SetUserlist(users)
@@ -58,7 +56,7 @@ const FriendRequestScreen = ({ navigation }) => {
 
         return (
             <View style={styles.friendItemContainer}>
-                <TouchableOpacity style={styles.friendItem} onPress={() => { navigation.navigate('OtherProfile', { uid: item.id }) }}>
+                <TouchableOpacity style={styles.friendItem} onPress={() => { navigation.navigate('OtherProfile', { userUid: item.id }) }}>
                     <Image source={imageUri} style={styles.avatar} />
                     <Text style={styles.friendName}>{item.senderusername}</Text>
                     <TouchableOpacity
@@ -97,7 +95,7 @@ const FriendRequestScreen = ({ navigation }) => {
                             <Text style={styles.TopButtons}>Receive</Text>
                         </TouchableOpacity>
                         <TouchableOpacity>
-                            <Text style={{ paddingLeft: 20, color: '#fff' }} onPress={() => { navigation.navigate('SendRequest', { uid: uid }) }}>
+                            <Text style={{ paddingLeft: 20, color: '#fff' }} onPress={() => { navigation.navigate('SendRequest', { uid: userUid }) }}>
                                 Send
                             </Text>
                         </TouchableOpacity>

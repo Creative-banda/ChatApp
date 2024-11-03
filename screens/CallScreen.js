@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState,useContext } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity, Image, Linking } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -7,25 +7,21 @@ import CallIcon from '../assets/SVG/CallIcon';
 import StatusIcon from '../assets/SVG/StatusIcon';
 import UserIcon from '../assets/SVG/UserIcon';
 import AddFriendIcon from '../assets/SVG/AddFriendIcon';
-import { useRoute } from '@react-navigation/native';
 import { ref, get } from 'firebase/database';
 import { database } from '../config';
-
+import { AppContext } from '../AppContext';
 
 const CallHistoryScreen = ({ navigation }) => {
-  const route = useRoute();
   const [callHistory, setCallHistory] = useState([]);
-  const { uid, user } = route.params;
-
-
+  const { userUid } = useContext(AppContext)
 
   useEffect(() => {
-    fetchUserHistory(uid)
+    fetchUserHistory(userUid)
   }, [])
 
-  const fetchUserHistory = async (uid) => {
+  const fetchUserHistory = async (userUid) => {
     try {
-      const UserData = ref(database, `CallHistory/${uid}`);
+      const UserData = ref(database, `CallHistory/${userUid}`);
       const snapshot = await get(UserData);
       if (snapshot.exists()) {
         const data = snapshot.val();
@@ -73,9 +69,9 @@ const CallHistoryScreen = ({ navigation }) => {
   };
 
  const renderCallItem = ({ item }) => {
-    const isCurrentUser = uid === item.senderuid;
+    const isCurrentUser = userUid === item.senderuid;
 
-    console.log("UID:", uid);
+    console.log("UID:", userUid);
     console.log("Sender UID:", item.senderuid);
     console.log("Receiver UID:", item.receiveruid);
     console.log("Is Current User:", isCurrentUser);
@@ -99,7 +95,7 @@ const CallHistoryScreen = ({ navigation }) => {
     return (
         <TouchableOpacity
             style={styles.callContainer}
-            onPress={() => navigation.navigate('OtherProfile', { uid: isCurrentUser ? item.receiveruid : item.senderuid })}
+            onPress={() => navigation.navigate('OtherProfile', { userUid: isCurrentUser ? item.receiveruid : item.senderuid })}
         >
             {isCurrentUser ? (
                 <MaterialIcons name="call-made" size={24} color="green" />
@@ -146,13 +142,13 @@ const CallHistoryScreen = ({ navigation }) => {
         <TouchableOpacity onPress={() => { navigation.navigate("Home") }}>
           <UserIcon />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => { navigation.navigate("Status", { uid: uid, user: user }) }}>
+        <TouchableOpacity onPress={() => { navigation.navigate("Status") }}>
           <StatusIcon />
         </TouchableOpacity>
         <TouchableOpacity>
           <CallIcon strokeWidth={3} />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigation.navigate('AddFriend', { uid: uid, user: user })}>
+        <TouchableOpacity onPress={() => navigation.navigate('AddFriend')}>
           <AddFriendIcon />
         </TouchableOpacity>
       </View>

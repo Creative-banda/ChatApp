@@ -21,6 +21,8 @@ import RateUsScreen from './screens/RateUsScreen'
 import { AppProvider } from './AppContext';
 import FriendRequestScreen from './screens/FriendRequestScreen';
 import SendRequestScreen from './screens/SendRequestScreen'
+import NotificationScreen from './screens/NotificationScreen';
+import NotificationPermission from './permissions/NotificationPermission';
 
 const Stack = createStackNavigator();
 
@@ -56,7 +58,7 @@ const App = () => {
   if (initializing || !fontsLoaded) {
     return (
       <View style={styles.container}>
-        <StatusBar color='dark'/>
+        <StatusBar color='dark' />
         <ActivityIndicator size="large" color="#fff" />
       </View>
     );
@@ -65,7 +67,7 @@ const App = () => {
   return (
     <AppProvider uid={user ? user.uid : null}>
       <NavigationContainer>
-
+      <NotificationPermission />
         <Stack.Navigator
           initialRouteName={user ? "Home" : "Login"}
           screenOptions={{
@@ -90,6 +92,7 @@ const App = () => {
           <Stack.Screen name="RateUs" component={RateUsScreen} />
           <Stack.Screen name="FriendRequest" component={FriendRequestScreen} />
           <Stack.Screen name="SendRequest" component={SendRequestScreen} />
+          <Stack.Screen name="Notification" component={NotificationScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </AppProvider>
@@ -101,7 +104,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor:'#000'
+    backgroundColor: '#000'
   },
 });
 

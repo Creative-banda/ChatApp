@@ -3,9 +3,8 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ImageBackgr
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Antdesign from 'react-native-vector-icons/FontAwesome';
 import BackButton from '../assets/SVG/BackButton'
-import VerifyEmailModal from '../components/VerifyMail';
-import auth from '../config';
-import { fetchSignInMethodsForEmail } from 'firebase/auth';
+import { ref, set } from 'firebase/database';
+import { database } from '../config'
 
 const SignupPage = ({ navigation }) => {
   const [username, setUsername] = useState('');
@@ -18,54 +17,74 @@ const SignupPage = ({ navigation }) => {
   const [IsPasswordVisible, setIsPasswordVisible] = useState(false);
   const [IsConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false);
   const [IsLoading, setIsloading] = useState(false);
-  const [VeriftVisible, SetVerifyVisible] = useState(false);
-  const [otp, setotp] = useState(0);
-
   const genderOptions = ['Male', 'Female', 'Other'];
 
   const handleSignUp = async () => {
     setIsloading(true);
-    if (username.trim() === "" || email.trim() === "" || password.trim() === "" || gender.trim() === "" || phoneNumber.trim() === "" || confirmPassword.trim() === "") {
+  
+    if ( username.trim() === "" ||  email.trim() === "" ||  password.trim() === "" ||  gender.trim() === "" ||  phoneNumber.trim() === "" ||  confirmPassword.trim() === "") {
       Alert.alert('Input Error', 'Please fill all fields');
       setIsloading(false);
       return;
     }
+  
     if (password.trim() !== confirmPassword.trim()) {
       Alert.alert("Password Error", "Password and Confirm Password do not match");
       setIsloading(false);
       return;
     }
+  
     if (password.trim().length < 6) {
       Alert.alert("Password Error", "Password must contain at least 6 characters");
       setIsloading(false);
       return;
     }
-
+  
     try {
-        const ConfirmOTP = Math.floor(1000 + Math.random() * 9000).toString();
-        setotp(ConfirmOTP);
-        const url = 'https://script.google.com/macros/s/AKfycbwKUbMXI53zf9Q5AaK2t_BsL-7TlwGtkUwa5ZWzs6Un7srIDn7FNKwtNfqXhWjRbkAnrQ/exec';
-        const res = await fetch(`${url}?recipient=${encodeURIComponent(email)}&otpCode=${encodeURIComponent(ConfirmOTP)}&username=${encodeURIComponent(username)}`);
-        if (res.status == 200) {
-          Alert.alert(
-            "Email Sent",
-            "OTP Sent to " + email,
-            [
-              {
-                text: "OK",
-                onPress: () => SetVerifyVisible(true)
-              }
-            ]
-          );
+      // Create user with Firebase authentication
+      const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
+      const user = userCredential.user;
+  
+      if (user) {
+        // Send verification email
+        await user.sendEmailVerification();
+        Alert.alert(
+          "Verification Email Sent",
+          `A verification email has been sent to ${email}. Please check your inbox.`,
+        );
+      }
+      await set(ref(database, 'Users/' + user.uid), {
+        id: user.uid,
+        username: username,
+        email: email,
+        ProfilePic: "",
+        PhoneNumber: phoneNumber,
+        Gender: gender,
+        LastSeen: "",
+        Birthday: "",
+        Status: {time : '', url : ''},
+        About: "Hey I am Using ChitChat",
+      });
+
+      await set(ref(database, 'chats/' + user.uid), [
+        {
+          To: "Dummy",
+          from: "Dummy",
+          id: "Dummy",
+          message: "Dummy",
+          messageType: "Dummy",
         }
+      ]);
+      
+      navigation.navigate('Login')
     } catch (error) {
       console.error('Error occurred during signup:', error);
+      Alert.alert("Signup Error", error.message || "An error occurred. Please try again.");
     } finally {
       setIsloading(false);
     }
   };
-
-
+  
 
   return (
     <ImageBackground source={require('../assets/Images/Registration.jpg')} style={styles.BackgroundImage}>
@@ -170,16 +189,6 @@ const SignupPage = ({ navigation }) => {
           {IsLoading ? <ActivityIndicator size="small" /> : <Text style={styles.signupButtonText}>Sign Up</Text>}
         </TouchableOpacity>
 
-        <VerifyEmailModal
-          visible={VeriftVisible}
-          onRequestClose={() => SetVerifyVisible(false)}
-          phoneNumber={phoneNumber}
-          gender={gender}
-          username={username}
-          email={email} otp={otp}
-          password={password}
-          navigation={navigation}
-        />
       </View>
     </ImageBackground>
   );

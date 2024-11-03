@@ -24,6 +24,8 @@ export default function Profile({ navigation }) {
     const [About, setAbout] = useState('');
     const [Gender, setGender] = useState('');
     const [Isloading, SetLoading] = useState(false);
+    const [Dpurl, setDpurl] = useState('');
+
 
     useEffect(() => {
         fetchUserData();
@@ -79,6 +81,7 @@ export default function Profile({ navigation }) {
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
             quality: 1,
+            aspect: [4, 3],
         });
 
         if (!result.canceled) {
@@ -110,7 +113,6 @@ export default function Profile({ navigation }) {
         }
     };
 
-
     const updateProfilePic = async (url) => {
         try {
             const userRef = databaseRef(database, `Users/${uid}`);
@@ -131,7 +133,9 @@ export default function Profile({ navigation }) {
                         <Text style={styles.title}>Edit Profile</Text>
                         <View style={styles.body}>
                             <View style={styles.profileContainer}>
+                                <TouchableOpacity onPress={()=>{setDpurl(userInfo.ProfilePic)}}>
                                 <Image source={userInfo?.ProfilePic ? { uri: userInfo.ProfilePic } : require('../assets/icon.png')} style={styles.profile} />
+                                </TouchableOpacity>
                                 <TouchableOpacity style={styles.cameraIcon} onPress={selectImage}>
                                     <Antdesign name="camera" size={22} color='white' />
                                 </TouchableOpacity>
@@ -150,6 +154,8 @@ export default function Profile({ navigation }) {
                     </View>
                     {imageUri && <DisplayImage imageUri={imageUri} setImageUri={setImageUri} Done={uploadImage} Isloading={Isloading} />}
                 </ScrollView>
+                {Dpurl && userInfo?.ProfilePic && <DisplayImage imageUri={Dpurl} setImageUri={setDpurl} />}
+
             </KeyboardAvoidingView>
         </ImageBackground>
     );

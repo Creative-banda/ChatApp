@@ -1,17 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet, StatusBar, ImageBackground } from 'react-native';
 import { database } from '../config';
-import { ref, get, onValue } from 'firebase/database';
+import { ref, get, onValue, set } from 'firebase/database';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import UserIcon from '../assets/SVG/UserIcon';
 import StatusIcon from '../assets/SVG/StatusIcon';
 import CallIcon from '../assets/SVG/CallIcon';
 import AddFriendIcon from '../assets/SVG/AddFriendIcon';
+import { AppContext } from '../AppContext';
 
 const ChatAppHomePage = ({ navigation, uid, email }) => {
   const [users, setUsers] = useState([]);
   const [username, setUsername] = useState('');
   const [UserInfo, setUserInfo] = useState('');
+  const { setFriendList, setUser } = useContext(AppContext);
 
   useEffect(() => {
     if (uid) {
@@ -20,7 +22,6 @@ const ChatAppHomePage = ({ navigation, uid, email }) => {
       fetchFriendsAndUsers(uid); 
     }
   
-    // Listen for changes in the Users table
     const userStatusListener = ref(database, 'Users');
     const unsubscribe = onValue(userStatusListener, async (snapshot) => {
       if (snapshot.exists()) {
@@ -90,8 +91,7 @@ const ChatAppHomePage = ({ navigation, uid, email }) => {
           })).filter(user => uniqueUids.has(user.name));
 
           setUsers(filteredUsers);
-
-          
+          setFriendList(filteredUsers);          
         }
       } else {
         console.log('No friend data available');
@@ -109,6 +109,7 @@ const ChatAppHomePage = ({ navigation, uid, email }) => {
         const CurrentUser = snapshot.val();
         setUsername(CurrentUser.username);
         setUserInfo(CurrentUser);
+        setUser(CurrentUser);
       } else {
         console.log('No such document!');
       }
@@ -188,13 +189,13 @@ const ChatAppHomePage = ({ navigation, uid, email }) => {
           <TouchableOpacity>
             <UserIcon strokeWidth={0} />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate("Status", { uid: uid, user: UserInfo, friendList : users })}>
+          <TouchableOpacity onPress={() => navigation.navigate("Status")}>
             <StatusIcon />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate("Call", { uid: uid, user: UserInfo })}>
+          <TouchableOpacity onPress={() => navigation.navigate("Call")}>
             <CallIcon />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate("AddFriend", { uid: uid, user: UserInfo })}>
+          <TouchableOpacity onPress={() => navigation.navigate("AddFriend")}>
             <AddFriendIcon />
           </TouchableOpacity>
         </View>
@@ -231,10 +232,8 @@ const styles = StyleSheet.create({
 
   title: {
     fontSize: 25,
-    fontWeight: 'bold',
     color: '#ffffff',
     fontFamily: 'Lato',
-    fontWeight: '600',
   },
   logoutButton: {
     backgroundColor: '#d32f2f',

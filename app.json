@@ -19,7 +19,8 @@
         "foregroundImage": "./assets/Test.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.ahz_khn_05.ChatApp"
+      "package": "com.ahz_khn_05.ChatApp",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -29,8 +30,9 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "23ec305d-f020-4de8-b990-f9f8a9af8aa8"
+        "projectId": "882adba4-e0f7-44e8-98ed-b085d0bc231a"
       }
-    }
+    },
+    "owner": "ahz_khn_05"
   }
 }
