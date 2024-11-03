@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState,useContext } from 'react';
 import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, Modal, Alert, ActivityIndicator } from 'react-native';
 import { storage, database } from '../config';
 import { ref, uploadBytes, getDownloadURL, deleteObject, getStorage } from 'firebase/storage';
@@ -14,10 +14,9 @@ import { useRoute } from '@react-navigation/native';
 import { MaterialIcons } from 'react-native-vector-icons';
 import { Ionicons } from 'react-native-vector-icons';
 import AddFriendIcon from '../assets/SVG/AddFriendIcon';
+import { AppContext } from '../AppContext';
 
 const StoryStatusScreen = ({ navigation }) => {
-    const route = useRoute();
-    const { uid, user, friendList } = route.params;
     const [selectedStory, setSelectedStory] = useState(null);
     const [modalVisible, setModalVisible] = useState(false);
     const [imageUri, setImageUri] = useState('');
@@ -25,6 +24,7 @@ const StoryStatusScreen = ({ navigation }) => {
     const [inputText, setInputText] = useState('');
     const [storyActionModalVisible, setStoryActionModalVisible] = useState(false);
     const [filteredFriendList, setFilteredFriendList] = useState([]);
+    const { friendList, user } = useContext(AppContext);
 
     useEffect(() => {
         setFilteredFriendList(filterFriendList(friendList));
@@ -213,10 +213,10 @@ const StoryStatusScreen = ({ navigation }) => {
                 <TouchableOpacity>
                     <StatusIcon strokeWidth={3.5} />
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => navigation.navigate('Call', { uid: uid, user: user })}>
+                <TouchableOpacity onPress={() => navigation.navigate('Call')}>
                     <CallIcon />
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => navigation.navigate('AddFriend', { uid: uid, user: user })}>
+                <TouchableOpacity onPress={() => navigation.navigate('AddFriend')}>
                     <AddFriendIcon />
                 </TouchableOpacity>
             </View>
