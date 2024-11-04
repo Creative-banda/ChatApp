@@ -48,7 +48,8 @@ const ChatAppHomePage = ({ navigation, uid, email }) => {
             username: userData[key].username,
             Phone: userData[key].PhoneNumber,
             LastSeen: userData[key].LastSeen,
-            Status : userData[key].Status
+            Status : userData[key].Status,
+            token : userData[key].token
           })).filter(user => uniqueUids.has(user.name));
   
           setUsers(filteredUsers);

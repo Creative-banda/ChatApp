@@ -10,6 +10,7 @@ import StoryDisplay from '../components/StoryDisplay';
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as ImagePicker from 'expo-image-picker';
 import DisplayAddStory from '../components/DisplayAddStory';
+import { useRoute } from '@react-navigation/native';
 import { MaterialIcons } from 'react-native-vector-icons';
 import { Ionicons } from 'react-native-vector-icons';
 import AddFriendIcon from '../assets/SVG/AddFriendIcon';

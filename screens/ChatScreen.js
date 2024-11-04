@@ -36,9 +36,10 @@ const ChatScreen = ({ navigation }) => {
     const typingTimeoutRef = useRef(null);
     const statusTimeoutRef = useRef(null);
     const route = useRoute();
-    const { chatId, name } = route.params;
+    const { chatId, name } = route.params;  
     
-
+    
+    
     useEffect(() => {
         const chatsRef = ref(database, `chats/${name.id}`);
         const unsubscribe = onValue(chatsRef, (snapshot) => {
@@ -255,7 +256,7 @@ const ChatScreen = ({ navigation }) => {
                 await set(otherMessageRef, newMessage);
                 await set(newMessageRef, newMessage);
                 let message = "You Receive a New Message From " + name.username;
-                handleNotification(message, name.token, name.uid, message)
+                handleNotification(message, chatId.token, chatId.name, "message")
 
                 handleTypingStatus(ChatRoom, name.id, false);
             } catch (error) {

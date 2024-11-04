@@ -1,5 +1,3 @@
-import React, { useEffect, useState, useContext } from 'react';
-import { StyleSheet, View, ImageBackground, StatusBar, Text, FlatList, TouchableOpacity, Image } from 'react-native';
 import { database } from '../config';
 import { AppContext } from '../AppContext';
 import UserIcon from '../assets/SVG/UserIcon';
@@ -7,14 +5,13 @@ import CallIcon from '../assets/SVG/CallIcon';
 import { ref, get, set } from 'firebase/database';
 import StatusIcon from '../assets/SVG/StatusIcon';
 import Icon from 'react-native-vector-icons/Ionicons';
-import UserIcon from '../assets/SVG/UserIcon';
-import StatusIcon from '../assets/SVG/StatusIcon';
-import CallIcon from '../assets/SVG/CallIcon';
 import AddFriendIcon from '../assets/SVG/AddFriendIcon';
-import AppContext from '../AppContext'
+import React, { useEffect, useState, useContext } from 'react';
+import handle_Notification from '../functions/Send_Notification';
+import { StyleSheet, View, ImageBackground, StatusBar, Text, FlatList, TouchableOpacity, Image } from 'react-native';
 
 const AddFriendsScreen = ({ navigation }) => {
-    const { user } = useContext(AppContext)
+    const { userUid, user } = useContext(AppContext);
     const [users, setUsers] = useState([]);
 
     useEffect(() => {
