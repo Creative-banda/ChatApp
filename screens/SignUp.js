@@ -82,10 +82,8 @@ const SignupPage = ({ navigation }) => {
           messageType: "Dummy",
         }
       ]);
-      await set(ref(database, 'Notification_Info/' + user.uid), [
-        { Status: true, Story: true, Message : true, New_Friend_Requests: true, Accepted_Friend_Requests: true, ProfileViewed: true }]);
-      navigation.navigate('Login');
-  
+      
+      navigation.navigate('Login')
     } catch (error) {
       console.error('Error occurred during signup:', error);
       Alert.alert("Signup Error", error.message || "An error occurred. Please try again.");

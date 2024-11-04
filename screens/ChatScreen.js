@@ -36,8 +36,9 @@ const ChatScreen = ({ navigation }) => {
     const typingTimeoutRef = useRef(null);
     const statusTimeoutRef = useRef(null);
     const route = useRoute();
-    const { chatId, name } = route.params;  
+    const { chatId, name } = route.params;
     
+
     useEffect(() => {
         const chatsRef = ref(database, `chats/${name.id}`);
         const unsubscribe = onValue(chatsRef, (snapshot) => {
