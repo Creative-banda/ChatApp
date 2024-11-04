@@ -58,6 +58,7 @@ const App = () => {
   if (initializing || !fontsLoaded) {
     return (
       <View style={styles.container}>
+        <NotificationPermission />
         <StatusBar color='dark' />
         <ActivityIndicator size="large" color="#fff" />
       </View>
@@ -67,7 +68,6 @@ const App = () => {
   return (
     <AppProvider uid={user ? user.uid : null}>
       <NavigationContainer>
-      <NotificationPermission />
         <Stack.Navigator
           initialRouteName={user ? "Home" : "Login"}
           screenOptions={{

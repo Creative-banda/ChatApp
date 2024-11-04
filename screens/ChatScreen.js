@@ -15,6 +15,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import DisplayImage from '../components/DisplayImage';
 import ThreeDotMenu from '../components/ThreeDotMenu';
+import handleNotification from '../functions/Send_Notification';
 
 const ChatScreen = ({ navigation }) => {
     const [messages, setMessages] = useState([]);
@@ -32,13 +33,11 @@ const ChatScreen = ({ navigation }) => {
     const [EditText, setEditText] = useState('');
     const [editTextList, setEditList] = useState([]);
 
-
     const typingTimeoutRef = useRef(null);
     const statusTimeoutRef = useRef(null);
     const route = useRoute();
-    const { chatId, name } = route.params;
+    const { chatId, name } = route.params;  
     
-
     useEffect(() => {
         const chatsRef = ref(database, `chats/${name.id}`);
         const unsubscribe = onValue(chatsRef, (snapshot) => {
@@ -95,7 +94,6 @@ const ChatScreen = ({ navigation }) => {
                     setisActive(false);
                 }
             } else {
-                console.log('No such document!');
                 setisActive(false);
             }
             if (typingTimeoutRef.current) {
@@ -133,7 +131,7 @@ const ChatScreen = ({ navigation }) => {
         return removeListener;
     }, [ChatRoom, chatId.name]);
 
-
+    
     const toggleSelectionMode = (id, Text, MessageType) => {
         setIsSelectionMode(true);
         toggleItemSelection(id);
@@ -255,6 +253,8 @@ const ChatScreen = ({ navigation }) => {
                 const otherMessageRef = ref(database, `chats/${chatId.name.trim()}/${Id}`);
                 await set(otherMessageRef, newMessage);
                 await set(newMessageRef, newMessage);
+                let message = "You Receive a New Message From " + name.username;
+                handleNotification(message, name.token, name.uid, message)
 
                 handleTypingStatus(ChatRoom, name.id, false);
             } catch (error) {
@@ -354,8 +354,6 @@ const ChatScreen = ({ navigation }) => {
     };
 
     const handleEdit = async () => {
-        console.log(chatId.name);
-        console.log(selectedItems[0]);
 
         const userRef = ref(database, `chats/${name.id}/${selectedItems[0]}`);
         await update(userRef, { message: EditText });
@@ -365,7 +363,6 @@ const ChatScreen = ({ navigation }) => {
         handleDeselect()
 
     }
-
 
     const renderMessage = ({ item }) => {
         const isMyMessage = item.from.trim().toLowerCase() === name.id.trim().toLowerCase();

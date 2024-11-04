@@ -5,6 +5,7 @@ import { ref as databaseRef, get } from 'firebase/database';
 import { useRoute } from '@react-navigation/native';
 import InputBox from '../components/InputBox';
 import DisplayImage from '../components/DisplayImage';
+import handleNotification from '../functions/Send_Notification';
 
 export default function Profile({ navigation }) {
     const route = useRoute();
@@ -16,9 +17,11 @@ export default function Profile({ navigation }) {
     const [About, setAbout] = useState('');
     const [Gender, setGender] = useState('');
     const [Dpurl, setDpurl] = useState('');
+    
 
     useEffect(() => {
         fetchUserData();
+        handleNotification(userInfo.token, "SomeOne visited your profile", uid, "profile_viewed");
     }, [uid]);
 
     useEffect(() => {
@@ -37,6 +40,8 @@ export default function Profile({ navigation }) {
             const snapshot = await get(userRef);
             if (snapshot.exists()) {
                 setUserInfo(snapshot.val());
+                console.log(snapshot.val());
+                
             } else {
                 console.log('No such document!');
             }
@@ -44,6 +49,7 @@ export default function Profile({ navigation }) {
             console.error("Error fetching user data: ", error);
         }
     };
+
 
 
     return (

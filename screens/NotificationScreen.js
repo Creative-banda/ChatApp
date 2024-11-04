@@ -1,20 +1,61 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, Switch, StyleSheet, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { database } from '../config';
+import { ref, get, set } from 'firebase/database';
+import { AppContext } from '../AppContext';
 
 const NotificationSettingsScreen = () => {
   // Feed Notifications
-  const [statusUpdate, setStatusUpdate] = useState(true);
-  const [storyUpdate, setStoryUpdate] = useState(true);
-  const [messageUpdate, setMessageUpdate] = useState(true);
+  const [statusUpdate, setStatusUpdate] = useState(false);
+  const [storyUpdate, setStoryUpdate] = useState(false);
+  const [messageUpdate, setMessageUpdate] = useState(false);
 
   // Social/Connection Notifications
-  const [newFriendRequest, setNewFriendRequest] = useState(true);
-  const [acceptedFriendRequest, setAcceptedFriendRequest] = useState(true);
+  const [newFriendRequest, setNewFriendRequest] = useState(false);
+  const [acceptedFriendRequest, setAcceptedFriendRequest] = useState(false);
 
   // Activity and Security Notifications
-  const [profileViewed, setProfileViewed] = useState(true);
+  const [profileViewed, setProfileViewed] = useState(false);
+
+  // Loading User Notification Settings
+
+  const { userUid } = useContext(AppContext);
+
+  useEffect(() => {
+    fetchingSettings();
+  }, []);
+
+  const fetchingSettings = async () => {
+    const currentuserRef = ref(database, `Notification_Info/${userUid}`);
+    const friendSnapshot = await get(currentuserRef)
+
+    if (friendSnapshot.exists()) {      
+      const userData = friendSnapshot.val();
+
+      setStatusUpdate(userData[0].Status);
+      setStoryUpdate(userData[0].Story);
+      setMessageUpdate(userData[0].Message);
+      setNewFriendRequest(userData[0].New_Friend_Requests);
+      setAcceptedFriendRequest(userData[0].Accepted_Friend_Requests);
+      setProfileViewed(userData[0].ProfileViewed);
+    }    
+  };
+
+  useEffect(() => {
+    updatePermissions();
+  }
+  , [statusUpdate, storyUpdate, messageUpdate, newFriendRequest, acceptedFriendRequest, profileViewed]);
+
+  const updatePermissions = async () => {
+    try {
+      await set(ref(database, `Notification_Info/${userUid}`), [
+        { Status: statusUpdate, Story: storyUpdate, Message: messageUpdate, New_Friend_Requests: newFriendRequest, Accepted_Friend_Requests: acceptedFriendRequest, ProfileViewed: profileViewed }]);
+    } catch (error) {
+      console.error("Error updating notification settings:", error);
+    }
+  };
 
   const SettingItem = ({ label, value, onValueChange, iconName }) => (
     <View style={styles.setting}>
@@ -49,12 +90,7 @@ const NotificationSettingsScreen = () => {
             <Text style={styles.sectionTitle}>Feed Notifications</Text>
           </View>
           <View style={styles.sectionContent}>
-            <SettingItem
-              label="Status Updates"
-              value={statusUpdate}
-              onValueChange={setStatusUpdate}
-              iconName="text-box-outline"
-            />
+
             <SettingItem
               label="Story Updates"
               value={storyUpdate}

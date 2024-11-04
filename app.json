@@ -20,7 +20,8 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.ahz_khn_05.ChatApp",
-      "googleServicesFile": "./google-services.json"
+      "googleServicesFile": "./google-services.json",
+      "useNextNotificationsApi": true
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -32,7 +33,6 @@
       "eas": {
         "projectId": "882adba4-e0f7-44e8-98ed-b085d0bc231a"
       }
-    },
-    "owner": "ahz_khn_05"
+    }
   }
 }

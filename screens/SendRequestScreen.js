@@ -1,27 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { StyleSheet, View, Text, ImageBackground, TouchableOpacity, FlatList, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ref, get, remove  } from 'firebase/database';
 import { database } from '../config';
-import { useRoute, useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { AppContext } from '../AppContext';
 
-const FriendRequestScreen = () => {
+const FriendRequestScreen = ({navigation}) => {
     const [UserList, SetUserlist] = useState([]);
-    const route = useRoute();
-    const navigation = useNavigation();
-    const { uid } = route.params;
-    console.log(uid);
+    const {userUid} = useContext(AppContext);
+    console.log(userUid);
     
-    
-
     useEffect(() => {
         initializingUsers();
     }, []);
 
     const initializingUsers = async () => {
         try {
-            const userDataRef = ref(database, `FriendList/${uid}`);
+            const userDataRef = ref(database, `FriendList/${userUid}`);
             const snapshot = await get(userDataRef);
             if (snapshot.exists()) {
                 const userData = snapshot.val();
@@ -29,7 +25,7 @@ const FriendRequestScreen = () => {
                     key: key,
                     ...userData[key]
                 }));
-                const users = userListArray.filter(item => item.Status !== "Accept" && item.receiveruid !== uid);
+                const users = userListArray.filter(item => item.Status !== "Accept" && item.receiveruid !== userUid);
                 SetUserlist(users);
             } else {
                 console.log('No data available');
@@ -47,7 +43,8 @@ const FriendRequestScreen = () => {
                 
                 await remove(requestRef);
                 await remove(otherrequestRef);
-                await initializingUsers()
+                const newUsers = UserList.filter(user => user.key !== item.key);
+                SetUserlist(newUsers);
             
         } catch (error) {
             console.error("Error deleting messages:", error);
@@ -60,7 +57,7 @@ const FriendRequestScreen = () => {
 
         return (
             <View style={styles.friendItemContainer}>
-                <TouchableOpacity style={styles.friendItem} onPress={() => { navigation.navigate('OtherProfile', { uid: item.id }) }}>
+                <TouchableOpacity style={styles.friendItem} onPress={() => { navigation.navigate('OtherProfile', { userUid: item.id }) }}>
                     <Image source={imageUri} style={styles.avatar} />
                     <Text style={styles.friendName}>{item.receiverusername}</Text>
                     <TouchableOpacity
@@ -95,7 +92,7 @@ const FriendRequestScreen = () => {
                         <Text style={styles.header}>Friend Requests</Text>
                     </View>
                     <View style={styles.TopContainer}>
-                        <TouchableOpacity onPress={() => { navigation.navigate('FriendRequest', { uid: uid }) }}>
+                        <TouchableOpacity onPress={() => { navigation.navigate('FriendRequest', { userUid: userUid }) }}>
                             <Text style={{ paddingLeft: 5, color: '#fff' }}>Receive</Text>
                         </TouchableOpacity>
                         <TouchableOpacity>

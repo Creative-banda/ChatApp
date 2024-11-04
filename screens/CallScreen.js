@@ -1,19 +1,24 @@
-import React, { useEffect, useState,useContext } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, Image, Linking } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
-import Icon from 'react-native-vector-icons/Ionicons';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import CallIcon from '../assets/SVG/CallIcon';
-import StatusIcon from '../assets/SVG/StatusIcon';
-import UserIcon from '../assets/SVG/UserIcon';
-import AddFriendIcon from '../assets/SVG/AddFriendIcon';
-import { ref, get } from 'firebase/database';
 import { database } from '../config';
 import { AppContext } from '../AppContext';
+import { ref, get } from 'firebase/database';
+import UserIcon from '../assets/SVG/UserIcon';
+import CallIcon from '../assets/SVG/CallIcon';
+import StatusIcon from '../assets/SVG/StatusIcon';
+import React, { useEffect, useState, useContext } from 'react';
+import { MaterialIcons } from '@expo/vector-icons';
+import { useRoute } from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/Ionicons';
+import AddFriendIcon from '../assets/SVG/AddFriendIcon';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, Image, Linking } from 'react-native';
+
 
 const CallHistoryScreen = ({ navigation }) => {
   const [callHistory, setCallHistory] = useState([]);
-  const { userUid } = useContext(AppContext)
+  const { userUid } = useContext(AppContext);
+
+
+
 
   useEffect(() => {
     fetchUserHistory(userUid)
@@ -22,6 +27,7 @@ const CallHistoryScreen = ({ navigation }) => {
   const fetchUserHistory = async (userUid) => {
     try {
       const UserData = ref(database, `CallHistory/${userUid}`);
+      
       const snapshot = await get(UserData);
       if (snapshot.exists()) {
         const data = snapshot.val();
@@ -70,23 +76,15 @@ const CallHistoryScreen = ({ navigation }) => {
 
  const renderCallItem = ({ item }) => {
     const isCurrentUser = userUid === item.senderuid;
-
-    console.log("UID:", userUid);
-    console.log("Sender UID:", item.senderuid);
-    console.log("Receiver UID:", item.receiveruid);
-    console.log("Is Current User:", isCurrentUser);
-
     let profilePic = '';
     let name = '';
 
     if (isCurrentUser) {
         profilePic = item.receiverprofile;
         name = item.receiverusername;
-        console.log("Current User (Receiver):", name);
     } else {
         profilePic = item.senderprofile;
         name = item.senderusername;
-        console.log("Other User (Sender):", name);
     }
 
     const imageUri = profilePic ? { uri: profilePic } : require('../assets/icon.png');

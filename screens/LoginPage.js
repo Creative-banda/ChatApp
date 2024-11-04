@@ -3,8 +3,10 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingVi
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Antdesign from 'react-native-vector-icons/FontAwesome';
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import { getDatabase, ref, set } from 'firebase/database';
 import { auth } from '../config';
 import SimpleAlert from '../components/SimpleAlert';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LoginPage = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -27,6 +29,7 @@ const LoginPage = ({ navigation }) => {
       try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
+        updateToken(user);
         navigation.navigate("Home", { uid: user.uid });
       } catch (error) {
         handleAuthError(error);
@@ -36,6 +39,28 @@ const LoginPage = ({ navigation }) => {
         setDisable(false);
         setPassword('')
       }
+    }
+  };
+
+  const updateToken = async (user) => {
+    try {
+      // Retrieve the token from AsyncStorage
+      const token = await AsyncStorage.getItem("expoPushToken");
+  
+      if (token) {
+        const database = getDatabase();
+        // Create a reference to the user's token path
+        const userRef = ref(database, `Users/${user.uid}/token`);
+  
+        // Update the token in the database
+        await set(userRef, token);
+  
+        console.log("Token updated successfully");
+      } else {
+        console.log("Token not found in AsyncStorage");
+      }
+    } catch (error) {
+      console.error("Error updating token:", error);
     }
   };
 

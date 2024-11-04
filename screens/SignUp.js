@@ -3,8 +3,10 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ImageBackgr
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Antdesign from 'react-native-vector-icons/FontAwesome';
 import BackButton from '../assets/SVG/BackButton'
-import { ref, set } from 'firebase/database';
-import { database } from '../config'
+import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
+import { getDatabase, ref, set } from 'firebase/database';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 const SignupPage = ({ navigation }) => {
   const [username, setUsername] = useState('');
@@ -19,10 +21,13 @@ const SignupPage = ({ navigation }) => {
   const [IsLoading, setIsloading] = useState(false);
   const genderOptions = ['Male', 'Female', 'Other'];
 
+
   const handleSignUp = async () => {
+    const token = await AsyncStorage.getItem("expoPushToken")    
+    
     setIsloading(true);
   
-    if ( username.trim() === "" ||  email.trim() === "" ||  password.trim() === "" ||  gender.trim() === "" ||  phoneNumber.trim() === "" ||  confirmPassword.trim() === "") {
+    if (username.trim() === "" || email.trim() === "" || password.trim() === "" || gender.trim() === "" || phoneNumber.trim() === "" || confirmPassword.trim() === "") {
       Alert.alert('Input Error', 'Please fill all fields');
       setIsloading(false);
       return;
@@ -41,18 +46,19 @@ const SignupPage = ({ navigation }) => {
     }
   
     try {
-      // Create user with Firebase authentication
-      const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
+      const auth = getAuth(); // Initialize auth
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
   
       if (user) {
-        // Send verification email
-        await user.sendEmailVerification();
+        await sendEmailVerification(user);
         Alert.alert(
           "Verification Email Sent",
           `A verification email has been sent to ${email}. Please check your inbox.`,
         );
       }
+  
+      const database = getDatabase(); 
       await set(ref(database, 'Users/' + user.uid), {
         id: user.uid,
         username: username,
@@ -62,10 +68,11 @@ const SignupPage = ({ navigation }) => {
         Gender: gender,
         LastSeen: "",
         Birthday: "",
-        Status: {time : '', url : ''},
+        Status: { time: '', url: '' },
         About: "Hey I am Using ChitChat",
+        token : token
       });
-
+  
       await set(ref(database, 'chats/' + user.uid), [
         {
           To: "Dummy",
@@ -75,8 +82,10 @@ const SignupPage = ({ navigation }) => {
           messageType: "Dummy",
         }
       ]);
-      
-      navigation.navigate('Login')
+      await set(ref(database, 'Notification_Info/' + user.uid), [
+        { Status: true, Story: true, Message : true, New_Friend_Requests: true, Accepted_Friend_Requests: true, ProfileViewed: true }]);
+      navigation.navigate('Login');
+  
     } catch (error) {
       console.error('Error occurred during signup:', error);
       Alert.alert("Signup Error", error.message || "An error occurred. Please try again.");
@@ -85,7 +94,6 @@ const SignupPage = ({ navigation }) => {
     }
   };
   
-
   return (
     <ImageBackground source={require('../assets/Images/Registration.jpg')} style={styles.BackgroundImage}>
       <TouchableOpacity style={{ position: 'absolute', top: 40, left: 30, zIndex: 2 }} onPress={() => { navigation.goBack() }}>
@@ -186,7 +194,7 @@ const SignupPage = ({ navigation }) => {
           </View>
         )}
         <TouchableOpacity style={styles.signupButton} onPress={handleSignUp}>
-          {IsLoading ? <ActivityIndicator size="small" /> : <Text style={styles.signupButtonText}>Sign Up</Text>}
+          {IsLoading ? <ActivityIndicator size="small" color='#fff' /> : <Text style={styles.signupButtonText}>Sign Up</Text>}
         </TouchableOpacity>
 
       </View>

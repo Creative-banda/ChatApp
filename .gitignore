@@ -9,8 +9,9 @@ node_modules/
 dist/
 web-build/
 config.js
-google-services.json
 chatapp.json
+google-services.json
+
 # Native
 *.orig.*
 *.jks
@@ -26,7 +27,6 @@ chatapp.json
 npm-debug.*
 yarn-debug.*
 yarn-error.*
-chatapp-247ae-firebase-adminsdk-61xpf-5eab4506a3.json
 
 # macOS
 .DS_Store
