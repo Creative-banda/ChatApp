@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Animated,ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Animated, ActivityIndicator, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ref, get, set, update } from 'firebase/database';
@@ -10,7 +10,7 @@ const RateUsScreen = () => {
     const [rating, setRating] = useState(0);
     const [feedback, setFeedback] = useState('');
     const navigation = useNavigation();
-    const [Isloading, SetLoading] = useState(false);
+    const [isLoading, setLoading] = useState(false);
     const [animation] = useState(new Animated.Value(0));
     const route = useRoute();
     const { uid } = route.params;
@@ -23,40 +23,40 @@ const RateUsScreen = () => {
             useNativeDriver: true,
         }).start();
     };
+
     const handleSubmit = async () => {
         if (rating === 0) {
-            SetLoading(true);
+            setLoading(true);
             Alert.alert('Rating Required', 'Please provide a rating before submitting.');
             return;
         }
-            const newMessage = {
-                Stars: rating,
-                Comment: feedback,
-            };
 
-            try {
-                const userRatingRef = ref(database, `Rating/${uid}`);
-                
-                const snapshot = await get(userRatingRef);
-                
-                if (snapshot.exists()) {
-                    // Update existing rating
-                    await update(userRatingRef, newMessage);
-                } else {
-                    // Create new rating
-                    await set(userRatingRef, newMessage);
-                }
-                
-                Alert.alert('Thank You!', 'Your feedback has been submitted.');
-                setRating(0);
-                setFeedback('');
-                navigation.goBack();
-            } catch (error) {
-                console.error("Error sending message: ", error);
-            } finally {
-                SetLoading(false);
+        const newMessage = {
+            Stars: rating,
+            Comment: feedback,
+        };
+
+        try {
+            const userRatingRef = ref(database, `Rating/${uid}`);
+            
+            const snapshot = await get(userRatingRef);
+            
+            if (snapshot.exists()) {
+                await update(userRatingRef, newMessage);
+            } else {
+                await set(userRatingRef, newMessage);
             }
+            
+            Alert.alert('Thank You!', 'Your feedback has been submitted.');
+            setRating(0);
+            setFeedback('');
+            navigation.goBack();
+        } catch (error) {
+            console.error("Error sending message: ", error);
+        } finally {
+            setLoading(false);
         }
+    };
 
     const renderStars = () => {
         const stars = [];
@@ -78,28 +78,32 @@ const RateUsScreen = () => {
     };
 
     return (
-        <LinearGradient
-            colors={['#333333', '#222222', '#111111']}
-            style={styles.container}
-        >
-            <Text style={styles.header}>Rate Your Experience</Text>
-            <View style={styles.card}>
-                <View style={styles.starContainer}>{renderStars()}</View>
-                <TextInput
-                    style={styles.feedbackInput}
-                    placeholder="Share your thoughts with us..."
-                    placeholderTextColor="#AAA"
-                    multiline
-                    value={feedback}
-                    onChangeText={setFeedback}
-                />
-                <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+        <LinearGradient colors={['#ffffff', '#f7f7f7']} style={styles.container}>
+            <Image source={require('../assets/Images/feedback-image.png')} style={styles.headerImage} />
 
-                    {!Isloading ?
-                        <Text style={styles.submitButtonText}>Submit Feedback</Text> : 
-                        <ActivityIndicator size='small'/>}
-                </TouchableOpacity>
-            </View>
+            <Text style={styles.header}>Your opinion matters to us!</Text>
+            <Text style={styles.subHeader}>
+                We work super hard to serve you better and would love to know how would you rate our app?
+            </Text>
+
+            <View style={styles.starContainer}>{renderStars()}</View>
+
+            <TextInput
+                style={styles.feedbackInput}
+                placeholder="Share your thoughts with us..."
+                placeholderTextColor="#AAA"
+                multiline
+                value={feedback}
+                onChangeText={setFeedback}
+            />
+
+            <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+                {!isLoading ? (
+                    <Text style={styles.submitButtonText}>Submit</Text>
+                ) : (
+                    <ActivityIndicator size="small" color="#fff" />
+                )}
+            </TouchableOpacity>
         </LinearGradient>
     );
 };
@@ -107,68 +111,73 @@ const RateUsScreen = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 20,
-        justifyContent: 'center',
+        paddingHorizontal: 20,
+        paddingVertical: 40,
         alignItems: 'center',
-
+        backgroundColor: '#ffffff',
     },
-    card: {
-        backgroundColor: 'rgba(255, 255, 255, 0.9)',
-        borderRadius: 20,
-        padding: 30,
-        width: '100%',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0,0,0,0.5)'
+    headerImage: {
+        width: 180,
+        height: 140,
+        marginBottom: 20,
+        marginTop : '20%'
     },
     header: {
-        fontSize: 32,
+        fontSize: 22,
         fontWeight: 'bold',
-        color: '#fff',
-        marginBottom: 30,
-        textShadowColor: 'rgba(0, 0, 0, 0.75)',
-        textShadowOffset: { width: -1, height: 1 },
-        textShadowRadius: 10,
+        color: '#333',
+        textAlign: 'center',
+        marginBottom: 10,
+        fontFamily: 'Lato',
+    },
+    subHeader: {
+        fontSize: 16,
+        color: '#555',
+        textAlign: 'center',
+        marginBottom: 20,
+        fontFamily: 'Nunito',
+        lineHeight: 22,
     },
     starContainer: {
         flexDirection: 'row',
-        marginBottom: 30,
+        marginBottom: 20,
     },
     star: {
-        fontSize: 48,
+        fontSize: 36,
         color: '#D1D1D1',
-        marginHorizontal: 8,
+        marginHorizontal: 4,
     },
     selectedStar: {
-        fontSize: 48,
+        fontSize: 36,
         color: '#FFD700',
-        marginHorizontal: 8,
+        marginHorizontal: 4,
     },
     feedbackInput: {
         width: '100%',
-        height: 120,
-        backgroundColor: '#fff',
+        minHeight: 100,
+        backgroundColor: '#f8f8f8',
         color: '#333',
         padding: 15,
-        borderRadius: 15,
-        marginTop: 16,
+        borderRadius: 10,
+        marginBottom: 20,
         textAlignVertical: 'top',
         borderWidth: 1,
-        borderColor: '#E0E0E0',
+        borderColor: '#ddd',
         fontSize: 16,
+        fontFamily: 'Nunito',
     },
     submitButton: {
-        width:'80%',
-        marginTop: 30,
+        width: '100%',
         backgroundColor: '#4CAF50',
-        paddingVertical: 16,
-        paddingHorizontal: 32,
-        borderRadius: 30,
+        paddingVertical: 15,
+        borderRadius: 10,
         alignItems: 'center',
     },
     submitButtonText: {
         color: '#fff',
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: 'bold',
+        fontFamily: 'Lato',
     },
 });
 

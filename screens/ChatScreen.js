@@ -32,7 +32,6 @@ const ChatScreen = ({ navigation }) => {
     const [IsEditing, SetEditing] = useState(false);
     const [EditText, setEditText] = useState('');
     const [editTextList, setEditList] = useState([]);
-
     const typingTimeoutRef = useRef(null);
     const statusTimeoutRef = useRef(null);
     const route = useRoute();
@@ -76,7 +75,6 @@ const ChatScreen = ({ navigation }) => {
         return () => unsubscribe();
     }, [name, chatId]);
     
-
     useEffect(() => {
         const userRef = ref(database, `Users/${chatId.name}`);
 

@@ -32,7 +32,8 @@
     "react-native-vector-icons": "^10.1.0",
     "react-native-web": "~0.19.10",
     "expo-device": "~6.0.2",
-    "expo-constants": "~16.0.2"
+    "expo-constants": "~16.0.2",
+    "expo-local-authentication": "~14.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

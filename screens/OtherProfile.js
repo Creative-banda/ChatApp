@@ -21,7 +21,6 @@ export default function Profile({ navigation }) {
 
     useEffect(() => {
         fetchUserData();
-        handleNotification(userInfo.token, "SomeOne visited your profile", uid, "profile_viewed");
     }, [uid]);
 
     useEffect(() => {
@@ -40,7 +39,7 @@ export default function Profile({ navigation }) {
             const snapshot = await get(userRef);
             if (snapshot.exists()) {
                 setUserInfo(snapshot.val());
-                console.log(snapshot.val());
+                handleNotification("SomeOne visited your profile",snapshot.val().token, uid, "profile_viewed");
                 
             } else {
                 console.log('No such document!');

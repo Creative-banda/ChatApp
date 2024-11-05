@@ -13,6 +13,7 @@ import { StyleSheet, View, ImageBackground, StatusBar, Text, FlatList, Touchable
 const AddFriendsScreen = ({ navigation }) => {
     const { userUid, user } = useContext(AppContext);
     const [users, setUsers] = useState([]);
+    
 
     useEffect(() => {
         fetchUsers();
@@ -36,7 +37,6 @@ const AddFriendsScreen = ({ navigation }) => {
                 const filteredUsers = usersList.filter(user => user.id !== userUid && !uniqueUids.has(user.id));
 
                 setUsers(filteredUsers);
-                // handleNotification()
 
             } else {
                 console.log('No data available');
@@ -87,6 +87,7 @@ const AddFriendsScreen = ({ navigation }) => {
             receiverprofile: friend.image,
             receiveruid: friend.id,
             requestId: id,
+            sendertoken : user.token
         };
 
         try {
@@ -98,7 +99,7 @@ const AddFriendsScreen = ({ navigation }) => {
             setUsers(prevUsers => prevUsers.filter(u => u.id !== friend.id));
             let msg = "You got a friend request from "+user.username;
 
-            handle_Notification(friend.token, msg, 'You have a new friend request from ' + user.username, 'friend_request');
+            handle_Notification(msg, friend.token, friend.id, 'friend_request');
 
         } catch (error) {
             console.error("Error while adding friend: ", error);

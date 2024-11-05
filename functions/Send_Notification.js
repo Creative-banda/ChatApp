@@ -1,6 +1,5 @@
 const handleNotification = (message, token, uid, type) => {
     try {
-        // Send the request without awaiting it
         fetch('http://10.0.13.126:3000/send-notification', {
             method: 'POST',
             headers: {

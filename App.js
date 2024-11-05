@@ -14,15 +14,16 @@ import SettingPage from './screens/SettingPage';
 import Profile from './screens/Profile';
 import CallScreen from './screens/CallScreen';
 import StatusScreen from './screens/StatusScreen';
-import Forgetpassword from './screens/Forgetpassword'
-import OtherProfile from './screens/OtherProfile'
+import Forgetpassword from './screens/Forgetpassword';
+import OtherProfile from './screens/OtherProfile';
 import AddFriendsScreen from './screens/AddFriendsScreen';
-import RateUsScreen from './screens/RateUsScreen'
+import RateUsScreen from './screens/RateUsScreen';
 import { AppProvider } from './AppContext';
 import FriendRequestScreen from './screens/FriendRequestScreen';
-import SendRequestScreen from './screens/SendRequestScreen'
+import SendRequestScreen from './screens/SendRequestScreen';
 import NotificationScreen from './screens/NotificationScreen';
 import NotificationPermission from './permissions/NotificationPermission';
+import FingerprintAuth from './permissions/FingerprintAuth'; // Import FingerprintAuth component
 
 const Stack = createStackNavigator();
 
@@ -30,6 +31,7 @@ const App = () => {
   const [initializing, setInitializing] = useState(true);
   const [user, setUser] = useState(null);
   const [fontsLoaded, setFontsLoaded] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false); // Track fingerprint authentication status
 
   useEffect(() => {
     async function loadFonts() {
@@ -55,12 +57,23 @@ const App = () => {
     return unsubscribe;
   }, [initializing]);
 
-  if (initializing || !fontsLoaded) {
+  const handleSuccessfulAuth = () => {
+    setIsAuthenticated(true);
+  };
+
+  if (initializing || !fontsLoaded || !isAuthenticated) {
+    // Show loading indicator if initializing or fonts are loading,
+    // or if the user hasn't authenticated with fingerprint
     return (
       <View style={styles.container}>
         <NotificationPermission />
-        <StatusBar color='dark' />
-        <ActivityIndicator size="large" color="#fff" />
+        <StatusBar color="dark" />
+        {initializing || !fontsLoaded ? (
+          <ActivityIndicator size="large" color="#fff" />
+        ) : (
+          // Show FingerprintAuth when ready but not authenticated
+          <FingerprintAuth onAuthenticate={handleSuccessfulAuth} />
+        )}
       </View>
     );
   }
@@ -69,7 +82,7 @@ const App = () => {
     <AppProvider uid={user ? user.uid : null}>
       <NavigationContainer>
         <Stack.Navigator
-          initialRouteName={user ? "Home" : "Login"}
+          initialRouteName={user ? 'Home' : 'Login'}
           screenOptions={{
             headerShown: false,
             gestureEnabled: true,
@@ -104,7 +117,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#000'
+    backgroundColor: '#000',
   },
 });
 
