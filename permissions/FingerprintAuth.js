@@ -3,13 +3,25 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Alert, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 import * as LocalAuthentication from 'expo-local-authentication';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const FingerprintAuth = ({ onAuthenticate }) => {
     const [isAuthenticating, setIsAuthenticating] = useState(true);
 
     useEffect(() => {
-        authenticateUser();
+        CheckingPermission()
     }, []);
+
+    const CheckingPermission = async () => {
+        const Lock = await AsyncStorage.getItem("Islock")
+        value = JSON.parse(Lock)
+        if (value == true) {
+            authenticateUser();
+        }
+        else {
+            onAuthenticate();
+        }
+    }
 
     const authenticateUser = async () => {
         const compatible = await LocalAuthentication.hasHardwareAsync();
@@ -31,9 +43,9 @@ const FingerprintAuth = ({ onAuthenticate }) => {
         });
 
         if (result.success) {
-            onAuthenticate(); // Trigger the callback on successful authentication
+            onAuthenticate();
+            
         }
-        onAuthenticate();
         setIsAuthenticating(false);
     };
 
@@ -59,7 +71,6 @@ const FingerprintAuth = ({ onAuthenticate }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#121212', // Darker shade for background
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -74,7 +85,7 @@ const styles = StyleSheet.create({
         marginTop: 20,
     },
     retryButton: {
-        backgroundColor: '#4CAF50', // Green for contrast with dark background
+        backgroundColor: '#4CAF50', 
         paddingVertical: 10,
         paddingHorizontal: 30,
         borderRadius: 8,

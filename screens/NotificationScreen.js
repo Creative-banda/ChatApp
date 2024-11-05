@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { View, Text, Switch, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { database } from '../config';
 import { ref, get, set } from 'firebase/database';
 import { AppContext } from '../AppContext';
+import SettingItem from '../components/SettingItem';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const NotificationSettingsScreen = () => {
   // Feed Notifications
@@ -18,6 +20,7 @@ const NotificationSettingsScreen = () => {
 
   // Activity and Security Notifications
   const [profileViewed, setProfileViewed] = useState(false);
+  const [LockApp, setlockApp] = useState(false);
 
   // Loading User Notification Settings
 
@@ -27,11 +30,18 @@ const NotificationSettingsScreen = () => {
     fetchingSettings();
   }, []);
 
+
+  const UpdateAppLock = async (e) => {
+    setlockApp(e)
+    await AsyncStorage.setItem("Islock", JSON.stringify(e));
+    console.log("Updating Value To : ", e);
+  }
+
   const fetchingSettings = async () => {
     const currentuserRef = ref(database, `Notification_Info/${userUid}`);
     const friendSnapshot = await get(currentuserRef)
 
-    if (friendSnapshot.exists()) {      
+    if (friendSnapshot.exists()) {
       const userData = friendSnapshot.val();
 
       setStatusUpdate(userData[0].Status);
@@ -40,13 +50,23 @@ const NotificationSettingsScreen = () => {
       setNewFriendRequest(userData[0].New_Friend_Requests);
       setAcceptedFriendRequest(userData[0].Accepted_Friend_Requests);
       setProfileViewed(userData[0].ProfileViewed);
-    }    
+    }
+    const IsLock = await AsyncStorage.getItem("Islock");
+    console.log("Value Received From AsyncStorage: ", IsLock);
+
+    if (IsLock !== null) {
+      setlockApp(JSON.parse(IsLock)); 
+    } else {
+      await AsyncStorage.setItem("Islock", JSON.stringify(false));
+      setlockApp(false);
+    }
   };
+
 
   useEffect(() => {
     updatePermissions();
   }
-  , [statusUpdate, storyUpdate, messageUpdate, newFriendRequest, acceptedFriendRequest, profileViewed]);
+    , [statusUpdate, storyUpdate, messageUpdate, newFriendRequest, acceptedFriendRequest, profileViewed]);
 
   const updatePermissions = async () => {
     try {
@@ -57,21 +77,6 @@ const NotificationSettingsScreen = () => {
     }
   };
 
-  const SettingItem = ({ label, value, onValueChange, iconName }) => (
-    <View style={styles.setting}>
-      <View style={styles.labelContainer}>
-        <Icon name={iconName} size={22} color="#7047EB" />
-        <Text style={styles.label}>{label}</Text>
-      </View>
-      <Switch
-        value={value}
-        onValueChange={onValueChange}
-        trackColor={{ false: '#4a4a4a', true: '#7047EB' }}
-        thumbColor={value ? '#fff' : '#f4f3f4'}
-        ios_backgroundColor="#4a4a4a"
-      />
-    </View>
-  );
 
   return (
     <LinearGradient
@@ -141,6 +146,12 @@ const NotificationSettingsScreen = () => {
               onValueChange={setProfileViewed}
               iconName="eye-outline"
             />
+            <SettingItem
+              label="Lock App"
+              value={LockApp}
+              onValueChange={(e)=>{UpdateAppLock(e)}}
+              iconName="lock"
+            />
           </View>
         </View>
       </ScrollView>
@@ -183,21 +194,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderRadius: 12,
     padding: 15,
-  },
-  setting: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 12,
-  },
-  labelContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  label: {
-    fontSize: 16,
-    color: '#ffffff',
-    marginLeft: 12,
   },
 });
 

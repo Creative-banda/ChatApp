@@ -10,7 +10,6 @@ import StoryDisplay from '../components/StoryDisplay';
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as ImagePicker from 'expo-image-picker';
 import DisplayAddStory from '../components/DisplayAddStory';
-import { useRoute } from '@react-navigation/native';
 import { MaterialIcons } from 'react-native-vector-icons';
 import { Ionicons } from 'react-native-vector-icons';
 import AddFriendIcon from '../assets/SVG/AddFriendIcon';
@@ -25,14 +24,16 @@ const StoryStatusScreen = ({ navigation }) => {
     const [storyActionModalVisible, setStoryActionModalVisible] = useState(false);
     const [filteredFriendList, setFilteredFriendList] = useState([]);
     const { friendList, user } = useContext(AppContext);
+    const [currentUser, setUser] = useState(user)
+    
 
     useEffect(() => {
         setFilteredFriendList(filterFriendList(friendList));
-    }, [friendList, user.email]);
+    }, [friendList, currentUser.email]);
 
 
     const filterFriendList = (list) => {
-        return list.filter(item => item.id !== user.email && item.Status.url);
+        return list.filter(item => item.id !== currentUser.email && item.Status.url);
     };
 
 
@@ -40,7 +41,7 @@ const StoryStatusScreen = ({ navigation }) => {
         const storage = getStorage();
 
         try {
-            const url = user.Status.url;
+            const url = currentUser.Status.url;
             const path = url.split('/o/')[1].split('?')[0].replace(/%2F/g, '/');
 
             const storageRef = ref(storage, path);
@@ -81,14 +82,14 @@ const StoryStatusScreen = ({ navigation }) => {
     };
 
     const handleViewStory = async () => {
-        setSelectedStory(user);
+        setSelectedStory(currentUser);
         setModalVisible(true);
     }
 
     const handleRemoveStory = async () => {
         try {
             SetUploading(true);
-            const statusRef = databaseRef(database, `Users/${user.id}/Status`);
+            const statusRef = databaseRef(database, `Users/${currentUser.id}/Status`);
             const snapshot = await get(statusRef);
 
             if (snapshot.exists()) {
@@ -100,7 +101,10 @@ const StoryStatusScreen = ({ navigation }) => {
                     console.log("Deleted Sucessfully");
                     Alert.alert("Sucessfully", "Story Deleted Sucessfully")
                     deleteImageFromStorage()
-                    initializingUsers()
+                    setUser(prevUser => ({
+                        ...prevUser,
+                        Status: { url: "", time: "  ", message: "" }
+                    }));
                 } else {
                     Alert.alert("No Story", "Sorry You Did Not Upload Any Story")
                 }
@@ -118,7 +122,7 @@ const StoryStatusScreen = ({ navigation }) => {
 
     const UpdatingDatabase = async (url) => {
         try {
-            let statusRef = databaseRef(database, `Users/${user.id}/Status`);
+            let statusRef = databaseRef(database, `Users/${currentUser.id}/Status`);
 
             await update(statusRef, {
                 time: Date.now(),
@@ -127,7 +131,14 @@ const StoryStatusScreen = ({ navigation }) => {
             });
 
             console.log("Database updated successfully!");
-            initializingUsers();
+            setUser(prevUser => ({
+                ...prevUser,
+                Status: {
+                    time: Date.now(),
+                    url: url,
+                    message: inputText,
+                }
+            }));
         } catch (error) {
             console.error("Error updating database: ", error);
         }
@@ -193,7 +204,7 @@ const StoryStatusScreen = ({ navigation }) => {
             <TouchableOpacity style={styles.addStoryContainer} onPress={handleAddStory}>
                 <MaterialIcons name="manage-accounts" color="#fff" size={22} />
                 <Text style={styles.addStoryText}>
-                    {user?.Status.url ? 'Manage Story' : 'Add Story'}
+                    {currentUser?.Status.url ? 'Manage Story' : 'Add Story'}
                 </Text>
             </TouchableOpacity>
 
@@ -238,12 +249,12 @@ const StoryStatusScreen = ({ navigation }) => {
                             <Text style={styles.modalButtonText}>Add Story</Text>
                         </TouchableOpacity>
 
-                        {user?.Status.url && <TouchableOpacity onPress={handleViewStory} style={styles.modalButton}>
+                        {currentUser?.Status.url && <TouchableOpacity onPress={handleViewStory} style={styles.modalButton}>
                             <Ionicons name="eye-outline" size={24} color="#fff" style={styles.icon} />
                             <Text style={styles.modalButtonText}>View Story</Text>
                         </TouchableOpacity>}
 
-                        {user?.Status.url && <TouchableOpacity onPress={handleRemoveStory} style={styles.modalButton}>
+                        {currentUser?.Status.url && <TouchableOpacity onPress={handleRemoveStory} style={styles.modalButton}>
                             {IsUploading ? <ActivityIndicator size='small' color="#fff" /> : <>
                                 <Ionicons name="trash-outline" size={24} color="#fff" style={styles.icon} />
                                 <Text style={styles.modalButtonText}>Remove Story</Text>

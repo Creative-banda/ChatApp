@@ -75,7 +75,7 @@ export default function SettingPage({ navigation }) {
                     <View style={styles.settingContainer}>
                         <Text style={{ fontSize: 20, fontWeight: 'bold', color: 'rgba(255, 255, 255, 0.8)', marginLeft: 20, marginTop: 20 }}>General</Text>
                         <SettingsItem title="Profile" IconName="user" onPress={() => navigation.navigate('Profile', { uid: uid })} />
-                        <SettingsItem title="Notification" IconName="notification" onPress={()=>navigation.navigate("Notification")}/>
+                        <SettingsItem title="Notification and Privacy" IconName="notification" onPress={()=>navigation.navigate("Notification")}/>
                         <SettingsItem title="Logout" IconName="logout" onPress={handleLogout} />
                         <SettingsItem title="Delete Account" IconName="delete" onPress={() => setPromptVisible(true)} />
 

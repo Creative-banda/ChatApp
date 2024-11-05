@@ -23,6 +23,7 @@ const ChatAppHomePage = ({ navigation, uid, email }) => {
     }
   
     const userStatusListener = ref(database, 'Users');
+    
     const unsubscribe = onValue(userStatusListener, async (snapshot) => {
       if (snapshot.exists()) {
         const userData = snapshot.val();
