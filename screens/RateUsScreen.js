@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Animated, ActivityIndicator, Image } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Animated, ActivityIndicator, Image, KeyboardAvoidingView, Platform, ScrollView, Keyboard } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ref, get, set, update } from 'firebase/database';
@@ -14,6 +14,24 @@ const RateUsScreen = () => {
     const [animation] = useState(new Animated.Value(0));
     const route = useRoute();
     const { uid } = route.params;
+    const [keyboardHeight, setKeyboardHeight] = useState(0);
+    const inputRef = useRef(null);
+    const [contentHeight, setContentHeight] = useState(0);
+
+    useEffect(() => {
+        const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', (event) => {
+            setKeyboardHeight(event.endCoordinates.height);
+        });
+
+        const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
+            setKeyboardHeight(0);
+        });
+
+        return () => {
+            keyboardDidShowListener.remove();
+            keyboardDidHideListener.remove();
+        };
+    }, []);
 
     const handleRating = (newRating) => {
         setRating(newRating);
@@ -26,10 +44,11 @@ const RateUsScreen = () => {
 
     const handleSubmit = async () => {
         if (rating === 0) {
-            setLoading(true);
             Alert.alert('Rating Required', 'Please provide a rating before submitting.');
             return;
         }
+        
+        setLoading(true);
 
         const newMessage = {
             Stars: rating,
@@ -38,15 +57,15 @@ const RateUsScreen = () => {
 
         try {
             const userRatingRef = ref(database, `Rating/${uid}`);
-            
+
             const snapshot = await get(userRatingRef);
-            
+
             if (snapshot.exists()) {
                 await update(userRatingRef, newMessage);
             } else {
                 await set(userRatingRef, newMessage);
             }
-            
+
             Alert.alert('Thank You!', 'Your feedback has been submitted.');
             setRating(0);
             setFeedback('');
@@ -78,49 +97,68 @@ const RateUsScreen = () => {
     };
 
     return (
-        <LinearGradient colors={['#ffffff', '#f7f7f7']} style={styles.container}>
-            <Image source={require('../assets/Images/feedback-image.png')} style={styles.headerImage} />
+        <LinearGradient colors={['#ffffff', '#f7f7f7']} style={{ flex: 1 }}>
+            <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                style={{ flex: 1 }}
+            >
+                <ScrollView
+                    contentContainerStyle={
+                        styles.container
+                    }
+                    showsVerticalScrollIndicator={false}
+                    onContentSizeChange={(_, height) => setContentHeight(height)}
+                >
+                    <Image source={require('../assets/Images/feedback-image.png')} style={styles.headerImage} />
 
-            <Text style={styles.header}>Your opinion matters to us!</Text>
-            <Text style={styles.subHeader}>
-                We work super hard to serve you better and would love to know how would you rate our app?
-            </Text>
+                    <Text style={styles.header}>Your opinion matters to us!</Text>
+                    <Text style={styles.subHeader}>
+                        We work super hard to serve you better and would love to know how would you rate our app?
+                    </Text>
 
-            <View style={styles.starContainer}>{renderStars()}</View>
+                    <View style={styles.starContainer}>{renderStars()}</View>
 
-            <TextInput
-                style={styles.feedbackInput}
-                placeholder="Share your thoughts with us..."
-                placeholderTextColor="#AAA"
-                multiline
-                value={feedback}
-                onChangeText={setFeedback}
-            />
+                    <TextInput
+                        ref={inputRef}
+                        style={[styles.feedbackInput, { marginBottom: keyboardHeight > 0 ? 10 : 20 }]}
+                        placeholder="Share your thoughts with us..."
+                        placeholderTextColor="#AAA"
+                        multiline
+                        value={feedback}
+                        onChangeText={setFeedback}
+                    />
 
-            <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-                {!isLoading ? (
-                    <Text style={styles.submitButtonText}>Submit</Text>
-                ) : (
-                    <ActivityIndicator size="small" color="#fff" />
-                )}
-            </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[
+                            styles.submitButton,
+                            { marginBottom: keyboardHeight > 0 ? keyboardHeight + 60 : 40 },
+                        ]}
+                        onPress={handleSubmit}
+                    >
+                        {!isLoading ? (
+                            <Text style={styles.submitButtonText}>Submit</Text>
+                        ) : (
+                            <ActivityIndicator size="small" color="#fff" />
+                        )}
+                    </TouchableOpacity>
+                </ScrollView>
+            </KeyboardAvoidingView>
         </LinearGradient>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
+        flexGrow: 1,
         paddingHorizontal: 20,
-        paddingVertical: 40,
         alignItems: 'center',
         backgroundColor: '#ffffff',
     },
     headerImage: {
-        width: 180,
-        height: 140,
+        width: '80%',
+        height: "40%",
         marginBottom: 20,
-        marginTop : '20%'
+        marginTop: '20%'
     },
     header: {
         fontSize: 22,

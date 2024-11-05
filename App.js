@@ -65,10 +65,7 @@ const App = () => {
         {initializing || !fontsLoaded ? (
           <ActivityIndicator size="large" color="#fff" />
         ) : (
-          // <FingerprintAuth onAuthenticate={handleSuccessfulAuth} />
-          handleSuccessfulAuth()
-
-          
+          <FingerprintAuth onAuthenticate={handleSuccessfulAuth} />
         )}
       </View>
     );
