@@ -8,7 +8,6 @@ node_modules/
 .expo/
 dist/
 web-build/
-config.js
 chatapp.json
 google-services.json
 
@@ -33,7 +32,7 @@ yarn-error.*
 *.pem
 
 # local env files
-.env*.local
+.env
 
 # typescript
 *.tsbuildinfo

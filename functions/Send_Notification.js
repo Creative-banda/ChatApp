@@ -1,6 +1,8 @@
+import { SERVER_URL } from "@env";
+
 const handleNotification = (message, token, uid, type) => {
     try {
-        fetch('http://10.0.13.126:3000/send-notification', {
+        fetch(`${SERVER_URL}/send-notification`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

@@ -2,10 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View, StatusBar } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator, CardStyleInterpolators } from '@react-navigation/stack';
-import { initializeApp } from 'firebase/app';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { firebaseConfig } from './config';
-import * as Font from 'expo-font';
+import { onAuthStateChanged } from 'firebase/auth';
+import { AppProvider } from './AppContext';
+import NotificationPermission from './permissions/NotificationPermission';
+import FingerprintAuth from './permissions/FingerprintAuth';
+import { auth } from './config';
+
+// Screens
 import ChatAppHomePage from './screens/HomeScreen';
 import LoginPage from './screens/LoginPage';
 import ChatScreen from './screens/ChatScreen';
@@ -18,12 +21,10 @@ import Forgetpassword from './screens/Forgetpassword';
 import OtherProfile from './screens/OtherProfile';
 import AddFriendsScreen from './screens/AddFriendsScreen';
 import RateUsScreen from './screens/RateUsScreen';
-import { AppProvider } from './AppContext';
 import FriendRequestScreen from './screens/FriendRequestScreen';
 import SendRequestScreen from './screens/SendRequestScreen';
 import NotificationScreen from './screens/NotificationScreen';
-import NotificationPermission from './permissions/NotificationPermission';
-import FingerprintAuth from './permissions/FingerprintAuth'; // Import FingerprintAuth component
+import * as Font from 'expo-font';
 
 const Stack = createStackNavigator();
 
@@ -31,7 +32,7 @@ const App = () => {
   const [initializing, setInitializing] = useState(true);
   const [user, setUser] = useState(null);
   const [fontsLoaded, setFontsLoaded] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false); // Track fingerprint authentication status
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     async function loadFonts() {
@@ -46,9 +47,6 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
       if (initializing) setInitializing(false);
@@ -57,22 +55,20 @@ const App = () => {
     return unsubscribe;
   }, [initializing]);
 
-  const handleSuccessfulAuth = () => {
-    setIsAuthenticated(true);
-  };
+  const handleSuccessfulAuth = () => setIsAuthenticated(true);
 
   if (initializing || !fontsLoaded || !isAuthenticated) {
-    // Show loading indicator if initializing or fonts are loading,
-    // or if the user hasn't authenticated with fingerprint
     return (
       <View style={styles.container}>
         <NotificationPermission />
-        <StatusBar color="dark" />
+        <StatusBar barStyle="dark-content" />
         {initializing || !fontsLoaded ? (
           <ActivityIndicator size="large" color="#fff" />
         ) : (
-          // Show FingerprintAuth when ready but not authenticated
-          <FingerprintAuth onAuthenticate={handleSuccessfulAuth} />
+          // <FingerprintAuth onAuthenticate={handleSuccessfulAuth} />
+          handleSuccessfulAuth()
+
+          
         )}
       </View>
     );
