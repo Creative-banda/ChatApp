@@ -9,7 +9,7 @@ import handleNotification from '../functions/Send_Notification';
 
 export default function Profile({ navigation }) {
     const route = useRoute();
-    const { uid } = route.params;
+    const { uid, IsNotification } = route.params;
     const [userInfo, setUserInfo] = useState(null);
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
@@ -39,7 +39,9 @@ export default function Profile({ navigation }) {
             const snapshot = await get(userRef);
             if (snapshot.exists()) {
                 setUserInfo(snapshot.val());
-                handleNotification("SomeOne visited your profile",snapshot.val().token, uid, "profile_viewed");
+                if (!IsNotification){
+                    handleNotification("SomeOne visited your profile",snapshot.val().token, uid, "profile_viewed");
+                }
                 
             } else {
                 console.log('No such document!');

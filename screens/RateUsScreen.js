@@ -16,7 +16,6 @@ const RateUsScreen = () => {
     const { uid } = route.params;
     const [keyboardHeight, setKeyboardHeight] = useState(0);
     const inputRef = useRef(null);
-    const [contentHeight, setContentHeight] = useState(0);
 
     useEffect(() => {
         const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', (event) => {
@@ -41,6 +40,7 @@ const RateUsScreen = () => {
             useNativeDriver: true,
         }).start();
     };
+
 
     const handleSubmit = async () => {
         if (rating === 0) {
@@ -107,7 +107,6 @@ const RateUsScreen = () => {
                         styles.container
                     }
                     showsVerticalScrollIndicator={false}
-                    onContentSizeChange={(_, height) => setContentHeight(height)}
                 >
                     <Image source={require('../assets/Images/feedback-image.png')} style={styles.headerImage} />
 

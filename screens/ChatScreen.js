@@ -255,8 +255,8 @@ const ChatScreen = ({ navigation }) => {
                 await set(newMessageRef, newMessage);
                 let message = "You Receive a New Message From " + name.username;
                 handleNotification(message, chatId.token, chatId.name, "message")
-
                 handleTypingStatus(ChatRoom, name.id, false);
+                
             } catch (error) {
                 console.error("Error sending message: ", error);
             }
@@ -425,7 +425,7 @@ const ChatScreen = ({ navigation }) => {
                             </TouchableOpacity>
                             <Image source={chatId.image ? { uri: chatId.image } : require('../assets/icon.png')} style={styles.avatar} />
 
-                            <TouchableOpacity onPress={() => { navigation.navigate('OtherProfile', { uid: chatId.name }) }}>
+                            <TouchableOpacity onPress={() => { navigation.navigate('OtherProfile', { uid: chatId.name, IsNotification : true }) }}>
                                 <Text style={{ color: '#fff', fontSize: 20, fontFamily: 'Lato' }}>{chatId.username}</Text>
                                 <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center' }}>
                                     {isActive ? (

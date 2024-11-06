@@ -100,7 +100,6 @@ const StoryStatusScreen = ({ navigation }) => {
                     await deleteObject(storageRef);
                     console.log("Deleted Sucessfully");
                     Alert.alert("Sucessfully", "Story Deleted Sucessfully")
-                    deleteImageFromStorage()
                     setUser(prevUser => ({
                         ...prevUser,
                         Status: { url: "", time: "  ", message: "" }
