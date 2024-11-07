@@ -2,11 +2,10 @@ import React, { useState } from 'react';
 import { View, TouchableOpacity, Text, Modal, StyleSheet, Linking } from 'react-native';
 import Entypo from 'react-native-vector-icons/Entypo';
 import { ref, set} from 'firebase/database';
-import { database } from '../config';
+import { database } from '@config';
 
 const ThreeDotMenu = ({ ViewProfile, CurrentUser, OtherUser }) => {
   const [modalVisible, setModalVisible] = useState(false);
-  
   
 
   function generateRandomId() {

@@ -1,21 +1,45 @@
+// React and React Native core imports
 import React, { useEffect, useState, useRef } from 'react';
-import { View, FlatList, TextInput, TouchableOpacity, Text, StyleSheet, StatusBar, Image, ImageBackground, Modal } from 'react-native';
+import {
+  View,
+  FlatList,
+  TextInput,
+  TouchableOpacity,
+  Text,
+  StyleSheet,
+  StatusBar,
+  Image,
+  ImageBackground,
+  Modal
+} from 'react-native';
+
+// Navigation
 import { useRoute } from '@react-navigation/native';
-import { database, storage } from '../config';
+
+// Firebase imports
+import { database, storage } from '@config';
 import { ref, set, onValue, update, remove } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import Back from '../assets/SVG/BackButton';
+
+// Components
+import CustomAlert from '@components/CustomAlert';
+import DisplayImage from '@components/DisplayImage';
+import ThreeDotMenu from '@components/ThreeDotMenu';
+
+// SVG and Icons
+import Back from '@assets/SVG/BackButton';
 import Icon from 'react-native-vector-icons/AntDesign';
 import Entypo from 'react-native-vector-icons/Entypo';
 import Feather from 'react-native-vector-icons/Ionicons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import CustomAlert from '../components/CustomAlert';
-import EmojiSelector from 'react-native-emoji-selector';
+
+// Expo packages
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
-import DisplayImage from '../components/DisplayImage';
-import ThreeDotMenu from '../components/ThreeDotMenu';
-import handleNotification from '../functions/Send_Notification';
+
+// Functions
+import handleNotification from '@functions/Send_Notification';
+import RenderMessage from '@functions/RenderMessage';
 
 const ChatScreen = ({ navigation }) => {
     const [messages, setMessages] = useState([]);
@@ -24,7 +48,6 @@ const ChatScreen = ({ navigation }) => {
     const [isSelectionMode, setIsSelectionMode] = useState(false);
     const [alertVisible, setAlertVisible] = useState(false);
     const [IsMessage, setIsMessage] = useState(false)
-    const [isPickerVisible, setIsPickerVisible] = useState(false);
     const [displayImage, setDisplayImage] = useState('');
     const [isActive, setisActive] = useState(false);
     const [ChatRoom, setChatroom] = useState('');
@@ -35,17 +58,17 @@ const ChatScreen = ({ navigation }) => {
     const typingTimeoutRef = useRef(null);
     const statusTimeoutRef = useRef(null);
     const route = useRoute();
-    const { chatId, name } = route.params;  
-    
-    
-    
+    const { chatId, name } = route.params;
+
+
+
     useEffect(() => {
         const chatsRef = ref(database, `chats/${name.id}`);
         const unsubscribe = onValue(chatsRef, (snapshot) => {
             if (snapshot.exists()) {
                 const chatsData = snapshot.val();
                 let allChats = [];
-    
+
                 Object.values(chatsData).forEach(chat => {
                     if (Array.isArray(chat)) {
                         allChats.push(...chat);
@@ -53,15 +76,15 @@ const ChatScreen = ({ navigation }) => {
                         allChats.push(chat);
                     }
                 });
-    
+
                 // Sort chats by time
                 allChats.sort((a, b) => new Date(a.time) - new Date(b.time));
-    
+
                 const filteredChats = allChats.filter(chat =>
                     (chat.To?.trim() === name.id.trim() && chat.from?.trim() === chatId.name.trim()) ||
                     (chat.To?.trim() === chatId.name.trim() && chat.from?.trim() === name.id.trim())
                 );
-    
+
                 if (filteredChats.length === 0) {
                     setIsMessage(true)
                 }
@@ -71,10 +94,10 @@ const ChatScreen = ({ navigation }) => {
                 setMessages(filteredChats.reverse());
             }
         });
-    
+
         return () => unsubscribe();
     }, [name, chatId]);
-    
+
     useEffect(() => {
         const userRef = ref(database, `Users/${chatId.name}`);
 
@@ -131,7 +154,7 @@ const ChatScreen = ({ navigation }) => {
         return removeListener;
     }, [ChatRoom, chatId.name]);
 
-    
+
     const toggleSelectionMode = (id, Text, MessageType) => {
         setIsSelectionMode(true);
         toggleItemSelection(id);
@@ -140,21 +163,8 @@ const ChatScreen = ({ navigation }) => {
         }
     };
 
-    const formatTimeOnly = (timestamp) => {
-        const date = new Date(timestamp);
-    
-        let hours = date.getHours();
-        const minutes = String(date.getMinutes()).padStart(2, '0');
-        const ampm = hours >= 12 ? 'PM' : 'AM';
-      
-        hours = hours % 12;
-        hours = hours ? hours : 12;
-        
-        const formattedTime = `${hours}:${minutes} ${ampm}`;
-      
-        return formattedTime;
-      };
-      
+
+
     const toggleItemSelection = (id) => {
         setSelectedItems(prevSelectedItems => {
             if (prevSelectedItems.includes(id)) {
@@ -186,11 +196,11 @@ const ChatScreen = ({ navigation }) => {
 
     const deleteMessages = async (user, otherUser, messageIds) => {
         console.log(selectedItems);
-        
+
         const userChatsPath = `chats/${user.trim()}`;
         const otherUserChatsPath = `chats/${otherUser.trim()}`;
         setAlertVisible(false);
-    
+
         try {
             await deleteFromChat(userChatsPath, messageIds);
             await deleteFromChat(otherUserChatsPath, messageIds);
@@ -200,24 +210,19 @@ const ChatScreen = ({ navigation }) => {
             console.error('Error deleting messages from both users:', error);
         }
     };
-    
+
     const deleteFromChat = async (chatPath, messageIds) => {
         try {
             for (const messageId of messageIds) {
                 // Create a reference to the specific message you want to delete
                 const messageRef = ref(database, `${chatPath}/${messageId}`);
-                
+
                 // Delete the message
                 await remove(messageRef);
             }
         } catch (error) {
             console.error("Error deleting messages:", error);
         }
-    };
-
-    const handleEmojiSelect = (emoji) => {
-        setInputText(inputText + emoji);
-        setIsPickerVisible(false);
     };
 
     const handleSingleClick = (item) => {
@@ -256,7 +261,7 @@ const ChatScreen = ({ navigation }) => {
                 let message = "You Receive a New Message From " + name.username;
                 handleNotification(message, chatId.token, chatId.name, "message")
                 handleTypingStatus(ChatRoom, name.id, false);
-                
+
             } catch (error) {
                 console.error("Error sending message: ", error);
             }
@@ -346,7 +351,6 @@ const ChatScreen = ({ navigation }) => {
     const handleTypingStatus = async (chatRoom, userId, isTyping) => {
         try {
             const typingStatusRef = ref(database, `TypingStatus/${chatRoom}/${userId}`);
-
             await set(typingStatusRef, isTyping);
         } catch (error) {
             console.error('Error updating typing status:', error);
@@ -354,7 +358,6 @@ const ChatScreen = ({ navigation }) => {
     };
 
     const handleEdit = async () => {
-
         const userRef = ref(database, `chats/${name.id}/${selectedItems[0]}`);
         await update(userRef, { message: EditText });
         SetEditing(false);
@@ -364,38 +367,6 @@ const ChatScreen = ({ navigation }) => {
 
     }
 
-    const renderMessage = ({ item }) => {
-        const isMyMessage = item.from.trim().toLowerCase() === name.id.trim().toLowerCase();
-        const isSelected = selectedItems.includes(item.id);
-        const isImage = item.messageType === 'image'
-        timeing = formatTimeOnly(item.time)
-
-
-        return (
-            <View
-                style={[isImage ? styles.imageContainer : styles.messageContainer, isMyMessage ? styles.myMessage : styles.otherMessage, isSelected && styles.selectedMessage]}
-            >
-                {isMyMessage ? (
-                    <TouchableOpacity onLongPress={() => toggleSelectionMode(item.id, item.message, item.messageType)} onPress={() => handleSingleClick(item)}>
-                        {item.messageType === "text" ? (
-                            <Text style={[styles.messageText, isSelected && styles.selectedMessageText]}>{item.message}</Text>
-                        ) : (
-                            <Image source={{ uri: item.message }} style={styles.image} />
-                        )}
-                    </TouchableOpacity>
-                ) : (
-                    <TouchableOpacity onPress={() => handleSingleClick(item)}>
-                        {item.messageType === "text" ? (
-                            <Text style={[styles.messageText, isSelected && styles.selectedMessageText]}>{item.message}</Text>
-                        ) : (
-                            <Image source={{ uri: item.message }} style={styles.image} />
-                        )}
-                    </TouchableOpacity>
-                )}
-            <Text style = {{fontSize:12,position:'absolute', bottom:0,right: 5,}}>{timeing}</Text>
-            </View>
-        );
-    };
 
     return (
         <ImageBackground source={require('../assets/Images/background.jpg')} style={styles.container}>
@@ -425,7 +396,7 @@ const ChatScreen = ({ navigation }) => {
                             </TouchableOpacity>
                             <Image source={chatId.image ? { uri: chatId.image } : require('../assets/icon.png')} style={styles.avatar} />
 
-                            <TouchableOpacity onPress={() => { navigation.navigate('OtherProfile', { uid: chatId.name, IsNotification : true }) }}>
+                            <TouchableOpacity onPress={() => { navigation.navigate('OtherProfile', { uid: chatId.name }) }}>
                                 <Text style={{ color: '#fff', fontSize: 20, fontFamily: 'Lato' }}>{chatId.username}</Text>
                                 <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center' }}>
                                     {isActive ? (
@@ -443,7 +414,7 @@ const ChatScreen = ({ navigation }) => {
                                 </View>
                             </TouchableOpacity>
 
-                            <ThreeDotMenu ViewProfile={()=>{ navigation.navigate('OtherProfile', { uid: chatId.name}) }} CurrentUser = {name} OtherUser = {chatId}/>
+                            <ThreeDotMenu ViewProfile={() => { navigation.navigate('OtherProfile', { uid: chatId.name }) }} CurrentUser={name} OtherUser={chatId} />
                         </View>
                     )}
                 </View>
@@ -459,7 +430,15 @@ const ChatScreen = ({ navigation }) => {
 
                 <FlatList
                     data={messages}
-                    renderItem={renderMessage}
+                    renderItem={({ item }) => (
+                        <RenderMessage
+                            item={item}
+                            handleSingleClick={handleSingleClick}
+                            toggleSelectionMode={toggleSelectionMode}
+                            selectedItems={selectedItems}
+                            name={name}
+                        />
+                    )}
                     keyExtractor={item => item.id}
                     contentContainerStyle={styles.chatContainer}
                     inverted
@@ -467,10 +446,10 @@ const ChatScreen = ({ navigation }) => {
                     initialNumToRender={10}
                     extraData={selectedItems}
                 />
+
+
                 <View style={styles.inputContainer}>
-                    <TouchableOpacity onPress={() => setIsPickerVisible(true)}>
-                        <Icon name="smileo" size={24} color="#fff" />
-                    </TouchableOpacity>
+
                     <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', marginLeft: 10, borderWidth: 1, borderColor: '#fff', borderRadius: 20, paddingHorizontal: 8 }}>
                         <TextInput
                             style={styles.input}
@@ -498,15 +477,6 @@ const ChatScreen = ({ navigation }) => {
                 onYes={() => deleteMessages(name.id, chatId.name, selectedItems)}
                 onNo={() => setAlertVisible(false)}
             />
-            <Modal
-                transparent
-                visible={isPickerVisible}
-                onRequestClose={() => setIsPickerVisible(false)}
-            >
-                <View style={styles.modalContainer}>
-                    <EmojiSelector onEmojiSelected={handleEmojiSelect} />
-                </View>
-            </Modal>
             {/* This is for Editing Mode */}
             {IsEditing && <View style={styles.EditContainer}>
                 <TouchableOpacity onPress={() => { SetEditing(false); }} style={{ left: 20, top: 30 }}>
@@ -572,11 +542,6 @@ const styles = StyleSheet.create({
         borderRadius: 25,
         marginRight: 16,
     },
-    messageContainer: {
-        marginBottom: 10,
-        flexDirection:'row',
-        paddingRight:50
-    },
     InfoContainer: {
         alignItems: 'center',
         justifyContent: 'center',
@@ -588,59 +553,16 @@ const styles = StyleSheet.create({
         fontSize: 22,
         fontFamily: 'Lato',
     },
-    imageContainer : {
-        justifyContent:'center',
-        backgroundColor:'#000'
-    },
-
-    image: {
-        width: 200,
-        height: 200,
-        resizeMode: 'cover'
-
-    },
     InfoText: {
         color: '#FFFFFF',
         marginTop: 10,
         fontSize: 16,
         fontFamily: 'Nunito',
     },
-    messageText: {
-        fontSize: 17,
-        color: '#000000',
-        fontFamily: 'Nunito',
-    },
-    myMessage: {
-        alignSelf: 'flex-end',
-        backgroundColor: '#CBC3E3',
-        padding: 7,
-        marginVertical: 5,
-        maxWidth: '75%',
-        borderTopLeftRadius: 20,
-        borderBottomRightRadius: 10,
-        borderBottomLeftRadius: 20,
-        paddingHorizontal: 20,
-        paddingLeft: 20,
-        paddingBottom:15
-    },
     selectionModeButton: {
         paddingVertical: 10,
         position: 'absolute',
         left: 10,
-    },
-    otherMessage: {
-        alignSelf: 'flex-start',
-        backgroundColor: '#FFFFFF',
-        padding: 3,
-        paddingHorizontal: 20,
-        borderTopRightRadius: 30,
-        borderBottomRightRadius: 10,
-        borderBottomLeftRadius: 20,
-        marginVertical: 5,
-        paddingTop: 10,
-        maxWidth: '75%',
-        fontSize: 16,
-        paddingBottom:15
     },
     selectionModeContainer: {
         flex: 1,
@@ -648,12 +570,6 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-end',
         gap: 50,
         paddingHorizontal: 30,
-    },
-    selectedMessage: {
-        backgroundColor: '#E09D90',
-    },
-    selectedMessageText: {
-        color: '#000',
     },
     inputContainer: {
         flexDirection: 'row',
@@ -690,16 +606,6 @@ const styles = StyleSheet.create({
     selectedTextView: {
         backgroundColor: '#E09D90',
     },
-    modalContainer: {
-        position: 'absolute',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '50%',
-        backgroundColor: 'rgba(0,0,0,0.5)',
-    },
-
-
-
 });
 
 export default ChatScreen;

@@ -1,14 +1,14 @@
 import { View, Text, ImageBackground, StyleSheet, SafeAreaView, TouchableOpacity, Alert, Linking } from "react-native";
 import { useState } from "react";
 import { getAuth, signOut } from 'firebase/auth';
-import CustomAlert from '../components/CustomAlert';
-import CustomPrompt from '../components/CustomPrompt';
-import { auth, firestore, database } from '../config';
+import CustomAlert from '@components/CustomAlert';
+import CustomPrompt from '@components/CustomPrompt';
+import { auth, firestore, database } from '@config';
 import { deleteUser, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 import { doc, deleteDoc } from 'firebase/firestore';
 import { ref, remove } from 'firebase/database';
-import BackButton from '../assets/SVG/BackButton';
-import SettingsItem from '../components/SettingsItem';
+import BackButton from '@assets/SVG/BackButton';
+import SettingsItem from '@components/SettingsItem';
 import { useRoute } from '@react-navigation/native';
 import AntDesign from 'react-native-vector-icons/AntDesign'
 import { LinearGradient } from 'expo-linear-gradient';

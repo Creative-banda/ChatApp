@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ImageBackground, ActivityIndicator } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Antdesign from 'react-native-vector-icons/FontAwesome';
-import BackButton from '../assets/SVG/BackButton'
+import BackButton from '@assets/SVG/BackButton'
 import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import { getDatabase, ref, set } from 'firebase/database';
 import AsyncStorage from '@react-native-async-storage/async-storage';

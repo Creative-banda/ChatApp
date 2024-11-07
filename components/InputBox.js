@@ -1,6 +1,6 @@
-import { View, Text, TextInput, StyleSheet } from 'react-native'
+import { View, TextInput, StyleSheet } from 'react-native'
 import React from 'react'
-export default function InputBox({ placeholder, Label, editable, value, onChangeText }) {
+export default function InputBox({ placeholder, editable, value, onChangeText }) {
   return (
     <View style={styles.container}>
       <TextInput

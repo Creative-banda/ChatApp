@@ -3,27 +3,27 @@ import { ActivityIndicator, StyleSheet, View, StatusBar } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator, CardStyleInterpolators } from '@react-navigation/stack';
 import { onAuthStateChanged } from 'firebase/auth';
-import { AppProvider } from './AppContext';
-import NotificationPermission from './permissions/NotificationPermission';
-import FingerprintAuth from './permissions/FingerprintAuth';
-import { auth } from './config';
+import { AppProvider } from '@context/AppContext';
+import NotificationPermission from '@permission/NotificationPermission';
+import FingerprintAuth from '@permission/FingerprintAuth';
+import { auth } from '@config';
 
 // Screens
-import ChatAppHomePage from './screens/HomeScreen';
-import LoginPage from './screens/LoginPage';
-import ChatScreen from './screens/ChatScreen';
-import SignUp from './screens/SignUp';
-import SettingPage from './screens/SettingPage';
-import Profile from './screens/Profile';
-import CallScreen from './screens/CallScreen';
-import StatusScreen from './screens/StatusScreen';
-import Forgetpassword from './screens/Forgetpassword';
-import OtherProfile from './screens/OtherProfile';
-import AddFriendsScreen from './screens/AddFriendsScreen';
-import RateUsScreen from './screens/RateUsScreen';
-import FriendRequestScreen from './screens/FriendRequestScreen';
-import SendRequestScreen from './screens/SendRequestScreen';
-import NotificationScreen from './screens/NotificationScreen';
+import ChatAppHomePage from '@screens/HomeScreen';
+import LoginPage from '@screens/LoginPage';
+import ChatScreen from '@screens/ChatScreen';
+import SignUp from '@screens/SignUp';
+import SettingPage from '@screens/SettingPage';
+import Profile from '@screens/Profile';
+import CallScreen from '@screens/CallScreen';
+import StatusScreen from '@screens/StatusScreen';
+import Forgetpassword from '@screens/Forgetpassword';
+import OtherProfile from '@screens/OtherProfile';
+import AddFriendsScreen from '@screens/AddFriendsScreen';
+import RateUsScreen from '@screens/RateUsScreen';
+import FriendRequestScreen from '@screens/FriendRequestScreen';
+import SendRequestScreen from '@screens/SendRequestScreen';
+import NotificationScreen from '@screens/NotificationScreen';
 import * as Font from 'expo-font';
 
 const Stack = createStackNavigator();
@@ -37,8 +37,8 @@ const App = () => {
   useEffect(() => {
     async function loadFonts() {
       await Font.loadAsync({
-        'Lato': require('./assets/Fonts/Lato-Bold.ttf'),
-        'Nunito': require('./assets/Fonts/Nunito.ttf'),
+        'Lato': require('@assets/Fonts/Lato-Bold.ttf'),
+        'Nunito': require('@assets/Fonts/Nunito.ttf'),
       });
       setFontsLoaded(true);
     }

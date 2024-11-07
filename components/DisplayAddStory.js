@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, View, Image, Modal, TouchableOpacity, Text, TextInput, ActivityIndicator } from 'react-native';
-import BackButton from '../assets/SVG/BackButton';
+import BackButton from '@assets/SVG/BackButton';
 
 const DisplayImage = ({ imageUri, setImageUri, Done, inputText, setInputText, IsUploading}) => {
     

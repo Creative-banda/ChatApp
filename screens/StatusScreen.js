@@ -1,7 +1,7 @@
 import React, { useEffect, useState,useContext } from 'react';
 import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, Modal, Alert, ActivityIndicator } from 'react-native';
 import { storage, database } from '../config';
-import { ref, uploadBytes, getDownloadURL, deleteObject, getStorage } from 'firebase/storage';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { ref as databaseRef, update, get } from 'firebase/database';
 import CallIcon from '../assets/SVG/CallIcon';
 import StatusIcon from '../assets/SVG/StatusIcon';
@@ -36,26 +36,6 @@ const StoryStatusScreen = ({ navigation }) => {
         return list.filter(item => item.id !== currentUser.email && item.Status.url);
     };
 
-
-    const deleteImageFromStorage = async () => {
-        const storage = getStorage();
-
-        try {
-            const url = currentUser.Status.url;
-            const path = url.split('/o/')[1].split('?')[0].replace(/%2F/g, '/');
-
-            const storageRef = ref(storage, path);
-            await deleteObject(storageRef);
-            console.log('Image deleted successfully');
-            return true;
-        } catch (error) {
-            if (error.code === 'storage/object-not-found') {
-            } else {
-                console.error('Error deleting image:', error);
-            }
-            return false;
-        }
-    };
 
 
     const handleAddStory = () => {
@@ -98,7 +78,6 @@ const StoryStatusScreen = ({ navigation }) => {
                 if (snapshot.val().url) {
                     const storageRef = ref(storage, imageUrl);
                     await deleteObject(storageRef);
-                    console.log("Deleted Sucessfully");
                     Alert.alert("Sucessfully", "Story Deleted Sucessfully")
                     setUser(prevUser => ({
                         ...prevUser,

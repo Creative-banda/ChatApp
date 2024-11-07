@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Image, StyleSheet, ImageBackground, TouchableOpacity, KeyboardAvoidingView, ScrollView } from 'react-native';
-import { database } from '../config';
+import { database } from '@config';
 import { ref as databaseRef, get } from 'firebase/database';
 import { useRoute } from '@react-navigation/native';
-import InputBox from '../components/InputBox';
-import DisplayImage from '../components/DisplayImage';
-import handleNotification from '../functions/Send_Notification';
+import InputBox from '@components/InputBox';
+import DisplayImage from '@components/DisplayImage';
+import handleNotification from '@functions/Send_Notification';
 
 export default function Profile({ navigation }) {
     const route = useRoute();

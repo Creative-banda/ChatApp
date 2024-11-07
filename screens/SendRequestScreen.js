@@ -2,9 +2,9 @@ import React, { useState, useEffect, useContext } from 'react';
 import { StyleSheet, View, Text, ImageBackground, TouchableOpacity, FlatList, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ref, get, remove  } from 'firebase/database';
-import { database } from '../config';
+import { database } from '@config';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { AppContext } from '../AppContext';
+import { AppContext } from '@context/AppContext';
 
 const FriendRequestScreen = ({navigation}) => {
     const [UserList, SetUserlist] = useState([]);

@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Animated, A
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ref, get, set, update } from 'firebase/database';
-import { database } from '../config';
+import { database } from '@config';
 import { useRoute } from '@react-navigation/native';
 
 const RateUsScreen = () => {

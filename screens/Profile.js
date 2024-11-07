@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Image, StyleSheet, ImageBackground, TouchableOpacity, KeyboardAvoidingView, ScrollView } from 'react-native';
-import BackButton from '../assets/SVG/BackButton';
+import BackButton from '@assets/SVG/BackButton';
 import Antdesign from 'react-native-vector-icons/FontAwesome'
 import * as ImagePicker from 'expo-image-picker';
-import { storage, database } from '../config';
+import { storage, database } from '@config';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import DisplayImage from '../components/DisplayImage';
+import DisplayImage from '@components/DisplayImage';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { ref as databaseRef, update, get } from 'firebase/database';
 import { useRoute } from '@react-navigation/native';
-import InputBox from '../components/InputBox';
+import InputBox from '@components/InputBox';
 
 export default function Profile({ navigation }) {
     const route = useRoute();
@@ -101,7 +101,7 @@ export default function Profile({ navigation }) {
             const storageRef = ref(storage, filename);
             await uploadBytes(storageRef, blob);
             const url = await getDownloadURL(storageRef);
-            alert('Image uploaded successfully!');
+            alert('Profile Pic Updated Sucessfully!');
             await updateProfilePic(url);
             fetchUserData();
             setImageUri(null);

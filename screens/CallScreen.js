@@ -1,16 +1,32 @@
-import { database } from '../config';
-import { AppContext } from '../AppContext';
-import { ref, get } from 'firebase/database';
-import UserIcon from '../assets/SVG/UserIcon';
-import CallIcon from '../assets/SVG/CallIcon';
-import StatusIcon from '../assets/SVG/StatusIcon';
+// React and React Native core imports
 import React, { useEffect, useState, useContext } from 'react';
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  Linking
+} from 'react-native';
+
+// Firebase imports
+import { database } from '@config';
+import { ref, get } from 'firebase/database';
+
+// Context
+import { AppContext } from '@context/AppContext';
+
+// Icons
 import { MaterialIcons } from '@expo/vector-icons';
-import { useRoute } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import AddFriendIcon from '../assets/SVG/AddFriendIcon';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, Image, Linking } from 'react-native';
+
+// SVG Components
+import UserIcon from '@assets/SVG/UserIcon';
+import CallIcon from '@assets/SVG/CallIcon';
+import StatusIcon from '@assets/SVG/StatusIcon';
+import AddFriendIcon from '@assets/SVG/AddFriendIcon';
 
 
 const CallHistoryScreen = ({ navigation }) => {

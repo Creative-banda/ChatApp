@@ -2,10 +2,10 @@ import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { database } from '../config';
+import { database } from '@config';
 import { ref, get, set } from 'firebase/database';
-import { AppContext } from '../AppContext';
-import SettingItem from '../components/SettingItem';
+import { AppContext } from '@context/AppContext';
+import SettingItem from '@components/SettingItem';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const NotificationSettingsScreen = () => {

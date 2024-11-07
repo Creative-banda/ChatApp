@@ -1,14 +1,24 @@
-import { database } from '../config';
-import { AppContext } from '../AppContext';
-import UserIcon from '../assets/SVG/UserIcon';
-import CallIcon from '../assets/SVG/CallIcon';
-import { ref, get, set } from 'firebase/database';
-import StatusIcon from '../assets/SVG/StatusIcon';
-import Icon from 'react-native-vector-icons/Ionicons';
-import AddFriendIcon from '../assets/SVG/AddFriendIcon';
+// Core React and React Native imports
 import React, { useEffect, useState, useContext } from 'react';
-import handle_Notification from '../functions/Send_Notification';
-import { StyleSheet, View, ImageBackground, StatusBar, Text, FlatList, TouchableOpacity, Image } from 'react-native';
+import {StyleSheet,View,ImageBackground,StatusBar,Text,FlatList,TouchableOpacity,Image
+} from 'react-native';
+
+// Firebase imports
+import { ref, get, set } from 'firebase/database';
+import { database } from '@config/index';
+
+// Context
+import { AppContext } from '@context/AppContext';
+
+// Icons and SVGs
+import Icon from 'react-native-vector-icons/Ionicons';
+import UserIcon from '@assets/SVG/UserIcon';
+import CallIcon from '@assets/SVG/CallIcon';
+import StatusIcon from '@assets/SVG/StatusIcon';
+import AddFriendIcon from '@assets/SVG/AddFriendIcon';
+
+// Functions
+// import handleNotification from '@functions/Send_Notification';
 
 const AddFriendsScreen = ({ navigation }) => {
     const { userUid, user } = useContext(AppContext);
@@ -32,7 +42,6 @@ const AddFriendsScreen = ({ navigation }) => {
                     username: userData[key].username,
                 }));
                 
-                // Filter out users who are already friends
                 const uniqueUids = await fetchCurrentUserFriends();
                 const filteredUsers = usersList.filter(user => user.id !== userUid && !uniqueUids.has(user.id));
 

@@ -1,13 +1,13 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet, StatusBar, ImageBackground } from 'react-native';
 import { database } from '../config';
-import { ref, get, onValue, set } from 'firebase/database';
+import { ref, get, onValue } from 'firebase/database';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import UserIcon from '../assets/SVG/UserIcon';
-import StatusIcon from '../assets/SVG/StatusIcon';
-import CallIcon from '../assets/SVG/CallIcon';
-import AddFriendIcon from '../assets/SVG/AddFriendIcon';
-import { AppContext } from '../AppContext';
+import StatusIcon from '@assets/SVG/StatusIcon';
+import CallIcon from '@assets/SVG/CallIcon';
+import AddFriendIcon from '@assets/SVG/AddFriendIcon';
+import { AppContext } from '@context/AppContext';
 
 const ChatAppHomePage = ({ navigation, uid, email }) => {
   const [users, setUsers] = useState([]);

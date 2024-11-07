@@ -17,17 +17,34 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/Test.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#ffffff",
+        "enablePngCrunchInReleaseBuilds": false
       },
       "package": "com.ahz_khn_05.ChatApp",
       "googleServicesFile": "./google-services.json",
-      "useNextNotificationsApi": true
+      "useNextNotificationsApi": true,
+      "enableHermes": true,
+      "enableProguardInReleaseBuilds": true,
+      "enableShrinkResources": true
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-font"
+      "expo-font",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableProguardInReleaseBuilds": true,
+            "enableShrinkResources": true,
+            "useLegacyPackaging": false,
+            "compileSdkVersion": 34,
+            "targetSdkVersion": 33,
+            "buildToolsVersion": "33.0.0"
+          }
+        }
+      ]
     ],
     "extra": {
       "eas": {

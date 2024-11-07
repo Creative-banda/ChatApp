@@ -3,9 +3,9 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingVi
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Antdesign from 'react-native-vector-icons/FontAwesome';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../config';
-import SimpleAlert from '../components/SimpleAlert';
-import updateToken from '../functions/UpdateToken';
+import { auth } from '@config';
+import SimpleAlert from '@components/SimpleAlert';
+import updateToken from '@functions/UpdateToken';
 
 const LoginPage = ({ navigation }) => {
   const [email, setEmail] = useState('');
