@@ -23,7 +23,6 @@ const ChatAppHomePage = ({ navigation, uid, email }) => {
     }
   
     const userStatusListener = ref(database, 'Users');
-    
     const unsubscribe = onValue(userStatusListener, async (snapshot) => {
       if (snapshot.exists()) {
         const userData = snapshot.val();
@@ -125,7 +124,7 @@ const ChatAppHomePage = ({ navigation, uid, email }) => {
 
     const currentTime = Date.now();
     const timeDifference = currentTime - item.LastSeen;
-    const isActive = timeDifference < 12000;
+    const isActive = timeDifference < 14000;
 
     const imageUri = item.image && item.image !== '' ? { uri: item.image } : require('../assets/icon.png');
 

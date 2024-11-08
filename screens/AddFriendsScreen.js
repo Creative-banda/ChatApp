@@ -1,6 +1,7 @@
 // Core React and React Native imports
 import React, { useEffect, useState, useContext } from 'react';
-import {StyleSheet,View,ImageBackground,StatusBar,Text,FlatList,TouchableOpacity,Image
+import {
+    StyleSheet, View, ImageBackground, StatusBar, Text, FlatList, TouchableOpacity, Image
 } from 'react-native';
 
 // Firebase imports
@@ -18,12 +19,12 @@ import StatusIcon from '@assets/SVG/StatusIcon';
 import AddFriendIcon from '@assets/SVG/AddFriendIcon';
 
 // Functions
-// import handleNotification from '@functions/Send_Notification';
+import handleNotification from '@functions/Send_Notification';
 
 const AddFriendsScreen = ({ navigation }) => {
     const { userUid, user } = useContext(AppContext);
     const [users, setUsers] = useState([]);
-    
+
 
     useEffect(() => {
         fetchUsers();
@@ -41,7 +42,7 @@ const AddFriendsScreen = ({ navigation }) => {
                     image: userData[key].ProfilePic,
                     username: userData[key].username,
                 }));
-                
+
                 const uniqueUids = await fetchCurrentUserFriends();
                 const filteredUsers = usersList.filter(user => user.id !== userUid && !uniqueUids.has(user.id));
 
@@ -67,9 +68,9 @@ const AddFriendsScreen = ({ navigation }) => {
                     uniqueUids.add(item.receiveruid);
                     uniqueUids.add(item.senderuid);
                 });
-                
+
                 return uniqueUids;
-                
+
             } else {
                 console.log('No data available');
                 return new Set(); // Return an empty set if no data is available
@@ -79,7 +80,7 @@ const AddFriendsScreen = ({ navigation }) => {
             return new Set(); // Return an empty set if an error occurs
         }
     };
-    
+
     function generateRandomId() {
         return Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
     }
@@ -96,7 +97,7 @@ const AddFriendsScreen = ({ navigation }) => {
             receiverprofile: friend.image,
             receiveruid: friend.id,
             requestId: id,
-            sendertoken : user.token
+            sendertoken: user.token
         };
 
         try {
@@ -106,9 +107,9 @@ const AddFriendsScreen = ({ navigation }) => {
             await set(newMessageRef, request);
 
             setUsers(prevUsers => prevUsers.filter(u => u.id !== friend.id));
-            let msg = "You got a friend request from "+user.username;
+            let msg = "You got a friend request from " + user.username;
 
-            handle_Notification(msg, friend.token, friend.id, 'friend_request');
+            handleNotification(msg, friend.token, friend.id, 'friend_request');
 
         } catch (error) {
             console.error("Error while adding friend: ", error);
@@ -116,10 +117,8 @@ const AddFriendsScreen = ({ navigation }) => {
     };
 
     const renderFriendItem = ({ item }) => {
-        console.log(item);
-        
         const imageUri = item.image && item.image !== '' ? { uri: item.image } : require('../assets/icon.png');
-    
+
         return (
             <TouchableOpacity style={styles.friendItem} onPress={() => navigation.navigate('OtherProfile', { uid: item.id })}>
                 <Image source={imageUri} style={styles.avatar} />
@@ -133,7 +132,7 @@ const AddFriendsScreen = ({ navigation }) => {
             </TouchableOpacity>
         );
     };
-    
+
 
     return (
         <ImageBackground source={require('../assets/Images/AddFriendBackground.jpg')} style={{ flex: 1 }}>
@@ -148,12 +147,14 @@ const AddFriendsScreen = ({ navigation }) => {
                         <Icon name='notifications-circle' size={30} color='#E7F573' />
                     </TouchableOpacity>
                 </View>
-                <FlatList
+                {users.length != 0 ? <FlatList
                     data={users}
                     renderItem={renderFriendItem}
                     keyExtractor={item => item.id}
                     contentContainerStyle={styles.listContainer}
-                />
+                /> : <View style={styles.nofriend}>
+                    <Text style={styles.noFriendText}>No Friend To Add</Text>
+                </View>}
                 <View style={styles.BottomIcons}>
                     <TouchableOpacity onPress={() => navigation.navigate("Home")}>
                         <UserIcon />
@@ -238,6 +239,16 @@ const styles = StyleSheet.create({
         paddingVertical: 8,
         borderRadius: 30,
         backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    },
+    nofriend: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    noFriendText: {
+        color: '#fff',
+        fontSize: 18,
+        fontFamily : 'Lato',
     }
 });
 

@@ -28,19 +28,8 @@ const StoryStatusScreen = ({ navigation }) => {
     
 
     useEffect(() => {
-        setFilteredFriendList(filterFriendList(friendList));
+        setFilteredFriendList(friendList.filter(item => item.id !== currentUser.email && item.Status.url));
     }, [friendList, currentUser.email]);
-
-
-    const filterFriendList = (list) => {
-        return list.filter(item => item.id !== currentUser.email && item.Status.url);
-    };
-
-
-
-    const handleAddStory = () => {
-        setStoryActionModalVisible(true);
-    };
 
     const handleImagePick = async () => {
         setStoryActionModalVisible(false);
@@ -86,9 +75,7 @@ const StoryStatusScreen = ({ navigation }) => {
                 } else {
                     Alert.alert("No Story", "Sorry You Did Not Upload Any Story")
                 }
-            } else {
-                console.log("No story to remove");
-            }
+            } 
         } catch (error) {
             console.log("Error", error);
         }
@@ -102,20 +89,9 @@ const StoryStatusScreen = ({ navigation }) => {
         try {
             let statusRef = databaseRef(database, `Users/${currentUser.id}/Status`);
 
-            await update(statusRef, {
-                time: Date.now(),
-                url: url,
-                message: inputText,
-            });
-
-            console.log("Database updated successfully!");
+            await update(statusRef, { time: Date.now(), url: url, message: inputText, });
             setUser(prevUser => ({
-                ...prevUser,
-                Status: {
-                    time: Date.now(),
-                    url: url,
-                    message: inputText,
-                }
+                ...prevUser, Status: { time: Date.now(), url: url, message: inputText, }
             }));
         } catch (error) {
             console.error("Error updating database: ", error);
@@ -179,7 +155,7 @@ const StoryStatusScreen = ({ navigation }) => {
                 </TouchableOpacity>
                 <Text style={styles.header}>Stories</Text>
             </View>
-            <TouchableOpacity style={styles.addStoryContainer} onPress={handleAddStory}>
+            <TouchableOpacity style={styles.addStoryContainer} onPress={()=> setStoryActionModalVisible(true)}>
                 <MaterialIcons name="manage-accounts" color="#fff" size={22} />
                 <Text style={styles.addStoryText}>
                     {currentUser?.Status.url ? 'Manage Story' : 'Add Story'}
