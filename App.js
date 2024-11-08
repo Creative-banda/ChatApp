@@ -24,6 +24,7 @@ import RateUsScreen from '@screens/RateUsScreen';
 import FriendRequestScreen from '@screens/FriendRequestScreen';
 import SendRequestScreen from '@screens/SendRequestScreen';
 import NotificationScreen from '@screens/NotificationScreen';
+import OpenMail from './screens/OpenMail';
 import * as Font from 'expo-font';
 
 const Stack = createStackNavigator();
@@ -99,6 +100,7 @@ const App = () => {
           <Stack.Screen name="FriendRequest" component={FriendRequestScreen} />
           <Stack.Screen name="SendRequest" component={SendRequestScreen} />
           <Stack.Screen name="Notification" component={NotificationScreen} />
+          <Stack.Screen name="OpenMail" component={OpenMail} />
         </Stack.Navigator>
       </NavigationContainer>
     </AppProvider>

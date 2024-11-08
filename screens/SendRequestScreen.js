@@ -9,7 +9,7 @@ import { AppContext } from '@context/AppContext';
 const FriendRequestScreen = ({navigation}) => {
     const [UserList, SetUserlist] = useState([]);
     const {userUid} = useContext(AppContext);
-    console.log(userUid);
+    
     
     useEffect(() => {
         initializingUsers();
@@ -57,7 +57,7 @@ const FriendRequestScreen = ({navigation}) => {
 
         return (
             <View style={styles.friendItemContainer}>
-                <TouchableOpacity style={styles.friendItem} onPress={() => { navigation.navigate('OtherProfile', { userUid: item.id }) }}>
+                <TouchableOpacity style={styles.friendItem} onPress={() => { navigation.navigate('OtherProfile', { userUid: item.receiveruid }) }}>
                     <Image source={imageUri} style={styles.avatar} />
                     <Text style={styles.friendName}>{item.receiverusername}</Text>
                     <TouchableOpacity

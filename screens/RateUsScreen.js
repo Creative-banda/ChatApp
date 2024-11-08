@@ -1,21 +1,21 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Animated, ActivityIndicator, Image, KeyboardAvoidingView, Platform, ScrollView, Keyboard } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ref, get, set, update } from 'firebase/database';
 import { database } from '@config';
 import { useRoute } from '@react-navigation/native';
+import ThankYouMessage from '../components/ThankYouMessage';
 
-const RateUsScreen = () => {
+const RateUsScreen = ({navigation}) => {
     const [rating, setRating] = useState(0);
     const [feedback, setFeedback] = useState('');
-    const navigation = useNavigation();
     const [isLoading, setLoading] = useState(false);
     const [animation] = useState(new Animated.Value(0));
     const route = useRoute();
     const { uid } = route.params;
     const [keyboardHeight, setKeyboardHeight] = useState(0);
     const inputRef = useRef(null);
+    const [thanksYouMessage, setThanksMessage] = useState(false);
 
     useEffect(() => {
         const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', (event) => {
@@ -47,29 +47,22 @@ const RateUsScreen = () => {
             Alert.alert('Rating Required', 'Please provide a rating before submitting.');
             return;
         }
-        
         setLoading(true);
-
         const newMessage = {
             Stars: rating,
             Comment: feedback,
         };
-
         try {
             const userRatingRef = ref(database, `Rating/${uid}`);
-
             const snapshot = await get(userRatingRef);
-
             if (snapshot.exists()) {
                 await update(userRatingRef, newMessage);
             } else {
                 await set(userRatingRef, newMessage);
             }
-
-            Alert.alert('Thank You!', 'Your feedback has been submitted.');
             setRating(0);
             setFeedback('');
-            navigation.goBack();
+            setThanksMessage(true);
         } catch (error) {
             console.error("Error sending message: ", error);
         } finally {
@@ -142,6 +135,7 @@ const RateUsScreen = () => {
                     </TouchableOpacity>
                 </ScrollView>
             </KeyboardAvoidingView>
+        <ThankYouMessage visible={thanksYouMessage} handleClose={() => setThanksMessage(false)} handleGoHome={()=>{navigation.goBack(); setThanksMessage(false)}}/>
         </LinearGradient>
     );
 };

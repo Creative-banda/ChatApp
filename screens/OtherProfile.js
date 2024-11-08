@@ -9,7 +9,7 @@ import handleNotification from '@functions/Send_Notification';
 
 export default function Profile({ navigation }) {
     const route = useRoute();
-    const { uid, IsNotification } = route.params;
+    const { userUid, IsNotification } = route.params;
     const [userInfo, setUserInfo] = useState(null);
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
@@ -17,11 +17,12 @@ export default function Profile({ navigation }) {
     const [About, setAbout] = useState('');
     const [Gender, setGender] = useState('');
     const [Dpurl, setDpurl] = useState('');
+    console.log(userUid);
     
 
     useEffect(() => {
         fetchUserData();
-    }, [uid]);
+    }, [userUid]);
 
     useEffect(() => {
         if (userInfo) {
@@ -35,12 +36,12 @@ export default function Profile({ navigation }) {
 
     const fetchUserData = async () => {
         try {
-            const userRef = databaseRef(database, `Users/${uid}`);
+            const userRef = databaseRef(database, `Users/${userUid}`);
             const snapshot = await get(userRef);
             if (snapshot.exists()) {
                 setUserInfo(snapshot.val());
                 if (!IsNotification){
-                    handleNotification("SomeOne visited your profile",snapshot.val().token, uid, "profile_viewed");
+                    handleNotification("SomeOne visited your profile",snapshot.val().token, userUid, "profile_viewed");
                 }
                 
             } else {
