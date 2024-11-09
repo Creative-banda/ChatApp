@@ -114,7 +114,7 @@ const LoginPage = ({ navigation }) => {
           </TouchableOpacity>
           <View style = {{flexDirection:'row',width:'100%',alignItems:'center',justifyContent:'center',paddingTop:20}}>
             <Text style={{color:'#CFCECD',fontFamily:'Lato',paddingHorizontal:10}}>Click here for</Text>
-          <TouchableOpacity onPress={() => navigation.navigate("SignUp")}>
+          <TouchableOpacity onPress={() => navigation.navigate('OpenMail')}>
             <Text style={styles.newUserText}>SignUp</Text>
           </TouchableOpacity>
           </View>

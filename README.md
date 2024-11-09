@@ -1,32 +1,40 @@
 # 📱 Chat App
 
-This is a fully-featured chat application built using **React Native** and **Firebase**. The app supports real-time messaging, status updates, friend requests, profile management, and more. This project was developed to demonstrate skills in mobile app development, Firebase integration, and user authentication.
+This is a feature-rich chat application developed using **React Native**, **Firebase**, and **Node**. The app includes real-time messaging, customizable notifications, biometric security, and social features. This project showcases skills in mobile development, backend integration, and user-centered security features.
 
 ## 🚀 Features
 
-- **User Authentication**: Sign up, log in, log out, and reset passwords using Firebase Authentication.
-- **Real-time Messaging**: Send and receive messages in real-time.
-- **Typing Indicators**: See when another user is typing a message.
-- **Online/Offline Status**: Track and display users' online or offline status.
-- **Friend Requests**: Send and accept friend requests.
-- **Profile Management**: Update profile details such as profile picture, bio, and name.
-- **Status Updates**: Upload and view status updates (stories) similar to popular social media apps.
-- **View Other Profiles**: Check out the profiles of other users.
+- **User Authentication**: Sign up, log in, log out, and reset passwords via Firebase Authentication.
+- **Real-time Messaging**: Instantly send and receive messages.
+- **Typing Indicators**: Shows when another user is typing.
+- **Online/Offline Status**: Display users’ online or offline status.
+- **Friend Requests**: Send and accept friend requests to build connections.
+- **Profile Management**: Customize profile details such as picture, bio, and name.
+- **Status Updates**: Upload and view status updates (similar to social media stories).
+- **View Other Profiles**: Check profiles of other users.
+- **Push Notifications**: Receive notifications based on customized user preferences.
+- **Biometric Lock System**: Enhanced app security with biometric authentication.
 
 ## 🛠️ Tech Stack
 
-- **React Native**: For building the cross-platform mobile application.
-- **Firebase**: For backend services including authentication, real-time database, and storage.
+- **React Native**: Cross-platform app development.
+- **Firebase**: Backend services (authentication, real-time database, and storage).
+- **Node.js & Express**: Manages notifications and additional backend processes.
+
+
 
 ## 📂 Project Structure
 
 /chatapp  
 │  
 ├── /assets  
-├── /components  # Reusable components  
-├── /screens  # App screens  
-├── App.js  # Main entry point of the app  
-├── config.js  # Firebase Config file
+├── /components            # Reusable components  
+├── /screens               # App screens  
+├── /functions             # Commonly used functions  
+├── /permission            # Permission management  
+├── /global_components     # Global components  
+├── App.js                 # Main entry point of the app  
+├── config.js              # Firebase configuration file  
 
 
 
@@ -72,4 +80,4 @@ This project is licensed under the **MIT License**.
 
 ## 👤 Author
 
-- **Mohd Ahtesham** - [https://www.linkedin.com/in/yourprofile](https://www.linkedin.com/in/ahtesham-khan-808260311/
+- **Mohd Ahtesham** - (https://www.linkedin.com/in/ahtesham-khan-808260311/)

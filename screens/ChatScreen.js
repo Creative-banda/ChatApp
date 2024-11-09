@@ -59,6 +59,7 @@ const ChatScreen = ({ navigation }) => {
     const statusTimeoutRef = useRef(null);
     const route = useRoute();
     const { chatId, name } = route.params;
+    
 
 
 
@@ -396,7 +397,7 @@ const ChatScreen = ({ navigation }) => {
                             </TouchableOpacity>
                             <Image source={chatId.image ? { uri: chatId.image } : require('../assets/icon.png')} style={styles.avatar} />
 
-                            <TouchableOpacity onPress={() => { navigation.navigate('OtherProfile', { uid: chatId.name }) }}>
+                            <TouchableOpacity onPress={() => { navigation.navigate('OtherProfile', { userUid: chatId.name }) }}>
                                 <Text style={{ color: '#fff', fontSize: 20, fontFamily: 'Lato' }}>{chatId.username}</Text>
                                 <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center' }}>
                                     {isActive ? (
@@ -414,7 +415,7 @@ const ChatScreen = ({ navigation }) => {
                                 </View>
                             </TouchableOpacity>
 
-                            <ThreeDotMenu ViewProfile={() => { navigation.navigate('OtherProfile', { uid: chatId.name }) }} CurrentUser={name} OtherUser={chatId} />
+                            <ThreeDotMenu ViewProfile={() => { navigation.navigate('OtherProfile', { userUid: chatId.name }) }} CurrentUser={name} OtherUser={chatId} />
                         </View>
                     )}
                 </View>

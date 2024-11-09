@@ -17,7 +17,6 @@ export default function Profile({ navigation }) {
     const [About, setAbout] = useState('');
     const [Gender, setGender] = useState('');
     const [Dpurl, setDpurl] = useState('');
-    console.log(userUid);
     
 
     useEffect(() => {
@@ -51,8 +50,6 @@ export default function Profile({ navigation }) {
             console.error("Error fetching user data: ", error);
         }
     };
-
-
 
     return (
         <ImageBackground source={require('../assets/Images/background.jpg')} style={styles.BackgroundImage}>

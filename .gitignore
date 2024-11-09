@@ -5,11 +5,12 @@ node_modules/
 
 
 # Expo
-.expo/
+.expo
 dist/
 web-build/
 chatapp.json
-google-services.json
+.idea
+.vscode
 
 # Native
 *.orig.*
@@ -18,6 +19,7 @@ google-services.json
 *.p12
 *.key
 *.mobileprovision
+google-services.json
 
 # Metro
 .metro-health-check*

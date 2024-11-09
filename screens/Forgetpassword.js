@@ -1,7 +1,7 @@
 import React from 'react';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { getAuth, sendPasswordResetEmail } from "firebase/auth";
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, Image, Platform, ActivityIndicator } from 'react-native';
+import { StyleSheet, View, Text, TextInput, TouchableOpacity, Image, Platform, ActivityIndicator, ImageBackground } from 'react-native';
 import CustomAlert from '../GlobalComponents/Customalert';
 
 const ForgetPassword = ({ navigation }) => {
@@ -42,50 +42,55 @@ const ForgetPassword = ({ navigation }) => {
     }
 
     return (
-        <View style={styles.container}>
-            <TouchableOpacity style={styles.headerContainer} onPress={() => navigation.goBack()}>
-                <Ionicons name="arrow-back-outline" size={28} color="#ACC8E5" />
-                <Text style={styles.backText}>Back</Text>
-            </TouchableOpacity>
+        <ImageBackground source={require('../assets/Images/Registration.jpg')} style={{flex : 1,
+            justifyContent: 'center',
+            backgroundColor: '#1e1e1e',}}>
 
-            <Image source={require('../assets/Images/forgetpasswordImage.png')} style={styles.illustration} />
+            <View style={styles.container}>
+                <TouchableOpacity style={styles.headerContainer} onPress={() => navigation.goBack()}>
+                    <Ionicons name="arrow-back-outline" size={28} color="#E0E0E0" />
+                    <Text style={styles.backText}>Back</Text>
+                </TouchableOpacity>
 
-            <Text style={styles.header}>Forgot Password</Text>
-            <Text style={styles.subHeader}>Enter your registered email address below to reset your password.</Text>
+                <Image source={require('../assets/Images/forgetpasswordImage.png')} style={styles.illustration} />
 
-            {/* Input Field */}
-            <View style={styles.inputWrapper}>
-                <Ionicons name="mail-outline" size={20} color="#ACC8E5" />
-                <TextInput
-                    placeholder="Email"
-                    value={mail}
-                    onChangeText={setMail}
-                    style={styles.input}
-                    placeholderTextColor="#a1a1a1"
-                    keyboardType="email-address"
-                />
+                <Text style={styles.header}>Forgot Password</Text>
+                <Text style={styles.subHeader}>Enter your registered email address below to reset your password.</Text>
+
+                {/* Input Field */}
+                <View style={styles.inputWrapper}>
+                    <Ionicons name="mail-outline" size={20} color="#E0E0E0" />
+                    <TextInput
+                        placeholder="Email"
+                        value={mail}
+                        onChangeText={setMail}
+                        style={styles.input}
+                        placeholderTextColor="#a1a1a1"
+                        keyboardType="email-address"
+                    />
+                </View>
+
+                {/* Helper text */}
+                <Text style={styles.helperText}>
+                    We will send a password reset link to your registered email address.
+                </Text>
+
+                {/* Submit Button */}
+                <TouchableOpacity style={styles.button} onPress={handleForgetPassword}>
+                    {loading ? <ActivityIndicator size='small' color={'#121212'} /> : <Text style={styles.buttonText}>Reset Password</Text>}
+                </TouchableOpacity>
+
+                <CustomAlert visible={visible} message={message} type='error' onClose={() => setVisible(false)} />
+
             </View>
-
-            {/* Helper text */}
-            <Text style={styles.helperText}>
-                We will send a password reset link to your registered email address.
-            </Text>
-
-            {/* Submit Button */}
-            <TouchableOpacity style={styles.button} onPress={handleForgetPassword}>
-                {loading ? <ActivityIndicator size='small' color={'#112A46'} /> : <Text style={styles.buttonText}>Reset Password</Text>}
-            </TouchableOpacity>
-
-            <CustomAlert visible={visible} message={message} type='error' onClose={() => setVisible(false)} />
-
-        </View>
+        </ImageBackground>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#112A46',
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
         paddingVertical: 40,
         paddingHorizontal: 20,
     },
@@ -106,52 +111,48 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontFamily: 'Lato',
         marginLeft: 10,
-        color: '#ACC8E5',
+        color: '#E0E0E0',
     },
     header: {
         fontSize: 28,
         fontFamily: 'Lato',
         marginBottom: 8,
-        color: '#ACC8E5',
+        color: '#E0E0E0',
     },
     subHeader: {
         fontSize: 16,
         fontFamily: 'Lato',
-        color: '#ACC8E5',
+        color: '#E0E0E0',
         lineHeight: 22,
         marginBottom: 20,
     },
     inputWrapper: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#112A46',
         borderRadius: 10,
         paddingVertical: 12,
         paddingHorizontal: 10,
-        borderWidth: 1.2,
-        borderColor: '#ACC8E5',
-        shadowColor: '#ACC8E5',
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255,0.5)',
     },
     input: {
         flex: 1,
         fontSize: 16,
         fontFamily: 'Lato',
         marginLeft: 10,
-        color: '#ACC8E5',
+        color: '#E0E0E0',
+        placeholderTextColor: '#9E9E9E',
     },
     helperText: {
         fontSize: 14,
-        color: '#ACC8E5',
+        color: '#E0E0E0',
         fontFamily: 'Lato',
         marginVertical: 10,
     },
     button: {
-        backgroundColor: '#ACC8E5',
+        backgroundColor: '#1E90FF', // Accent color
         borderRadius: 10,
-        paddingVertical: 12,
+        paddingVertical: 16,
         alignItems: 'center',
         marginTop: 30,
         shadowColor: '#000',
@@ -160,11 +161,11 @@ const styles = StyleSheet.create({
         elevation: 5,
     },
     buttonText: {
-        color: '#112A46',
+        color: '#fff', // Dark color for contrast on button
         fontSize: 18,
         fontFamily: 'Lato',
     },
-
 });
+
 
 export default ForgetPassword;

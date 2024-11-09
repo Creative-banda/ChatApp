@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Platform } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Platform, ImageBackground } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { openInbox } from 'react-native-email-link'
 import * as IntentLauncher from 'expo-intent-launcher';
@@ -8,52 +8,59 @@ const OpenMail = ({ navigation }) => {
 
     const openMail = async () => {
         if (Platform.OS === "ios") {
-          try {
-            await openInbox({ title: "Open mail app" });
-          } catch (error) {
-            console.error(`OpenEmailbox > iOS Error > ${error}`);
-          }
+            try {
+                await openInbox({ title: "Open mail app" });
+            } catch (error) {
+                console.error(`OpenEmailbox > iOS Error > ${error}`);
+            }
         }
-      
+
         if (Platform.OS === "android") {
-          const activityAction = "android.intent.action.MAIN";
-          const intentParams = {
-            category: "android.intent.category.APP_EMAIL",
-          };
-          IntentLauncher.startActivityAsync(activityAction, intentParams);
+            const activityAction = "android.intent.action.MAIN";
+            const intentParams = {
+                category: "android.intent.category.APP_EMAIL",
+            };
+            IntentLauncher.startActivityAsync(activityAction, intentParams);
         }
-      }
+    }
 
 
     return (
-        <View style={styles.container}>
-            <View style={styles.upperContainer}>
-                <View style={styles.iconHolder}>
-                    <MaterialCommunityIcons name='email' size={50} color="#673fd2" />
-                </View>
-                <Text style={styles.header}>Check Your Mail</Text>
-                <Text style={styles.subHeader}>We've sent you a verification link</Text>
-                <Text style={styles.subHeader}>Please check your inbox</Text>
+        <ImageBackground source={require('../assets/Images/Registration.jpg')} style={{
+            flex: 1,
+            justifyContent: 'center',
+            backgroundColor: '#1e1e1e',
+        }}>
 
-                <TouchableOpacity style={styles.button} onPress={openMail}>
-                    <Text style={styles.buttonText}>Open Email App</Text>
-                </TouchableOpacity>
+            <View style={styles.container}>
+                <View style={styles.upperContainer}>
+                    <View style={styles.iconHolder}>
+                        <MaterialCommunityIcons name='email' size={50} color="#1E90FF" />
+                    </View>
+                    <Text style={styles.header}>Check Your Mail</Text>
+                    <Text style={styles.subHeader}>We've sent you a verification link</Text>
+                    <Text style={styles.subHeader}>Please check your inbox</Text>
 
-                <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-                    <Text style={styles.laterText}>Skip, I'll confirm later</Text>
-                </TouchableOpacity>
-            </View>
+                    <TouchableOpacity style={styles.button} onPress={openMail}>
+                        <Text style={styles.buttonText}>Open Email App</Text>
+                    </TouchableOpacity>
 
-            <View style={styles.lowerContainer}>
-                <Text style={styles.notReceivetext}>Didn't receive the email? Check your Spam</Text>
-                <View style={styles.resendContainer}>
-                    <Text style={styles.normalText}>or </Text>
-                    <TouchableOpacity onPress={()=>navigation.navigate("ForgetPassword")}>
-                        <Text style={styles.resendText}>try another email address</Text>
+                    <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+                        <Text style={styles.laterText}>Skip, I'll confirm later</Text>
                     </TouchableOpacity>
                 </View>
+
+                <View style={styles.lowerContainer}>
+                    <Text style={styles.notReceivetext}>Didn't receive the email? Check your Spam</Text>
+                    <View style={styles.resendContainer}>
+                        <Text style={styles.normalText}>or </Text>
+                        <TouchableOpacity onPress={() => navigation.navigate("ForgetPassword")}>
+                            <Text style={styles.resendText}>try another email address</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
             </View>
-        </View>
+        </ImageBackground>
     );
 }
 
@@ -62,7 +69,7 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingTop: '40%',
         paddingHorizontal: 20,
-        backgroundColor: '#112A46',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
         alignItems: 'center',
     },
     upperContainer: {
@@ -95,7 +102,7 @@ const styles = StyleSheet.create({
     },
     button: {
         marginTop: 20,
-        backgroundColor: '#673fd2',
+        backgroundColor: '#1E90FF',
         paddingVertical: 15,
         paddingHorizontal: 40,
         borderRadius: 10,
@@ -143,7 +150,7 @@ const styles = StyleSheet.create({
     },
     resendText: {
         fontSize: 16,
-        color: '#673fd2',
+        color: '#1E90FF',
         textDecorationLine: 'underline',
     }
 });
