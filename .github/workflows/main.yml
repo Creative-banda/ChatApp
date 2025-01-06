@@ -1,0 +1,16 @@
+name: Delete Outdated Stories
+
+on:
+  schedule:
+    - cron: "0 * * * *" # Runs every hour
+
+jobs:
+  delete-stories:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send POST request to API
+        run: |
+          curl -X POST https://chat-app-notification-server.vercel.app/update \
+          -H "Content-Type: application/json" \
+          -d '{}'
