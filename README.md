@@ -37,9 +37,7 @@ This is a feature-rich chat application developed using **React Native**, **Fire
 ├── config.js              # Firebase configuration file  
 
 
-
 ## 📸 Screenshots
-
 
 <img src="https://github.com/user-attachments/assets/10ac91dd-e97b-4901-8795-d1bc087604fd" alt="Login" width="300"/>
 <img src="https://github.com/user-attachments/assets/c03715f8-8335-4d20-a045-1533c839bf94" alt="SignUp" width="300"/>
@@ -63,9 +61,11 @@ This is a feature-rich chat application developed using **React Native**, **Fire
    git clone https://github.com/Creative-banda/ChatApp.git
 2. Install the dependencies:
   cd chatapp
+  ```bash
   npm install
-3. Set up your Firebase project and update the configuration in / (root folder
+3. Set up your Firebase project and update the configuration in / (root folder)
 4. Run the app: 
+  ```bash
     npx expo start
 
 

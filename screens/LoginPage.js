@@ -6,6 +6,7 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@config';
 import SimpleAlert from '@components/SimpleAlert';
 import updateToken from '@functions/UpdateToken';
+import { SignUp } from '@screens/SignUp';
 
 const LoginPage = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -114,7 +115,7 @@ const LoginPage = ({ navigation }) => {
           </TouchableOpacity>
           <View style = {{flexDirection:'row',width:'100%',alignItems:'center',justifyContent:'center',paddingTop:20}}>
             <Text style={{color:'#CFCECD',fontFamily:'Lato',paddingHorizontal:10}}>Click here for</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('OpenMail')}>
+          <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
             <Text style={styles.newUserText}>SignUp</Text>
           </TouchableOpacity>
           </View>
